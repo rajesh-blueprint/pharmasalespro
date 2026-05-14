@@ -962,7 +962,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div class="sec-title" style="color:var(--gold)">🔑 Groq API Key (Fallback OCR)</div>
         <div class="gc gcp mb-2">
           <div id="groq-status" class="al al-info mb-1" style="font-size:.78rem">Checking…</div>
-          <div class="fg"><label class="fl">Groq API Key ()</label>
+          <div class="fg"><label class="fl">Groq API Key (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
+)</label>
             <input class="fi" type="password" id="groq-key-inp" placeholder="gsk_xxxxxxxxxxxxxxxx"></div>
           <div class="flex-row" style="flex-wrap:wrap;gap:.5rem">
             <button class="btn btn-p btn-sm" onclick="saveGroqKey()">Save Key</button>
@@ -1123,10 +1124,10 @@ const Sess={
 
 /* ══ SHEETS API ══ */
 const SheetAPI={
-  async findUser(mob){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=findUser&mobile=${mob}`);return(await r.json()).user||null}catch{return null}},
-  async appendUser(d){try{const r=await fetch(CFG.SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'appendUser',data:d})});return await r.json()}catch{return null}},
+  async findUser(mob){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=findUser&mobile=${encodeURIComponent(mob)}`);return(await r.json()).user||null}catch{return null}},
+  async appendUser(d){try{const params=new URLSearchParams({action:'appendUser',userId:d.userId||'',name:d.name||'',mobile:d.mobile||'',company:d.company||'',designation:d.designation||'',city:d.city||'',place:d.place||'',pin:d.pin||'',status:d.status||'Free',createdAt:d.createdAt||new Date().toISOString()});const r=await fetch(`${CFG.SCRIPT_URL}?${params.toString()}`);return await r.json()}catch(e){console.error('appendUser error:',e);return null}},
   async getAll(){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=getAllUsers`);return(await r.json()).users||[]}catch{return[]}},
-  async updateStatus(uid,status){try{const r=await fetch(CFG.SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateStatus',userId:uid,status})});return await r.json()}catch{return null}},
+  async updateStatus(uid,status){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=updateStatus&userId=${encodeURIComponent(uid)}&status=${encodeURIComponent(status)}`);return await r.json()}catch{return null}},
 };
 
 /* ══ PHARMAMATH ══ */
