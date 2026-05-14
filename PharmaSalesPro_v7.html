@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#040d18"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>PharmaSalesPro — Field Sales Intelligence v6</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#040d18;--bg2:#071a2e;--bg3:#0a2040;
+  --glass:rgba(255,255,255,0.05);--glass-b:rgba(255,255,255,0.10);--glass-h:rgba(255,255,255,0.08);
+  --accent-a:#00c6ff;--accent-b:#0072ff;--grad:linear-gradient(135deg,#00c6ff,#0072ff);
+  --gold:#ffd200;--gold-b:#f7971e;--gold-grad:linear-gradient(135deg,#f7971e,#ffd200);
+  --green:#00e87a;--red:#ff4d6a;--amber:#ffb300;
+  --text:#e8f4ff;--muted:rgba(232,244,255,0.45);--label:rgba(232,244,255,0.62);
+  --radius:16px;--radius-sm:10px;--shadow:0 8px 32px rgba(0,0,0,0.5);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono','Courier New',monospace;--nav-h:68px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden}
+input,select,button,textarea{font-family:var(--font)}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes m4Pulse{0%{opacity:.4;transform:scale(.97)}60%{opacity:1;transform:scale(1.02)}100%{opacity:1;transform:scale(1)}}
+
+/* SHELL */
+#auth-screen{min-height:100vh;background:linear-gradient(160deg,#040d18 0%,#071828 40%,#0a2235 70%,#040d18 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem}
+#app{display:none;flex-direction:column;max-width:480px;margin:0 auto;min-height:100vh;position:relative}
+.screen{display:none;flex-direction:column;min-height:100vh;padding-bottom:var(--nav-h);animation:fadeIn .22s ease}
+.screen.active{display:flex}
+
+/* AUTH */
+.auth-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.11);border-radius:22px;padding:2rem 1.75rem;width:100%;max-width:420px;box-shadow:0 16px 60px rgba(0,0,0,0.55);animation:fadeUp .4s ease both}
+.logo-wrap{text-align:center;margin-bottom:1.6rem}
+.logo-icon{width:56px;height:56px;background:var(--grad);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:.7rem;box-shadow:0 4px 22px rgba(0,114,255,.45)}
+.logo-name{font-size:1.35rem;font-weight:700;letter-spacing:-.4px;color:#fff}
+.logo-sub{font-size:.65rem;color:rgba(255,255,255,.38);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.tab-row{display:flex;background:rgba(255,255,255,.06);border-radius:12px;padding:3px;margin-bottom:1.4rem}
+.auth-tab{flex:1;padding:.52rem;border:none;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.42);background:transparent}
+.auth-tab.on{background:var(--grad);color:#fff;box-shadow:0 2px 12px rgba(0,114,255,.32)}
+.fg{margin-bottom:.9rem}
+.fl{display:block;font-size:.68rem;font-weight:700;color:var(--label);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.fi{width:100%;padding:.68rem .9rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:9px;color:#fff;font-size:.9rem;outline:none;transition:border .2s}
+.fi:focus{border-color:rgba(0,198,255,.55)}
+.fi::placeholder{color:rgba(255,255,255,.26)}
+.fsel{width:100%;padding:.68rem .9rem;background:rgba(10,28,48,.95);border:1px solid rgba(255,255,255,.13);border-radius:9px;color:#fff;font-size:.9rem;outline:none}
+.fsel option{background:#0a1c30}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.al{border-radius:9px;padding:.58rem .8rem;font-size:.8rem;margin-bottom:.85rem}
+.al-err{background:rgba(255,77,106,.12);border:1px solid rgba(255,77,106,.3);color:#ff8090}
+.al-ok{background:rgba(0,232,122,.12);border:1px solid rgba(0,232,122,.3);color:#00e87a}
+.al-info{background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.25);color:#00c6ff}
+.al-warn{background:rgba(255,179,0,.1);border:1px solid rgba(255,179,0,.25);color:#ffb300}
+
+/* BUTTONS */
+.btn{padding:.75rem 1.2rem;border:none;border-radius:11px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 18px rgba(0,114,255,.3)}
+.btn-p:hover{opacity:.9;transform:translateY(-1px)}
+.btn-gold{background:var(--gold-grad);color:#7a4800;box-shadow:0 4px 18px rgba(247,151,30,.3);font-weight:700}
+.btn-g{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.14)}
+.btn-d{background:rgba(255,77,106,.14);color:#ff8090;border:1px solid rgba(255,77,106,.28)}
+.btn-wa{background:linear-gradient(135deg,#25d366,#128c5e);color:#fff;box-shadow:0 4px 16px rgba(37,211,102,.3)}
+.btn-google{background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;box-shadow:0 4px 16px rgba(66,133,244,.35)}
+.btn-block{width:100%}
+.btn-sm{padding:.42rem .85rem;font-size:.78rem;border-radius:8px}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.28);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem .7rem;background:rgba(4,13,24,.92);border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;z-index:20;backdrop-filter:blur(14px)}
+.tb-logo{display:flex;align-items:center;gap:.55rem}
+.tb-icon{width:32px;height:32px;background:var(--grad);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,114,255,.35);flex-shrink:0}
+.tb-name{font-size:1rem;font-weight:700;letter-spacing:-.3px}
+.tb-right{display:flex;align-items:center;gap:.5rem}
+.avatar-btn{width:32px;height:32px;border-radius:50%;background:var(--grad);border:none;cursor:pointer;font-weight:700;color:#fff;font-size:.82rem;display:flex;align-items:center;justify-content:center}
+.bp{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.5px}
+.bp-paid{background:var(--gold-grad);color:#7a4800}
+.bp-free{background:rgba(255,255,255,.1);color:rgba(255,255,255,.55)}
+.sub-topbar{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:rgba(4,13,24,.88);border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(14px);position:sticky;top:0;z-index:20}
+.sub-topbar-title{font-size:.95rem;font-weight:700}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(4,13,24,.97);border-top:1px solid rgba(255,255,255,.09);display:flex;z-index:100;padding:.35rem 0 .55rem}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:.3rem .15rem;transition:all .2s}
+.nb svg{width:21px;height:21px;stroke:rgba(255,255,255,.32);stroke-width:1.8;fill:none;transition:stroke .2s}
+.nb span{font-size:.56rem;color:rgba(255,255,255,.32);font-weight:600;letter-spacing:.3px;font-family:var(--font);transition:color .2s}
+.nb.on svg{stroke:var(--accent-a)}
+.nb.on span{color:var(--accent-a)}
+.nb:active{transform:scale(.9)}
+
+/* LAYOUT */
+.sa{flex:1;overflow-y:auto;padding:1rem 1rem .5rem}
+.sa::-webkit-scrollbar{width:3px}
+.sa::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:2px}
+.gc{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--radius);backdrop-filter:blur(14px)}
+.gcp{padding:1.2rem}
+.sec-title{font-size:.67rem;font-weight:700;color:rgba(255,255,255,.38);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.75rem;margin-top:.2rem}
+.divider{height:1px;background:rgba(255,255,255,.07);margin:.9rem 0}
+.mt-1{margin-top:.5rem}.mt-2{margin-top:1rem}
+.mb-1{margin-bottom:.5rem}.mb-2{margin-bottom:1rem}
+.flex-row{display:flex;align-items:center;gap:.5rem}
+.flex-1{flex:1}
+.text-muted{color:var(--muted)}
+.text-xs{font-size:.72rem}
+.text-center{text-align:center}
+
+/* CALC CARDS */
+.calc-card{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--radius);padding:1.1rem;backdrop-filter:blur(14px);box-shadow:var(--shadow);margin-bottom:1rem}
+.calc-title{font-size:.82rem;font-weight:700;color:var(--accent-a);margin-bottom:.9rem;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:.7rem}
+.calc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.65rem;margin-bottom:.85rem}
+.calc-field{display:flex;flex-direction:column;gap:4px}
+.calc-field label{font-size:.6rem;font-weight:700;color:var(--label);letter-spacing:.5px;text-transform:uppercase}
+.calc-field input,.calc-field select{background:rgba(255,255,255,.07);border:1px solid var(--glass-b);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:.88rem;padding:.55rem .7rem;outline:none;transition:border .2s,box-shadow .2s;width:100%}
+.calc-field input:focus,.calc-field select:focus{border-color:var(--accent-a);background:rgba(0,198,255,.07);box-shadow:0 0 0 3px rgba(0,198,255,.1)}
+.calc-field input::placeholder{color:rgba(232,244,255,.22)}
+.calc-field select option{background:#0a1c30}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem}
+.res-box{background:rgba(0,198,255,.05);border:1px solid rgba(0,198,255,.14);border-radius:var(--radius-sm);padding:.85rem .8rem;position:relative;overflow:hidden}
+.res-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:.55}
+.res-lbl{font-size:.58rem;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.res-val{font-family:var(--mono);font-size:1.1rem;font-weight:600;color:var(--accent-a);line-height:1.1;margin-bottom:3px;transition:all .22s}
+.res-val.upd{animation:m4Pulse .32s ease}
+.res-frm{font-size:.56rem;color:rgba(232,244,255,.22);font-family:var(--mono);line-height:1.4;margin-top:2px}
+.res-box.green .res-val{color:var(--green)}
+.res-box.amber .res-val{color:var(--amber)}
+.res-box.gold .res-val{color:var(--gold);font-size:1.2rem;font-weight:700}
+
+/* PERFORMANCE BADGE */
+.perf-card{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--radius);padding:1rem;backdrop-filter:blur(12px);margin-bottom:.75rem}
+.perf-title{font-size:.68rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--label);margin-bottom:.8rem;display:flex;align-items:center;gap:5px}
+.perf-title span{font-size:.9rem}
+.perf-badge{display:inline-flex;align-items:center;gap:5px;padding:.55rem 1rem;border-radius:var(--radius-sm);font-family:var(--mono);font-size:1.25rem;font-weight:500;transition:all .28s}
+.perf-badge.g{background:rgba(0,232,122,.12);border:1px solid rgba(0,232,122,.28);color:var(--green)}
+.perf-badge.a{background:rgba(255,179,0,.12);border:1px solid rgba(255,179,0,.28);color:var(--amber)}
+.perf-badge.r{background:rgba(255,77,106,.12);border:1px solid rgba(255,77,106,.28);color:var(--red)}
+.perf-badge.n{background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.18);color:var(--accent-a)}
+.perf-note{font-size:.62rem;color:rgba(255,255,255,.3);margin-top:.45rem}
+
+/* ORDER TABLE */
+.otbl-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--glass-b)}
+.otbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.otbl thead th{background:rgba(0,198,255,.08);padding:.55rem .65rem;text-align:left;font-size:.58rem;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--label);white-space:nowrap;border-bottom:1px solid var(--glass-b)}
+.otbl tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .14s}
+.otbl tbody tr:hover{background:rgba(0,198,255,.04)}
+.otbl tbody td{padding:.58rem .65rem;color:var(--text);font-family:var(--mono);font-size:.78rem;white-space:nowrap}
+.otbl tbody td:first-child,.otbl tbody td:nth-child(2){font-family:var(--font);font-weight:500}
+.otbl tfoot td{padding:.65rem;font-weight:700;font-size:.85rem;background:rgba(0,198,255,.06);color:var(--accent-a);border-top:1px solid rgba(0,198,255,.18)}
+.rm-btn{background:rgba(255,77,106,.12);border:1px solid rgba(255,77,106,.22);color:var(--red);border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.rm-btn:hover{background:rgba(255,77,106,.24)}
+.o-sumbar{display:flex;align-items:center;justify-content:space-between;background:rgba(0,198,255,.07);border:1px solid rgba(0,198,255,.14);border-radius:var(--radius-sm);padding:.7rem 1rem;margin-top:.75rem;flex-wrap:wrap;gap:.5rem}
+.o-sumbar .sl{font-size:.68rem;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.7px}
+.o-sumbar .sv{font-family:var(--mono);font-size:1.3rem;font-weight:600;color:var(--gold)}
+.o-empty{text-align:center;padding:1.5rem 1rem;color:var(--muted);font-size:.8rem}
+.o-empty .ei{font-size:2rem;display:block;margin-bottom:.4rem;opacity:.4}
+
+/* OCR */
+.ocr-upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.85rem}
+.ocr-zone{border:2px dashed rgba(255,255,255,.15);border-radius:var(--radius-sm);padding:1.2rem .7rem;text-align:center;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.ocr-zone:hover,.ocr-zone.drag-over{border-color:var(--accent-a);background:rgba(0,198,255,.06)}
+.ocr-zone.has-file{border-color:var(--green);border-style:solid;background:rgba(0,232,122,.05)}
+.ocr-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ocr-zone-icon{font-size:22px}
+.ocr-zone-lbl{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;line-height:1.3}
+.ocr-zone-sub{font-size:.6rem;color:rgba(255,255,255,.28)}
+.ocr-preview{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:8px;z-index:1}
+.ocr-preview-ov{position:absolute;inset:0;z-index:2;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:.65rem;color:#fff;font-weight:600;flex-direction:column;gap:3px}
+.ocr-saved-badge{display:flex;align-items:center;gap:.65rem;background:rgba(0,232,122,.09);border:1px solid rgba(0,232,122,.22);border-radius:8px;padding:.55rem .85rem;margin-bottom:.75rem}
+.ocr-saved-badge .sb-text{flex:1;font-size:.78rem;color:var(--green);font-weight:500}
+.ocr-saved-badge .sb-clear{font-size:.68rem;background:none;border:none;color:var(--red);cursor:pointer;text-decoration:underline}
+.ocr-steps{display:flex;align-items:center;gap:0;margin:0 0 .85rem;position:relative}
+.ocr-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.ocr-step:not(:last-child)::after{content:'';position:absolute;top:13px;left:50%;right:-50%;height:2px;background:rgba(255,255,255,.08);z-index:0}
+.ocr-step.done:not(:last-child)::after{background:var(--accent-a)}
+.ocr-step-dot{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--muted);position:relative;z-index:1;transition:all .3s}
+.ocr-step.active .ocr-step-dot{background:var(--grad);border-color:var(--accent-a);color:#fff;box-shadow:0 0 12px rgba(0,198,255,.4)}
+.ocr-step.done .ocr-step-dot{background:rgba(0,232,122,.14);border-color:var(--green);color:var(--green)}
+.ocr-step-lbl{font-size:.55rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;text-align:center}
+.ocr-step.active .ocr-step-lbl{color:var(--accent-a)}
+.ocr-step.done .ocr-step-lbl{color:var(--green)}
+.ocr-spin-wrap{display:none;flex-direction:column;align-items:center;gap:.85rem;padding:1.5rem 0;text-align:center}
+.ocr-spin-wrap.active{display:flex}
+.ocr-spinner{width:40px;height:40px;border:3px solid rgba(0,198,255,.15);border-top-color:var(--accent-a);border-radius:50%;animation:spin .85s linear infinite}
+.ocr-err-box{display:none;background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.28);border-radius:var(--radius-sm);padding:.85rem;margin-top:.75rem}
+.ocr-err-box.active{display:block}
+.ocr-table-wrap{display:none;animation:fadeUp .35s ease}
+.ocr-table-wrap.active{display:block}
+.ocr-tbl{width:100%;border-collapse:collapse;font-size:.74rem;min-width:480px}
+.ocr-tbl thead tr{background:rgba(0,198,255,.09)}
+.ocr-tbl th{padding:.6rem .55rem;text-align:left;font-weight:700;font-size:.58rem;text-transform:uppercase;letter-spacing:.6px;color:var(--accent-a);white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.08)}
+.ocr-tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
+.ocr-tbl tbody tr:hover{background:var(--glass-h)}
+.ocr-tbl td{padding:.58rem .55rem;vertical-align:middle;color:var(--text)}
+.ocr-cell{background:rgba(255,255,255,.06);border:1px solid transparent;border-radius:6px;padding:4px 6px;color:#fff;font-family:var(--font);font-size:.74rem;width:100%;min-width:50px;outline:none;transition:border .15s}
+.ocr-cell:focus{border-color:var(--accent-a);background:rgba(0,198,255,.08)}
+.ocr-cell.wide{min-width:95px}
+.ocr-del-btn{background:none;border:1px solid rgba(255,77,106,.28);color:var(--red);border-radius:6px;width:25px;height:25px;cursor:pointer;font-size:.78rem;display:flex;align-items:center;justify-content:center}
+.ocr-tbl-scroll{overflow-x:auto;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch}
+.ocr-tbl-scroll::-webkit-scrollbar{height:3px}
+.ocr-tbl-scroll::-webkit-scrollbar-thumb{background:rgba(0,198,255,.22);border-radius:3px}
+
+/* GOOGLE OAUTH */
+.gauth-card{background:linear-gradient(135deg,rgba(66,133,244,.1),rgba(52,168,83,.08));border:1px solid rgba(66,133,244,.3);border-radius:var(--radius);padding:1.1rem;margin-bottom:.85rem}
+.gauth-connected{background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.28)}
+.gauth-avatar{width:36px;height:36px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;flex-shrink:0}
+
+/* TOAST */
+.ocr-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(14px);background:rgba(10,25,48,.97);border:1px solid rgba(255,255,255,.12);border-radius:50px;padding:8px 20px;font-size:.82rem;font-weight:500;color:var(--text);white-space:nowrap;box-shadow:var(--shadow);opacity:0;transition:all .28s;z-index:999;pointer-events:none}
+.ocr-toast.ok{border-color:rgba(0,232,122,.32);color:var(--green)}
+.ocr-toast.err{border-color:rgba(255,77,106,.32);color:var(--red)}
+.ocr-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SETTINGS */
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.set-row:last-child{border-bottom:none}
+.set-lbl{font-size:.87rem;font-weight:600;color:rgba(255,255,255,.85)}
+.set-sub{font-size:.7rem;color:rgba(255,255,255,.38);margin-top:1px}
+.set-val{font-size:.85rem;color:var(--accent-a);font-weight:600}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.65rem;font-weight:700}
+.pill-paid{background:var(--gold-grad);color:#7a4800}
+.pill-free{background:rgba(255,255,255,.1);color:rgba(255,255,255,.52)}
+.pill-act{background:rgba(0,232,122,.13);color:#00e87a;border:1px solid rgba(0,232,122,.28)}
+.search-wrap{position:relative;margin-bottom:.85rem}
+.search-wrap svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:rgba(255,255,255,.3);fill:none;stroke-width:2}
+.search-inp{width:100%;padding:.62rem .9rem .62rem 2.3rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-size:.87rem;outline:none}
+.search-inp:focus{border-color:rgba(0,198,255,.45)}
+.search-inp::placeholder{color:rgba(255,255,255,.28)}
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.tbl th{text-align:left;padding:.5rem .65rem;color:var(--muted);font-size:.62rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08)}
+.tbl td{padding:.58rem .65rem;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.85);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,.08)}
+
+/* DR MASTER LIST */
+.dr-list-item{display:flex;align-items:center;gap:.6rem;padding:.65rem .85rem;border-bottom:1px solid rgba(255,255,255,.05);transition:background .14s}
+.dr-list-item:hover{background:rgba(0,198,255,.04)}
+.dr-list-item:last-child{border-bottom:none}
+.dr-checkbox{width:18px;height:18px;border-radius:5px;border:2px solid rgba(0,198,255,.4);background:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;flex-shrink:0;transition:all .15s;position:relative}
+.dr-checkbox:checked{background:var(--grad);border-color:var(--accent-a)}
+.dr-checkbox:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:.65rem;font-weight:700}
+.dr-info{flex:1;min-width:0}
+.dr-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dr-meta{font-size:.68rem;color:var(--muted)}
+.dr-list-scroll{max-height:280px;overflow-y:auto;border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-sm)}
+.dr-list-scroll::-webkit-scrollbar{width:3px}
+.dr-list-scroll::-webkit-scrollbar-thumb{background:rgba(0,198,255,.22);border-radius:3px}
+.selected-pool{background:rgba(0,198,255,.06);border:1px solid rgba(0,198,255,.2);border-radius:var(--radius-sm);padding:.6rem .85rem;font-size:.78rem;color:var(--accent-a);margin-top:.7rem;display:none}
+
+/* FORMAT FILLER OCR SUB-TAB */
+.sub-tab-row{display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:3px;margin-bottom:1rem}
+.sub-tab{flex:1;padding:.45rem;border:none;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.42);background:transparent}
+.sub-tab.on{background:var(--grad);color:#fff}
+
+@media(max-width:380px){.calc-grid{grid-template-columns:1fr 1fr}.res-grid{grid-template-columns:1fr 1fr}}
+
+/* ACCORDION */
+.acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.1rem;background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--radius);color:var(--text);cursor:pointer;font-family:var(--font);font-size:.88rem;font-weight:600;transition:all .2s;margin-bottom:.5rem;text-align:left;backdrop-filter:blur(14px)}
+.acc-btn:hover{background:var(--glass-h);border-color:rgba(0,198,255,.3);transform:translateY(-1px)}
+.acc-btn:active{transform:scale(.98)}
+.acc-btn.open{background:rgba(0,198,255,.08);border-color:rgba(0,198,255,.4);border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0}
+.acc-left{display:flex;align-items:center;gap:.65rem}
+.acc-emoji{font-size:1.1rem;line-height:1}
+.acc-label{display:flex;flex-direction:column;gap:1px}
+.acc-title{font-size:.85rem;font-weight:700;color:var(--text)}
+.acc-sub{font-size:.6rem;color:var(--muted);font-weight:400}
+.acc-arrow{font-size:.72rem;color:var(--muted);transition:transform .25s;flex-shrink:0}
+.acc-btn.open .acc-arrow{transform:rotate(180deg);color:var(--accent-a)}
+.acc-body{display:none;background:var(--glass);border:1px solid rgba(0,198,255,.22);border-top:none;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius);padding:1.1rem;margin-bottom:.75rem;animation:fadeUp .22s ease;backdrop-filter:blur(14px)}
+.acc-body.open{display:block}
+.acc-tag{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(0,198,255,.14);color:var(--accent-a);margin-left:.4rem;letter-spacing:.4px}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg width="28" height="28" viewBox="0 0 30 30" fill="none" stroke="white" stroke-width="2.2">
+          <rect x="3" y="11" width="24" height="8" rx="4" transform="rotate(-32 15 15)" fill="rgba(255,255,255,.18)" stroke="white"/>
+          <line x1="5" y1="10" x2="25" y2="20" stroke="rgba(0,200,255,.75)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="logo-name">PharmaSalesPro</div>
+      <div class="logo-sub">Field Sales Intelligence v6</div>
+    </div>
+    <div class="tab-row">
+      <button class="auth-tab on" id="tab-l" onclick="authTab('login')">Login</button>
+      <button class="auth-tab" id="tab-s" onclick="authTab('signup')">Sign Up</button>
+    </div>
+    <div id="frm-login">
+      <div id="lerr" class="al al-err" style="display:none"></div>
+      <div class="fg"><label class="fl">Mobile Number</label>
+        <input class="fi" type="tel" id="lmob" maxlength="10" placeholder="10-digit mobile" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+      <div class="fg"><label class="fl">4-Digit PIN</label>
+        <input class="fi" type="password" id="lpin" maxlength="6" placeholder="Your secure PIN" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-p btn-block" onclick="doLogin()" id="lbtn">Login →</button>
+      <p class="text-center text-xs text-muted mt-2">Free &amp; PRO — All features unlocked for testing</p>
+    </div>
+    <div id="frm-signup" style="display:none">
+      <div id="serr" class="al al-err" style="display:none"></div>
+      <div id="sok" class="al al-ok" style="display:none"></div>
+      <div class="fg"><label class="fl">Full Name</label><input class="fi" id="sname" placeholder="Your full name"></div>
+      <div class="fg"><label class="fl">Mobile Number</label>
+        <input class="fi" type="tel" id="smob" maxlength="10" placeholder="10-digit mobile" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+      <div class="fg"><label class="fl">Company / Division</label><input class="fi" id="scomp" placeholder="e.g. Sun Pharma – Cardiology"></div>
+      <div class="fg"><label class="fl">Designation</label>
+        <select class="fsel" id="sdesig">
+          <option>MR</option><option>ASM</option><option>RSM</option><option>ZSM</option>
+          <option>SM</option><option>GM</option><option>VP</option><option>PMT</option><option>MM</option>
+        </select></div>
+      <div class="frow">
+        <div class="fg"><label class="fl">City</label><input class="fi" id="scity" placeholder="e.g. Mumbai"></div>
+        <div class="fg"><label class="fl">Area / Place</label><input class="fi" id="splace" placeholder="e.g. Andheri West"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Create PIN</label>
+          <input class="fi" type="password" id="spin" maxlength="6" placeholder="4–6 digits" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+        <div class="fg"><label class="fl">Confirm PIN</label>
+          <input class="fi" type="password" id="scpin" maxlength="6" placeholder="Repeat" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+      </div>
+      <button class="btn btn-p btn-block" onclick="doSignup()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar" id="main-topbar">
+    <div class="tb-logo">
+      <div class="tb-icon">
+        <svg width="17" height="17" viewBox="0 0 30 30" fill="none" stroke="white" stroke-width="2.2">
+          <rect x="3" y="11" width="24" height="8" rx="4" transform="rotate(-32 15 15)" fill="rgba(255,255,255,.18)" stroke="white"/>
+          <line x1="5" y1="10" x2="25" y2="20" stroke="rgba(0,200,255,.75)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="tb-name">PharmaSalesPro</div>
+    </div>
+    <div class="tb-right">
+      <span id="tb-badge" class="bp bp-free">FREE</span>
+      <button class="avatar-btn" id="tb-avatar" onclick="nav('settings')">U</button>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD (accordion calculators) ═══ -->
+  <div id="scr-dashboard" class="screen active">
+    <div class="sa">
+      <div style="padding:.4rem 0 .9rem;animation:fadeUp .32s ease">
+        <div style="font-size:1.1rem;font-weight:700;letter-spacing:-.3px" id="greet-text">Good morning 👋</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px" id="greet-sub">Welcome back</div>
+      </div>
+
+      <div class="sec-title">💰 Price Calculators</div>
+
+      <!-- 1. PTR / PTS -->
+      <button class="acc-btn" onclick="accToggle('acc-ptpts')">
+        <div class="acc-left"><span class="acc-emoji">⚗️</span>
+          <div class="acc-label"><span class="acc-title">PTR / PTS Calculator</span><span class="acc-sub">Price to Retailer · Price to Stockist · Margins</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-ptpts">
+        <div class="calc-grid">
+          <div class="calc-field"><label>MRP (₹)</label><input type="number" id="m-mrp" placeholder="100.00" step="0.01" oninput="calcLive()"></div>
+          <div class="calc-field"><label>Retailer Margin %</label><input type="number" id="m-ret" value="20" oninput="calcLive();saveM()"></div>
+          <div class="calc-field"><label>Stockist Margin %</label><input type="number" id="m-stk" value="10" oninput="calcLive();saveM()"></div>
+          <div class="calc-field"><label>Cash Discount %</label><input type="number" id="m-cd" placeholder="0" oninput="calcLive()"></div>
+          <div class="calc-field"><label>Standard Qty</label><input type="number" id="m-sq" value="10" oninput="calcLive()"></div>
+          <div class="calc-field"><label>Free Qty (Scheme)</label><input type="number" id="m-fq" value="0" oninput="calcLive()"></div>
+          <div class="calc-field"><label>GST %</label>
+            <select id="m-gst" onchange="calcLive()">
+              <option value="0">0%</option><option value="5">5%</option>
+              <option value="12" selected>12%</option><option value="18">18%</option><option value="28">28%</option>
+            </select></div>
+        </div>
+        <div class="res-grid">
+          <div class="res-box"><div class="res-lbl">PTR</div><div class="res-val" id="rv-ptr">—</div><div class="res-frm">MRP÷(1+Ret%)</div></div>
+          <div class="res-box"><div class="res-lbl">PTS</div><div class="res-val" id="rv-pts">—</div><div class="res-frm">PTR÷(1+Stk%)</div></div>
+          <div class="res-box green"><div class="res-lbl">Net Rate (Chemist)</div><div class="res-val" id="rv-nr">—</div><div class="res-frm">PTR×(1−CD%)×Qty/(Qty+Free)</div></div>
+          <div class="res-box amber"><div class="res-lbl">GST Amount</div><div class="res-val" id="rv-gst">—</div><div class="res-frm">PTS×GST%</div></div>
+          <div class="res-box"><div class="res-lbl">Scheme Value</div><div class="res-val" id="rv-scheme">—</div><div class="res-frm">PTS×Free Qty</div></div>
+          <div class="res-box gold"><div class="res-lbl">Effective Rate</div><div class="res-val" id="rv-eff">—</div><div class="res-frm">PTS + GST/unit</div></div>
+          <div class="res-box" style="border-color:rgba(0,232,122,.28);background:rgba(0,232,122,.06)">
+            <div class="res-lbl" style="color:var(--green)">Chemist % Profit</div>
+            <div class="res-val" id="rv-cmargin" style="color:var(--green)">—</div>
+            <div class="res-frm">(MRP−Net Rate)÷MRP×100</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Net Rate -->
+      <button class="acc-btn" onclick="accToggle('acc-netrate')">
+        <div class="acc-left"><span class="acc-emoji">💊</span>
+          <div class="acc-label"><span class="acc-title">Net Rate Calculator</span><span class="acc-sub">Chemist bill value with scheme &amp; discount</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-netrate">
+        <div class="calc-grid">
+          <div class="calc-field"><label>Brand Name</label><input type="text" id="nr-brand" placeholder="e.g. Augmentin 625"></div>
+          <div class="calc-field"><label>MRP (₹) → auto PTR</label><input type="number" id="nr-mrp" placeholder="0.00" step="0.01" oninput="nrAuto()"></div>
+          <div class="calc-field"><label>PTR (₹)</label><input type="number" id="nr-ptr" placeholder="Auto from MRP" step="0.01" oninput="nrCalc()"></div>
+          <div class="calc-field"><label>Bill Qty</label><input type="number" id="nr-qty" value="1" min="1" oninput="nrCalc()"></div>
+          <div class="calc-field"><label>Free Qty (Scheme)</label><input type="number" id="nr-scheme" value="0" min="0" oninput="nrCalc()"></div>
+          <div class="calc-field"><label>Discount %</label><input type="number" id="nr-disc" value="0" oninput="nrCalc()"></div>
+          <div class="calc-field"><label>GST %</label><input type="number" id="nr-gst" value="12" oninput="nrCalc()"></div>
+        </div>
+        <div class="res-grid">
+          <div class="res-box"><div class="res-lbl">Net Rate / Unit</div><div class="res-val" id="nr-rate">—</div><div class="res-frm">PTR×Qty/(Qty+Scheme)×(1−Disc%)</div></div>
+          <div class="res-box green"><div class="res-lbl">Net Value (ex-GST)</div><div class="res-val" id="nr-netval">—</div><div class="res-frm">Net Rate × Bill Qty</div></div>
+          <div class="res-box amber"><div class="res-lbl">GST Amount</div><div class="res-val" id="nr-gstamt">—</div><div class="res-frm">Net Value × GST%</div></div>
+          <div class="res-box gold"><div class="res-lbl">Total Bill Value</div><div class="res-val" id="nr-total">—</div><div class="res-frm">Net Value + GST</div></div>
+        </div>
+        <button class="btn btn-g btn-sm" style="margin-top:.75rem" onclick="nrReset()">↺ Reset</button>
+      </div>
+
+      <div class="sec-title" style="margin-top:.3rem">📊 Performance KPIs</div>
+
+      <!-- 3. % Achievement -->
+      <button class="acc-btn" onclick="accToggle('acc-ach')">
+        <div class="acc-left"><span class="acc-emoji">🎯</span>
+          <div class="acc-label"><span class="acc-title">% Achievement</span><span class="acc-sub">Actual vs Target sales</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-ach">
+        <div class="calc-grid">
+          <div class="calc-field"><label>Actual Sales (₹)</label><input type="number" id="pa-actual" placeholder="0" oninput="calcAch()"></div>
+          <div class="calc-field"><label>Target Sales (₹)</label><input type="number" id="pa-target" placeholder="0" oninput="calcAch()"></div>
+        </div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:.5rem">Actual ÷ Target × 100</div>
+        <div class="perf-badge n" id="ach-badge"><span>📌</span> —</div>
+      </div>
+
+      <!-- 4. % Growth -->
+      <button class="acc-btn" onclick="accToggle('acc-growth')">
+        <div class="acc-left"><span class="acc-emoji">📈</span>
+          <div class="acc-label"><span class="acc-title">% Growth vs Last Year</span><span class="acc-sub">Current month vs same period last year</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-growth">
+        <div class="calc-grid">
+          <div class="calc-field"><label>Current Month (₹)</label><input type="number" id="pg-curr" placeholder="0" oninput="calcGrowth()"></div>
+          <div class="calc-field"><label>Last Year Sale (₹)</label><input type="number" id="pg-last" placeholder="0" oninput="calcGrowth()"></div>
+        </div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:.5rem">(Current − Last Year) ÷ Last Year × 100</div>
+        <div class="perf-badge n" id="growth-badge"><span>📉</span> —</div>
+      </div>
+
+      <!-- 5. Call Average -->
+      <button class="acc-btn" onclick="accToggle('acc-callavg')">
+        <div class="acc-left"><span class="acc-emoji">📞</span>
+          <div class="acc-label"><span class="acc-title">Call Average</span><span class="acc-sub">Total Dr calls ÷ days worked</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-callavg">
+        <div class="calc-grid">
+          <div class="calc-field"><label>Total Dr Calls Made</label><input type="number" id="pc-calls" placeholder="0" oninput="calcCallAvg()"></div>
+          <div class="calc-field"><label>Days Worked</label><input type="number" id="pc-days" placeholder="0" oninput="calcCallAvg()"></div>
+        </div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:.5rem">Total Calls ÷ Days Worked · Benchmark: ≥8/day 🟢</div>
+        <div class="perf-badge n" id="callavg-badge"><span>📊</span> —</div>
+      </div>
+
+      <!-- 6. Dr Coverage -->
+      <button class="acc-btn" onclick="accToggle('acc-coverage')">
+        <div class="acc-left"><span class="acc-emoji">🗺️</span>
+          <div class="acc-label"><span class="acc-title">Dr Coverage</span><span class="acc-sub">Doctors covered vs total in list</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-coverage">
+        <div class="calc-grid">
+          <div class="calc-field"><label>Dr Covered (visited)</label><input type="number" id="pc-cov" placeholder="0" oninput="calcCoverage()"></div>
+          <div class="calc-field"><label>Total Dr in List</label><input type="number" id="pc-list" placeholder="0" oninput="calcCoverage()"></div>
+        </div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:.5rem">Dr Covered ÷ Dr in List × 100 · Benchmark: ≥80% 🟢</div>
+        <div class="perf-badge n" id="cov-badge"><span>📋</span> —</div>
+      </div>
+
+      <!-- 7. Dr Compliance -->
+      <button class="acc-btn" onclick="accToggle('acc-compliance')">
+        <div class="acc-left"><span class="acc-emoji">✅</span>
+          <div class="acc-label"><span class="acc-title">Dr Compliance</span><span class="acc-sub">Visited as per plan vs total Dr list</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-compliance">
+        <div class="calc-grid">
+          <div class="calc-field"><label>Dr Visited (as per plan)</label><input type="number" id="pc-vis" placeholder="0" oninput="calcCompliance()"></div>
+          <div class="calc-field"><label>Total Dr in List</label><input type="number" id="pc-clist" placeholder="0" oninput="calcCompliance()"></div>
+        </div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:.5rem">Dr Visited (per plan) ÷ Dr in List × 100 · Benchmark: ≥80% 🟢</div>
+        <div class="perf-badge n" id="comp-badge"><span>📌</span> —</div>
+      </div>
+
+      <div style="height:.5rem"></div>
+    </div>
+  </div>
+
+  <!-- ═══ OCR SCREEN ═══ -->
+  <div id="scr-ocr" class="screen">
+    <div class="sub-topbar">
+      <button class="btn btn-g btn-sm" onclick="nav('dashboard')">← Back</button>
+      <span class="sub-topbar-title">🧠 OCR &amp; Dr Tools</span>
+      <div style="width:60px"></div>
+    </div>
+    <div class="sa">
+
+      <!-- Sub-tabs -->
+      <div class="sub-tab-row" style="flex-wrap:wrap;gap:3px">
+        <button class="sub-tab on" id="subtab-ocr" onclick="ocrSubTab('ocr')" style="flex:1;min-width:80px">🤖 Gemini</button>
+        <button class="sub-tab" id="subtab-groq" onclick="ocrSubTab('groq')" style="flex:1;min-width:80px">⚡ Groq</button>
+        <button class="sub-tab" id="subtab-drmaster" onclick="ocrSubTab('drmaster')" style="flex:1;min-width:80px">👨‍⚕️ Dr Master</button>
+        <button class="sub-tab" id="subtab-filler" onclick="ocrSubTab('filler')" style="flex:1;min-width:80px">📋 Format Filler</button>
+      </div>
+
+      <!-- ── OCR TAB (Gemini) ── -->
+      <div id="panel-ocr">
+
+        <!-- Gemini Auth — two options -->
+        <div class="gauth-card" id="gauth-card">
+          <div class="flex-row mb-1">
+            <div style="font-size:.78rem;font-weight:700;color:#7cb4ff">🤖 Gemini Vision — Connect</div>
+          </div>
+
+          <!-- Option A: Google OAuth (connected state) -->
+          <div id="gauth-connected" style="display:none">
+            <div class="flex-row">
+              <div class="gauth-avatar" id="gauth-initial">G</div>
+              <div style="flex:1">
+                <div style="font-size:.82rem;font-weight:600" id="gauth-email">Connected</div>
+                <div style="font-size:.68rem;color:var(--green)">✓ Gemini via Google Account</div>
+              </div>
+              <button class="btn btn-d btn-sm" onclick="gAuthRevoke()">Disconnect</button>
+            </div>
+          </div>
+
+          <!-- Option B: Direct Gemini API Key -->
+          <div id="gemini-direct-key-section">
+            <!-- Status badge -->
+            <div id="gemini-key-status" class="al al-info" style="font-size:.76rem;margin-bottom:.7rem">ℹ Use Google Account login OR enter a Gemini API key directly below.</div>
+
+            <!-- Sub-toggle: show key input -->
+            <div id="gemini-key-input-wrap">
+              <div class="fg" style="margin-bottom:.6rem">
+                <label class="fl">Gemini API Key (Direct — no Google login needed)</label>
+                <div class="flex-row" style="gap:.5rem">
+                  <input class="fi flex-1" type="password" id="gemini-direct-key-inp" placeholder="AIza…" oninput="geminiKeyCheck()">
+                  <button class="btn btn-g btn-sm" onclick="geminiKeyToggle()" style="flex-shrink:0">👁</button>
+                </div>
+              </div>
+              <div class="flex-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
+                <button class="btn btn-p btn-sm" onclick="geminiKeySave()">💾 Save Key</button>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn btn-g btn-sm" style="text-decoration:none;font-size:.75rem">🔗 Get Free Key</a>
+              </div>
+              <div id="gemini-key-msg" class="al" style="display:none;margin-top:.4rem;font-size:.76rem"></div>
+            </div>
+
+            <!-- Divider -->
+            <div class="divider" style="margin:.7rem 0"></div>
+            <div id="gauth-disconnected">
+              <p style="font-size:.7rem;color:var(--muted);margin-bottom:.6rem">— OR connect via Google Account (uses your Gemini quota) —</p>
+              <button class="btn btn-google btn-block" onclick="gAuthStart()" style="font-size:.82rem">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Connect Google Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Groq Vision card hidden (stub for gAuthUpdateUI ref) -->
+        <div id="groq-mode-card" style="display:none"></div>
+
+        <!-- Gemini Vision Mode Card (shown when any Gemini auth is ready) -->
+        <div class="calc-card" id="gemini-mode-card" style="display:none">
+          <div class="calc-title">🤖 Gemini Vision — Auto Extract</div>
+          <div id="gemini-active-mode-badge" class="al al-ok" style="font-size:.72rem;margin-bottom:.7rem">✓ Gemini ready</div>
+
+          <div class="ocr-saved-badge" id="gem-saved-badge" style="display:none">
+            <span>✅</span>
+            <span class="sb-text">Price List saved — upload Order Copy only</span>
+            <button class="sb-clear" onclick="gemClearPriceList()">Clear</button>
+          </div>
+
+          <div class="ocr-steps">
+            <div class="ocr-step active" id="gstep1"><div class="ocr-step-dot">1</div><div class="ocr-step-lbl">Upload</div></div>
+            <div class="ocr-step" id="gstep2"><div class="ocr-step-dot">2</div><div class="ocr-step-lbl">Extract</div></div>
+            <div class="ocr-step" id="gstep3"><div class="ocr-step-dot">✓</div><div class="ocr-step-lbl">Review</div></div>
+          </div>
+
+          <!-- File type selector -->
+          <div class="flex-row mb-1" style="gap:.5rem">
+            <label class="fl" style="margin-bottom:0;align-self:center">File type:</label>
+            <select id="gem-file-type" class="fsel" style="flex:1;padding:.4rem .7rem;font-size:.8rem" onchange="gemFileTypeChange()">
+              <option value="image">📷 Image (JPG/PNG)</option>
+              <option value="pdf">📄 PDF Document</option>
+            </select>
+          </div>
+
+          <div class="ocr-upload-grid">
+            <div class="ocr-zone" id="gem-zone-order" ondragover="ocrDragOver(event,'gem-zone-order')" ondragleave="ocrDragLeave('gem-zone-order')" ondrop="gemDrop(event,'order')">
+              <input type="file" id="gem-file-order" accept="image/*" onchange="gemHandleFile(event,'order')">
+              <div class="ocr-zone-icon">📋</div>
+              <div class="ocr-zone-lbl">Handwritten<br>Order Copy</div>
+              <div class="ocr-zone-sub">Tap to upload</div>
+            </div>
+            <div class="ocr-zone" id="gem-zone-pl" ondragover="ocrDragOver(event,'gem-zone-pl')" ondragleave="ocrDragLeave('gem-zone-pl')" ondrop="gemDrop(event,'pricelist')">
+              <input type="file" id="gem-file-pl" accept="image/*" onchange="gemHandleFile(event,'pricelist')">
+              <div class="ocr-zone-icon">💊</div>
+              <div class="ocr-zone-lbl">Company<br>Price List</div>
+              <div class="ocr-zone-sub">Tap to upload</div>
+            </div>
+          </div>
+          <button class="btn btn-p btn-block mt-2" id="gem-process-btn" onclick="gemProcess()" disabled>
+            🤖 Extract with Gemini Vision
+          </button>
+        </div>
+
+        <!-- Spinner (shared) -->
+        <div class="ocr-spin-wrap" id="ocr-spinner">
+          <div class="ocr-spinner"></div>
+          <div style="font-size:.8rem;color:var(--muted)" id="ocr-spin-msg">Analysing with Gemini…</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.28);max-width:220px;margin-top:4px">Extracting products &amp; matching prices…</div>
+        </div>
+
+        <!-- Error -->
+        <div class="ocr-err-box" id="ocr-err-box">
+          <p id="ocr-err-msg" style="font-size:.8rem;color:var(--red);margin-bottom:.6rem">Error</p>
+          <button class="btn btn-d btn-sm" onclick="ocrRetry()">↺ Retry</button>
+        </div>
+
+        <!-- Draft Table -->
+        <div class="calc-card ocr-table-wrap" id="ocr-table-wrap">
+          <div class="flex-row mb-1">
+            <div style="font-size:.8rem;font-weight:700;color:var(--accent-a)">📦 Order Draft</div>
+            <span id="ocr-row-count" style="font-size:.66rem;background:rgba(0,198,255,.12);color:var(--accent-a);border-radius:20px;padding:2px 8px;margin-left:.4rem"></span>
+          </div>
+          <div class="ocr-tbl-scroll">
+            <table class="ocr-tbl">
+              <thead><tr><th>#</th><th>Product Name</th><th>Qty</th><th>PTS(₹)</th><th>GST%</th><th>Net Amt(₹)</th><th></th></tr></thead>
+              <tbody id="ocr-tbody"></tbody>
+              <tfoot id="ocr-tfoot"></tfoot>
+            </table>
+          </div>
+          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap">
+            <button class="btn btn-g" style="flex:1;min-width:90px" onclick="ocrAddRow()">+ Row</button>
+            <button class="btn btn-p" style="flex:1;min-width:110px" onclick="ocrConfirmOrder()">🚀 Push to Orders</button>
+            <button class="btn btn-d btn-sm" onclick="ocrReset()">✕</button>
+          </div>
+          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap;display:none" id="ocr-export-row">
+            <button class="btn btn-gold" style="flex:1" onclick="ocrDownloadExcel()">⬇ Download Excel</button>
+            <button class="btn btn-wa" style="flex:1" onclick="ocrShareWhatsApp()">📲 WhatsApp</button>
+          </div>
+        </div>
+
+      </div><!-- /panel-ocr -->
+
+      <!-- ── GROQ TAB ── -->
+      <div id="panel-groq" style="display:none">
+
+        <!-- Groq API Key Quick-Enter Card -->
+        <div class="calc-card" id="groq-key-card-ocr" style="border-color:rgba(130,80,255,.35);background:rgba(130,80,255,.06)">
+          <div class="calc-title" style="color:#a78bfa">⚡ Groq API Key — Direct OCR</div>
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.75rem">Enter your Groq key to run OCR without Google login. Uses <b style="color:#a78bfa">llama-4-scout-17b</b> (vision-capable, multi-image). For PDFs, use the Gemini tab instead.</p>
+          <div id="groq-ocr-key-status" class="al al-warn" style="font-size:.76rem;margin-bottom:.7rem">⚠ No key loaded yet. Enter below or save from Admin panel.</div>
+          <div class="fg mb-1">
+            <label class="fl">Groq API Key</label>
+            <div class="flex-row" style="gap:.5rem">
+              <input class="fi flex-1" type="password" id="groq-ocr-key-inp" placeholder="gsk_xxxxxxxxxxxxxxxx" oninput="groqOcrKeyCheck()">
+              <button class="btn btn-g btn-sm" onclick="groqOcrToggleKey()" style="flex-shrink:0">👁</button>
+            </div>
+          </div>
+          <div class="flex-row" style="gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-p btn-sm" onclick="groqOcrSaveKey()">💾 Save Key</button>
+            <a href="https://console.groq.com/keys" target="_blank" class="btn btn-g btn-sm" style="text-decoration:none;font-size:.75rem">🔗 Get Groq Key</a>
+          </div>
+          <div id="groq-ocr-key-msg" class="al" style="display:none;margin-top:.7rem;font-size:.76rem"></div>
+        </div>
+
+        <!-- Groq OCR Upload Card -->
+        <div class="calc-card">
+          <div class="calc-title" style="color:#a78bfa">📸 Groq Vision OCR</div>
+
+          <div class="ocr-saved-badge" id="ocr-saved-badge" style="display:none">
+            <span>✅</span>
+            <span class="sb-text">Price List saved — upload Order Copy only</span>
+            <button class="sb-clear" onclick="ocrClearPriceList()">Clear</button>
+          </div>
+
+          <div class="ocr-upload-grid">
+            <div class="ocr-zone" id="zone-order" ondragover="ocrDragOver(event,'zone-order')" ondragleave="ocrDragLeave('zone-order')" ondrop="ocrDrop(event,'order')">
+              <input type="file" id="file-order" accept="image/*" onchange="ocrHandleFile(event,'order')">
+              <div class="ocr-zone-icon">📋</div>
+              <div class="ocr-zone-lbl">Handwritten<br>Order Copy</div>
+              <div class="ocr-zone-sub">Tap to upload</div>
+            </div>
+            <div class="ocr-zone" id="zone-pl" ondragover="ocrDragOver(event,'zone-pl')" ondragleave="ocrDragLeave('zone-pl')" ondrop="ocrDrop(event,'pricelist')">
+              <input type="file" id="file-pl" accept="image/*" onchange="ocrHandleFile(event,'pricelist')">
+              <div class="ocr-zone-icon">💊</div>
+              <div class="ocr-zone-lbl">Company<br>Price List</div>
+              <div class="ocr-zone-sub">Tap to upload</div>
+            </div>
+          </div>
+
+          <!-- Spinner & Error (shared with Gemini tab via same IDs — groq uses its own) -->
+          <div class="ocr-spin-wrap" id="groq-spinner">
+            <div class="ocr-spinner"></div>
+            <div style="font-size:.8rem;color:var(--muted)">Analysing with Llama Vision…</div>
+            <div style="font-size:.7rem;color:rgba(255,255,255,.28);max-width:220px;margin-top:4px">Extracting products &amp; matching prices…</div>
+          </div>
+          <div class="ocr-err-box" id="groq-err-box">
+            <p id="groq-err-msg" style="font-size:.8rem;color:var(--red);margin-bottom:.6rem">Error</p>
+            <button class="btn btn-d btn-sm" onclick="ocrProcess()">↺ Retry</button>
+          </div>
+
+          <button class="btn btn-block mt-2" id="ocr-process-btn" onclick="ocrProcess()" disabled style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;box-shadow:0 4px 18px rgba(124,58,237,.35);font-weight:700;border:none;border-radius:11px;padding:.75rem 1.2rem;cursor:pointer">
+            🧠 Extract with Groq AI
+          </button>
+        </div>
+
+        <!-- Results table (shared OCR table) -->
+        <div class="calc-card ocr-table-wrap" id="groq-table-wrap" style="display:none;animation:fadeUp .35s ease">
+          <div class="flex-row mb-1">
+            <div style="font-size:.8rem;font-weight:700;color:#a78bfa">📦 Order Draft (Groq)</div>
+            <span id="groq-row-count" style="font-size:.66rem;background:rgba(124,58,237,.18);color:#a78bfa;border-radius:20px;padding:2px 8px;margin-left:.4rem"></span>
+          </div>
+          <div class="ocr-tbl-scroll">
+            <table class="ocr-tbl">
+              <thead><tr><th>#</th><th>Product Name</th><th>Qty</th><th>PTS(₹)</th><th>GST%</th><th>Net Amt(₹)</th><th></th></tr></thead>
+              <tbody id="groq-tbody"></tbody>
+              <tfoot id="groq-tfoot"></tfoot>
+            </table>
+          </div>
+          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap">
+            <button class="btn btn-g" style="flex:1;min-width:90px" onclick="groqAddRow()">+ Row</button>
+            <button class="btn btn-p" style="flex:1;min-width:110px" onclick="groqConfirmOrder()">🚀 Push to Orders</button>
+            <button class="btn btn-d btn-sm" onclick="groqReset()">✕</button>
+          </div>
+          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap" id="groq-export-row" style="display:none">
+            <button class="btn btn-gold" style="flex:1" onclick="groqDownloadExcel()">⬇ Download Excel</button>
+            <button class="btn btn-wa" style="flex:1" onclick="groqShareWhatsApp()">📲 WhatsApp</button>
+          </div>
+        </div>
+
+      </div><!-- /panel-groq -->
+
+      <!-- ── DR MASTER TAB ── -->
+      <div id="panel-drmaster" style="display:none">
+        <div class="calc-card">
+          <div class="calc-title">📂 Upload Dr Master List</div>
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.85rem">Upload your master Excel/CSV with Dr Name, Mobile, Speciality, Area columns. Saved locally.</p>
+
+          <div class="ocr-zone" id="drzone" style="height:90px" ondragover="ocrDragOver(event,'drzone')" ondragleave="ocrDragLeave('drzone')" ondrop="drDrop(event)">
+            <input type="file" id="dr-file" accept=".xlsx,.xls,.csv" onchange="drLoadFile(event)">
+            <div class="ocr-zone-icon">📊</div>
+            <div class="ocr-zone-lbl">Dr Master Excel / CSV</div>
+            <div class="ocr-zone-sub">Tap to upload</div>
+          </div>
+
+          <div id="dr-loaded-info" class="al al-ok" style="display:none;margin-top:.7rem;font-size:.78rem"></div>
+        </div>
+
+        <div id="dr-list-panel" style="display:none">
+          <div class="calc-card">
+            <div class="flex-row mb-1">
+              <div style="font-size:.8rem;font-weight:700;color:var(--accent-a)">👨‍⚕️ Dr List</div>
+              <span id="dr-count-badge" style="font-size:.66rem;background:rgba(0,198,255,.12);color:var(--accent-a);border-radius:20px;padding:2px 8px"></span>
+            </div>
+            <div class="search-wrap" style="margin-bottom:.6rem">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="search-inp" id="dr-search" placeholder="Search name, area, speciality…" oninput="drFilter()">
+            </div>
+            <div class="dr-list-scroll" id="dr-list-scroll"></div>
+            <div class="selected-pool" id="dr-selected-pool"></div>
+            <div class="flex-row mt-2" style="flex-wrap:wrap;gap:.5rem">
+              <button class="btn btn-p btn-sm" onclick="drSelectAll()">☑ Select All</button>
+              <button class="btn btn-g btn-sm" onclick="drClearSelection()">✕ Clear</button>
+              <button class="btn btn-gold btn-sm" style="margin-left:auto" onclick="drExportSelected()">⬇ Export Selected</button>
+            </div>
+            <button class="btn btn-p btn-block mt-2" id="dr-goto-filler-btn" style="display:none;font-size:.8rem" onclick="ocrSubTab('filler')">📋 Go to Format Filler →</button>
+          </div>
+        </div>
+      </div><!-- /panel-drmaster -->
+
+      <!-- ── FORMAT FILLER TAB ── -->
+      <div id="panel-filler" style="display:none">
+
+        <!-- Step 1: Dr Master check -->
+        <div class="calc-card" id="ff-step1">
+          <div class="calc-title">📋 Format Filler — Auto-fill Company Template</div>
+          <div id="ff-no-master" class="al al-warn" style="font-size:.78rem;margin-bottom:.75rem;display:none">⚠ No Dr Master loaded. Go to Dr Master tab first.</div>
+          <div id="ff-master-ok" class="al al-ok" style="font-size:.78rem;margin-bottom:.75rem;display:none"></div>
+
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.85rem">Upload your blank company format (.xlsx). App reads column headers and auto-fills from selected Drs in master list.</p>
+
+          <div class="ocr-zone" id="ff-zone" style="height:90px" ondragover="ocrDragOver(event,'ff-zone')" ondragleave="ocrDragLeave('ff-zone')" ondrop="ffDrop(event)">
+            <input type="file" id="ff-file" accept=".xlsx,.xls" onchange="ffLoadFile(event)">
+            <div class="ocr-zone-icon">📁</div>
+            <div class="ocr-zone-lbl">Company Format (.xlsx)</div>
+            <div class="ocr-zone-sub">Tap to upload</div>
+          </div>
+
+          <div id="ff-cols-info" style="display:none;margin-top:.85rem">
+            <div style="font-size:.7rem;font-weight:700;color:var(--label);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.4rem">Detected Columns</div>
+            <div id="ff-cols-list" style="font-size:.74rem;color:var(--muted);line-height:1.7"></div>
+            <div style="font-size:.68rem;color:rgba(255,255,255,.28);margin-top:.5rem">Smart matching will auto-map Dr fields. Unmatched columns left blank for manual fill.</div>
+          </div>
+
+          <button class="btn btn-p btn-block mt-2" id="ff-fill-btn" onclick="ffFillFormat()" style="display:none">
+            ⚡ Auto-Fill Format
+          </button>
+        </div>
+
+        <!-- OCR for handwritten data in format -->
+        <div class="calc-card" id="ff-ocr-card" style="display:none">
+          <div class="calc-title">🖊 Add Handwritten Data via Gemini</div>
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.75rem">Upload a photo of handwritten data to extract and add to the filled format.</p>
+          <div class="ocr-zone" id="ff-ocr-zone" style="height:90px">
+            <input type="file" id="ff-ocr-file" accept="image/*" onchange="ffOcrHandleFile(event)">
+            <div class="ocr-zone-icon">📸</div>
+            <div class="ocr-zone-lbl">Handwritten Data Image</div>
+            <div class="ocr-zone-sub">Tap to upload</div>
+          </div>
+          <button class="btn btn-p btn-block mt-2" onclick="ffOcrProcess()">🤖 Extract &amp; Merge</button>
+        </div>
+
+        <!-- Download result -->
+        <div id="ff-result-card" class="calc-card" style="display:none">
+          <div class="calc-title">✅ Format Ready</div>
+          <div id="ff-result-info" style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem"></div>
+          <button class="btn btn-gold btn-block" onclick="ffDownload()">⬇ Download Filled Excel</button>
+        </div>
+      </div><!-- /panel-filler -->
+
+    </div>
+  </div>
+
+  <!-- ═══ ORDERS SCREEN ═══ -->
+  <div id="scr-orders" class="screen">
+    <div class="sub-topbar">
+      <button class="btn btn-g btn-sm" onclick="nav('dashboard')">← Back</button>
+      <span class="sub-topbar-title">🛒 Stockist Order Accumulator</span>
+      <div style="width:60px"></div>
+    </div>
+    <div class="sa">
+      <div class="calc-card">
+        <div class="calc-title">➕ Add Item</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:.5rem;margin-bottom:.5rem">
+          <div class="calc-field"><label>Product Name</label><input type="text" id="o-prod" placeholder="e.g. Augmentin 625mg" autocomplete="off"></div>
+          <div class="calc-field"><label>Qty (w/o Scheme)</label><input type="number" id="o-qty" value="1" min="1"></div>
+          <div class="calc-field"><label>Scheme (Free)</label><input type="number" id="o-free" value="0" min="0"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.75rem">
+          <div class="calc-field"><label>MRP (₹) → auto PTS</label><input type="number" id="o-mrp" placeholder="Optional" step="0.01" oninput="oAutoCalcPTS()"></div>
+          <div class="calc-field"><label>PTS (₹)</label><input type="number" id="o-pts" placeholder="0.00" step="0.01" oninput="oClearMRP()"></div>
+          <div class="calc-field"><label>GST %</label><input type="number" id="o-gst" value="12" min="0" max="28"></div>
+        </div>
+        <button class="btn btn-p btn-block" onclick="orderAdd()" style="padding:.75rem">+ Add Item</button>
+      </div>
+      <div class="calc-card">
+        <div class="calc-title">📋 Order Items <span style="margin-left:auto;font-size:.68rem;font-weight:400;color:var(--muted)" id="o-count"></span></div>
+        <div class="o-empty" id="o-empty"><span class="ei">📦</span>No items yet. Add above.</div>
+        <div id="o-tbl-wrap" class="otbl-wrap" style="display:none">
+          <table class="otbl">
+            <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Scheme</th><th>PTS(₹)</th><th>Net(ex-GST)</th><th>GST%</th><th>GST Amt</th><th>Total(₹)</th><th></th></tr></thead>
+            <tbody id="o-tbody"></tbody>
+            <tfoot id="o-tfoot"></tfoot>
+          </table>
+        </div>
+        <div class="o-sumbar" id="o-sumbar" style="display:none">
+          <div><div class="sl">Grand Total (incl. GST)</div><div id="o-sub" style="font-size:.68rem;color:var(--muted)"></div></div>
+          <div class="sv" id="o-total">₹0.00</div>
+        </div>
+        <button class="btn btn-wa btn-block mt-2" id="o-wa-btn" onclick="orderWhatsApp()" style="display:none">📲 Share to WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS ═══ -->
+  <div id="scr-settings" class="screen">
+    <div class="sub-topbar">
+      <button class="btn btn-g btn-sm" onclick="nav('dashboard')">← Back</button>
+      <span class="sub-topbar-title">⚙️ Settings</span>
+      <div style="width:60px"></div>
+    </div>
+    <div class="sa">
+      <div class="gc gcp flex-row mb-2" style="gap:.85rem;animation:fadeUp .3s ease">
+        <div id="set-avatar" style="width:48px;height:48px;background:var(--grad);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.15rem;flex-shrink:0">U</div>
+        <div style="flex:1;min-width:0">
+          <div id="set-name" style="font-weight:700;font-size:.95rem">—</div>
+          <div id="set-desig" style="font-size:.75rem;color:var(--muted);margin-top:1px">—</div>
+          <div id="set-location" style="font-size:.72rem;color:rgba(255,255,255,.35);margin-top:2px">—</div>
+          <span id="set-badge" class="pill pill-free" style="display:inline-block;margin-top:4px">FREE</span>
+        </div>
+        <button class="btn btn-d btn-sm" onclick="doLogout()">Logout</button>
+      </div>
+      <div class="sec-title">Default Margins</div>
+      <div class="gc gcp mb-2">
+        <div class="frow mb-1">
+          <div class="fg flex-1"><label class="fl">Retailer Margin %</label><input class="fi" type="number" id="set-ret" value="20" min="0" max="100"></div>
+          <div class="fg flex-1"><label class="fl">Stockist Margin %</label><input class="fi" type="number" id="set-stk" value="10" min="0" max="100"></div>
+        </div>
+        <div class="fg mb-1"><label class="fl">Default GST %</label>
+          <select class="fsel" id="set-gst">
+            <option value="0">0%</option><option value="5" selected>5%</option>
+            <option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
+          </select></div>
+        <div class="flex-row">
+          <button class="btn btn-p btn-sm" onclick="saveMargins()">Save Margins</button>
+          <span id="margins-saved" class="al al-ok" style="display:none;padding:3px 10px;font-size:.75rem">✓ Saved</span>
+        </div>
+      </div>
+      <div class="sec-title">Account</div>
+      <div class="gc mb-2">
+        <div class="set-row" style="padding:.8rem 1.2rem"><div><div class="set-lbl">Account Type</div></div><div id="set-acct-type" class="set-val">Free</div></div>
+        <div class="set-row" style="padding:.8rem 1.2rem"><div><div class="set-lbl">Version</div></div><div class="set-val">6.0.0</div></div>
+        <div class="set-row" style="padding:.8rem 1.2rem"><div><div class="set-lbl">User ID</div><div class="set-sub" id="set-uid">—</div></div></div>
+      </div>
+      <div class="sec-title">Data</div>
+      <div class="gc gcp mb-2">
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">Clear locally saved price list from this device.</p>
+        <button class="btn btn-d btn-sm" onclick="clearPL()">Clear Saved Price List</button>
+      </div>
+      <div class="sec-title">Admin</div>
+      <div class="gc gcp mb-2">
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">Admin panel: set Groq API key, manage users.</p>
+        <button class="btn btn-g btn-sm" onclick="nav('admin')">🔐 Open Admin Panel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ADMIN ═══ -->
+  <div id="scr-admin" class="screen">
+    <div class="sub-topbar">
+      <button class="btn btn-g btn-sm" onclick="nav('settings')">← Back</button>
+      <span class="sub-topbar-title" style="color:var(--gold)">🔐 Admin Panel</span>
+      <div style="width:60px"></div>
+    </div>
+    <div class="sa">
+      <div class="gc gcp mb-2" id="admin-gate">
+        <div style="text-align:center;font-size:.82rem;color:var(--muted);margin-bottom:.85rem">Enter master key</div>
+        <div id="admin-key-err" class="al al-err" style="display:none"></div>
+        <div class="fg"><label class="fl">Master Key</label>
+          <input class="fi" type="password" id="admin-key" placeholder="Enter master key" onkeydown="if(event.key==='Enter')adminUnlock()"></div>
+        <button class="btn btn-p btn-block" onclick="adminUnlock()">Unlock →</button>
+      </div>
+      <div id="admin-content" style="display:none">
+        <!-- Google Sheet Setup Guide -->
+        <div class="gc gcp mb-2" style="border-color:rgba(255,210,0,.25)">
+          <div class="sec-title" style="color:var(--gold)">🔗 Google Sheet Setup</div>
+          <div style="font-size:.74rem;color:var(--muted);line-height:1.7;margin-bottom:.85rem">
+            <b style="color:var(--text)">Step 1:</b> Open your Google Sheet (ID already set in code).<br>
+            <b style="color:var(--text)">Step 2:</b> Go to <b>Extensions → Apps Script</b> → paste Code.gs (see below).<br>
+            <b style="color:var(--text)">Step 3:</b> Deploy → <b>New deployment → Web App → Execute as: Me → Anyone access</b>.<br>
+            <b style="color:var(--text)">Step 4:</b> Copy the Web App URL → paste in CFG.SCRIPT_URL in code.
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="downloadCodeGS()">⬇ Download Code.gs</button>
+        </div>
+        <div class="sec-title" style="color:var(--gold)">🔑 Groq API Key (Fallback OCR)</div>
+        <div class="gc gcp mb-2">
+          <div id="groq-status" class="al al-info mb-1" style="font-size:.78rem">Checking…</div>
+          <div class="fg"><label class="fl">Groq API Key (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
+)</label>
+            <input class="fi" type="password" id="groq-key-inp" placeholder="gsk_xxxxxxxxxxxxxxxx"></div>
+          <div class="flex-row" style="flex-wrap:wrap;gap:.5rem">
+            <button class="btn btn-p btn-sm" onclick="saveGroqKey()">Save Key</button>
+            <button class="btn btn-g btn-sm" onclick="toggleGroqKey()">Show/Hide</button>
+            <button class="btn btn-d btn-sm" onclick="deleteGroqKey()">Delete</button>
+          </div>
+          <div id="groq-msg" class="al" style="display:none;margin-top:.75rem;font-size:.78rem"></div>
+        </div>
+        <div class="sec-title">👥 Registered Users</div>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-inp" id="user-search" placeholder="Search name, mobile, designation…" oninput="filterUsers()">
+        </div>
+        <button class="btn btn-g btn-block mb-1" onclick="fetchUsers()">
+          <span id="fetch-spin" style="display:none" class="spin"></span>
+          Load Users from Google Sheet
+        </button>
+        <div id="user-tbl-wrap" style="display:none">
+          <div class="tbl-wrap">
+            <table class="tbl"><thead><tr><th>#</th><th>Name</th><th>Mobile</th><th>Desig</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="user-tbody"></tbody></table>
+          </div>
+          <div id="user-count" class="text-xs text-muted mt-1" style="text-align:right"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nb on" id="nb-dashboard" onclick="nav('dashboard')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Calculators</span>
+    </button>
+    <button class="nb" id="nb-orders" onclick="nav('orders')">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+      <span>Orders</span>
+    </button>
+    <button class="nb" id="nb-ocr" onclick="nav('ocr')">
+      <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+      <span>OCR</span>
+    </button>
+    <button class="nb" id="nb-settings" onclick="nav('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+</div>
+
+<div class="ocr-toast" id="ocr-toast"></div>
+
+<script>
+/* ══════════════════════════════════
+   CONFIG
+══════════════════════════════════ */
+const CFG={
+  SHEET_ID:'1Q0l01LZg6lcoU-HvcnNX6bEKiZDJO1NwX-LI5QjDScc',
+  // ⬇ Paste your Google Apps Script Web App URL here after deploying Code.gs
+  SCRIPT_URL:'https://script.google.com/macros/s/AKfycbzXVLfX-06JIKCIyWQgk_6n8RN2_c3mruCYbLSXfhdu80BhCNUHsrDkjkIkFbdvyJZm/exec',
+  MASTER_KEY:'PHARMA_ADMIN_2024',
+  IDB_NAME:'PharmaSalesProDB',IDB_VER:2,SESS_KEY:'psp_session',
+  // Change 2: Google OAuth — your registered Client ID
+  GOOGLE_CLIENT_ID:'155551737382-9bdvgsreqntt38vcjm3ib2it3j1eoja9.apps.googleusercontent.com',
+  GEMINI_MODEL:'gemini-2.0-flash',
+  // Groq vision model — llama-4-scout supports multi-image vision
+  GROQ_MODEL:'meta-llama/llama-4-scout-17b-16e-instruct',
+};
+
+/* ══════════════════════════════════
+   CODE.gs — Apps Script (paste in script.google.com, deploy as Web App)
+   Sheet columns: userId | name | mobile | company | designation | city | place | pin | status | createdAt
+   
+   function doGet(e){
+     const ss=SpreadsheetApp.openById('SHEET_ID');
+     const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
+     const p=e.parameter,action=p.action;
+     if(action==='findUser'){
+       const rows=ws.getDataRange().getValues();
+       const h=rows[0];const mi=h.indexOf('mobile');const pi=h.indexOf('pin');
+       for(let i=1;i<rows.length;i++){if(String(rows[i][mi])===p.mobile){
+         const obj={};h.forEach((k,j)=>obj[k]=rows[i][j]);
+         return ContentService.createTextOutput(JSON.stringify({user:obj})).setMimeType(ContentService.MimeType.JSON);
+       }}
+       return ContentService.createTextOutput(JSON.stringify({user:null})).setMimeType(ContentService.MimeType.JSON);
+     }
+     if(action==='getAllUsers'){
+       const rows=ws.getDataRange().getValues();const h=rows[0];
+       const users=rows.slice(1).map(r=>{const o={};h.forEach((k,j)=>o[k]=r[j]);return o});
+       return ContentService.createTextOutput(JSON.stringify({users})).setMimeType(ContentService.MimeType.JSON);
+     }
+     return ContentService.createTextOutput(JSON.stringify({error:'unknown action'})).setMimeType(ContentService.MimeType.JSON);
+   }
+   
+   function doPost(e){
+     const ss=SpreadsheetApp.openById('SHEET_ID');
+     const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
+     const body=JSON.parse(e.postData.contents);
+     const action=body.action;
+     if(action==='appendUser'){
+       const d=body.data;
+       // Header row auto-create if empty
+       if(ws.getLastRow()===0){
+         ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
+       }
+       ws.appendRow([d.userId,d.name,d.mobile,d.company,d.designation,d.city||'',d.place||'',d.pin,d.status||'Free',d.createdAt]);
+       return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+     }
+     if(action==='updateStatus'){
+       const rows=ws.getDataRange().getValues();const h=rows[0];
+       const ui=h.indexOf('userId');const si=h.indexOf('status');
+       for(let i=1;i<rows.length;i++){if(rows[i][ui]===body.userId){ws.getRange(i+1,si+1).setValue(body.status);break}}
+       return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+     }
+     return ContentService.createTextOutput(JSON.stringify({error:'unknown'})).setMimeType(ContentService.MimeType.JSON);
+   }
+══════════════════════════════════ */
+
+window.PSP={user:null,settings:{retailerMargin:20,stockistMargin:10,defaultGST:5},priceList:[]};
+
+/* ══ INDEXEDDB ══ */
+const IDB={
+  _db:null,
+  open(){
+    if(this._db)return Promise.resolve(this._db);
+    return new Promise((res,rej)=>{
+      const r=indexedDB.open(CFG.IDB_NAME,CFG.IDB_VER);
+      r.onupgradeneeded=e=>{
+        const db=e.target.result;
+        ['settings','priceLists','orders','drMaster'].forEach(s=>{
+          if(!db.objectStoreNames.contains(s)){
+            db.createObjectStore(s,{keyPath:s==='orders'?'id':s==='priceLists'?'userId':'key',autoIncrement:s==='orders'});
+          }
+        });
+      };
+      r.onsuccess=e=>{this._db=e.target.result;res(this._db)};
+      r.onerror=()=>rej(r.error);
+    });
+  },
+  async set(store,data){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(data);tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error)})},
+  async get(store,key){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction(store,'readonly');const r=tx.objectStore(store).get(key);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})},
+  async del(store,key){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error)})},
+  async saveSetting(k,v){return this.set('settings',{key:k,value:v})},
+  async loadSetting(k){const r=await this.get('settings',k);return r?r.value:null},
+  async savePL(uid,data){return this.set('priceLists',{userId:uid,data,savedAt:new Date().toISOString()})},
+  async loadPL(uid){const r=await this.get('priceLists',uid);return r?r.data:null},
+  async deletePL(uid){return this.del('priceLists',uid)},
+  async saveDrMaster(rows){return this.set('drMaster',{key:'master',rows,savedAt:new Date().toISOString()})},
+  async loadDrMaster(){const r=await this.get('drMaster','master');return r?r.rows:null},
+};
+
+/* ══ SESSION ══ */
+const Sess={
+  save(u){localStorage.setItem(CFG.SESS_KEY,JSON.stringify(u))},
+  load(){try{return JSON.parse(localStorage.getItem(CFG.SESS_KEY))}catch{return null}},
+  clear(){localStorage.removeItem(CFG.SESS_KEY)},
+  genId(m){return'PSP_'+m+'_'+Date.now()},
+};
+
+/* ══ SHEETS API ══ */
+const SheetAPI={
+  async findUser(mob){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=findUser&mobile=${mob}`);return(await r.json()).user||null}catch{return null}},
+  async appendUser(d){try{const r=await fetch(CFG.SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'appendUser',data:d})});return await r.json()}catch{return null}},
+  async getAll(){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=getAllUsers`);return(await r.json()).users||[]}catch{return[]}},
+  async updateStatus(uid,status){try{const r=await fetch(CFG.SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateStatus',userId:uid,status})});return await r.json()}catch{return null}},
+};
+
+/* ══ PHARMAMATH ══ */
+const PM={
+  PTR:(mrp,ret)=>mrp/(1+ret/100),
+  PTS:(mrp,ret,stk)=>(mrp/(1+ret/100))/(1+stk/100),
+  netRate:(ptr,cd,sq,fq)=>fq+sq>0?(ptr*(1-cd/100))*(sq/(sq+fq)):ptr*(1-cd/100),
+  ach:(act,tgt)=>(act/tgt*100).toFixed(2),
+  growth:(cur,ly)=>((cur-ly)/ly*100).toFixed(2),
+};
+
+/* ══════════════════════════════════
+   GEMINI DIRECT API KEY (no OAuth needed)
+══════════════════════════════════ */
+let GeminiDirect={key:null};
+
+async function geminiKeyLoadOnBoot(){
+  const k=await IDB.loadSetting('geminiApiKey');
+  if(k&&k.length>10){GeminiDirect.key=k;document.getElementById('gemini-direct-key-inp').value=k;geminiKeyUpdateStatus(true)}
+  else geminiKeyUpdateStatus(false);
+}
+function geminiKeyCheck(){
+  const v=(document.getElementById('gemini-direct-key-inp').value||'').trim();
+  const s=document.getElementById('gemini-key-status');
+  if(v.startsWith('AIza')&&v.length>20){s.className='al al-ok';s.textContent='✓ Key looks valid — tap Save Key to activate.'}
+  else if(v.length>0){s.className='al al-err';s.textContent='⚠ Gemini API keys start with AIza…'}
+  else{s.className='al al-info';s.textContent='ℹ Enter Gemini API key or connect Google Account below.'}
+}
+function geminiKeyToggle(){const i=document.getElementById('gemini-direct-key-inp');i.type=i.type==='password'?'text':'password'}
+async function geminiKeySave(){
+  const k=(document.getElementById('gemini-direct-key-inp').value||'').trim();
+  const msg=document.getElementById('gemini-key-msg');
+  if(!k.startsWith('AIza')||k.length<20){msg.className='al al-err';msg.style.display='block';msg.textContent='⚠ Key must start with AIza and be valid length.';return}
+  await IDB.saveSetting('geminiApiKey',k);
+  GeminiDirect.key=k;
+  msg.className='al al-ok';msg.style.display='block';msg.textContent='✓ Gemini API Key saved! Gemini OCR is now ready.';
+  geminiKeyUpdateStatus(true);
+  setTimeout(()=>msg.style.display='none',3000);
+}
+function geminiKeyUpdateStatus(hasKey){
+  const s=document.getElementById('gemini-key-status');
+  if(GAuth.token){// Google OAuth connected — takes priority
+    s.className='al al-ok';s.textContent='✓ Google Account connected — using OAuth token for Gemini.';
+    document.getElementById('gemini-mode-card').style.display='block';
+    const badge=document.getElementById('gemini-active-mode-badge');
+    if(badge){badge.className='al al-ok';badge.textContent='✓ Gemini ready via Google Account (OAuth)'}
+  } else if(hasKey&&GeminiDirect.key){
+    s.className='al al-ok';s.textContent='✓ Gemini API Key active — ready for image & PDF OCR.';
+    document.getElementById('gemini-mode-card').style.display='block';
+    const badge=document.getElementById('gemini-active-mode-badge');
+    if(badge){badge.className='al al-ok';badge.textContent='✓ Gemini ready via Direct API Key (AIza…)'}
+  } else {
+    s.className='al al-info';s.textContent='ℹ Enter a Gemini API Key above, or connect Google Account below.';
+    document.getElementById('gemini-mode-card').style.display='none';
+  }
+}
+
+/* ══ FILE TYPE TOGGLE (image / PDF) ══ */
+function gemFileTypeChange(){
+  const t=document.getElementById('gem-file-type').value;
+  const accept=t==='pdf'?'.pdf':'image/*';
+  document.getElementById('gem-file-order').accept=accept;
+  document.getElementById('gem-file-pl').accept=accept;
+  // Reset zones
+  ['gem-zone-order','gem-zone-pl'].forEach(id=>{
+    const z=document.getElementById(id);
+    z.classList.remove('has-file');
+    z.innerHTML=`<div class="ocr-zone-icon">${id.includes('order')?'📋':'💊'}</div><div class="ocr-zone-lbl">${id.includes('order')?'Handwritten<br>Order Copy':'Company<br>Price List'}</div><div class="ocr-zone-sub">Tap to upload</div>`;
+  });
+  GEM.orderB64=null;GEM.plB64=null;GEM.orderMime=null;GEM.plMime=null;
+  gemUpdateBtn();
+  showToast(t==='pdf'?'PDF mode — upload PDF files':'Image mode — upload JPG/PNG','ok');
+}
+
+/* ══════════════════════════════════
+   CHANGE 2: GOOGLE OAUTH + GEMINI
+══════════════════════════════════ */
+let GAuth={token:null,email:null,_client:null};
+
+function gAuthStart(){
+  if(!document.getElementById('gis-script')){
+    const s=document.createElement('script');s.id='gis-script';s.src='https://accounts.google.com/gsi/client';
+    s.onload=()=>_gAuthInitAndLogin();
+    s.onerror=()=>showToast('Failed to load Google script. Check internet.','err');
+    document.head.appendChild(s);
+  } else {
+    _gAuthInitAndLogin();
+  }
+}
+
+function _gAuthInitAndLogin(){
+  try{
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id:CFG.GOOGLE_CLIENT_ID,
+      scope:'https://www.googleapis.com/auth/generative-language.retriever openid email profile',
+      callback:(resp)=>{
+        if(resp.error){
+          let msg='Google auth failed: '+resp.error;
+          if(resp.error==='access_denied')msg='Access denied. Check that your Google Client ID has this domain authorised in Google Cloud Console → OAuth consent screen → Authorised domains.';
+          if(resp.error==='popup_closed_by_user')msg='Popup closed. Please try again.';
+          if(resp.error==='popup_blocked_by_browser')msg='Popup blocked by browser. Allow popups for this page.';
+          showToast(msg,'err');
+          document.getElementById('ocr-err-box').classList.add('active');
+          document.getElementById('ocr-err-msg').innerHTML=`<b>Google OAuth Error: ${resp.error}</b><br><span style="font-size:.72rem">Fix: Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#00c6ff">Google Cloud Console</a> → Your OAuth Client → Authorised JavaScript Origins → add this file's origin (or use a Direct Gemini API Key instead).</span>`;
+          return;
+        }
+        GAuth.token=resp.access_token;
+        const expMs=Date.now()+(resp.expires_in||3600)*1000;
+        IDB.saveSetting('gauth_token_exp',String(expMs));
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+resp.access_token}})
+          .then(r=>r.json()).then(info=>{
+            GAuth.email=info.email||'Google User';
+            IDB.saveSetting('gauth_token',resp.access_token);
+            IDB.saveSetting('gauth_email',GAuth.email);
+            gAuthUpdateUI(true);
+            showToast('Google connected ✓ Gemini ready!','ok');
+          }).catch(()=>{GAuth.email='Google User';gAuthUpdateUI(true)});
+      }
+    });
+    GAuth._client=client;
+    client.requestAccessToken();
+  }catch(e){
+    showToast('Google OAuth init failed: '+e.message,'err');
+  }
+}
+
+function gAuthRevoke(){
+  if(GAuth.token)try{google.accounts.oauth2.revoke(GAuth.token,()=>{})}catch(e){}
+  GAuth.token=null;GAuth.email=null;
+  IDB.saveSetting('gauth_token','');IDB.saveSetting('gauth_email','');
+  gAuthUpdateUI(false);
+  showToast('Google disconnected','ok');
+}
+
+function gAuthUpdateUI(connected){
+  const disc=document.getElementById('gauth-disconnected');
+  const conn=document.getElementById('gauth-connected');
+  const card=document.getElementById('gauth-card');
+  if(connected){
+    if(disc)disc.style.display='none';
+    if(conn)conn.style.display='block';
+    card.classList.add('gauth-connected');
+    document.getElementById('gauth-email').textContent=GAuth.email||'Connected';
+    document.getElementById('gauth-initial').textContent=(GAuth.email||'G').charAt(0).toUpperCase();
+    // Hide direct key input section when OAuth is active (cleaner UI)
+    const directSection=document.getElementById('gemini-key-input-wrap');
+    if(directSection)directSection.style.display='none';
+  } else {
+    if(disc)disc.style.display='block';
+    if(conn)conn.style.display='none';
+    card.classList.remove('gauth-connected');
+    const directSection=document.getElementById('gemini-key-input-wrap');
+    if(directSection)directSection.style.display='block';
+  }
+  // Update Gemini mode card visibility based on any auth available
+  geminiKeyUpdateStatus(!!GeminiDirect.key);
+}
+
+/* ══ GEMINI OCR MODULE ══ */
+const GEM={orderB64:null,plB64:null,savedPL:null,rows:[],orderMime:'image/jpeg',plMime:'image/jpeg'};
+
+async function gemHandleFile(e,type){const f=e.target.files[0];if(f)gemProcessFile(f,type)}
+
+function gemDrop(e,type){
+  e.preventDefault();
+  const id=type==='order'?'gem-zone-order':'gem-zone-pl';
+  document.getElementById(id).classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];
+  if(f&&(f.type.startsWith('image/')||f.type==='application/pdf'))gemProcessFile(f,type);
+}
+
+function gemProcessFile(file,type){
+  const id=type==='order'?'gem-zone-order':'gem-zone-pl';
+  const zone=document.getElementById(id);
+  const isPDF=file.type==='application/pdf';
+  const mime=file.type||'image/jpeg';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const du=e.target.result;const b64=du.split(',')[1];
+    if(type==='order'){GEM.orderB64=b64;GEM.orderMime=mime}
+    else{GEM.plB64=b64;GEM.plMime=mime}
+    zone.classList.add('has-file');
+    const icon=isPDF?'📄':'🖼️';
+    zone.innerHTML=`<div class="ocr-preview-ov" style="position:relative;inset:auto;background:transparent;flex-direction:column;gap:6px;padding:.8rem"><div style="font-size:2rem">${icon}</div><div style="font-size:.68rem;color:var(--green);font-weight:700">✓ ${file.name.length>14?file.name.substr(0,12)+'…':file.name}</div><div style="font-size:.6rem;color:var(--muted)">${isPDF?'PDF':'Image'} · ${(file.size/1024).toFixed(0)}KB</div></div>`;
+    gemUpdateBtn();
+  };
+  reader.readAsDataURL(file);
+}
+
+function gemUpdateBtn(){
+  const hasO=!!GEM.orderB64;const hasPL=!!(GEM.plB64||GEM.savedPL);
+  const btn=document.getElementById('gem-process-btn');
+  if(btn)btn.disabled=!(hasO&&hasPL);
+}
+
+function gemSetStep(n){[1,2,3].forEach(i=>{const el=document.getElementById('gstep'+i);if(!el)return;el.classList.remove('active','done');if(i<n)el.classList.add('done');if(i===n)el.classList.add('active')})}
+
+async function gemProcess(){
+  if(!GEM.orderB64){showToast('Upload order copy first.','err');return}
+  const pl=GEM.plB64||GEM.savedPL;
+  if(!pl){showToast('Upload price list.','err');return}
+
+  // Determine auth: OAuth token takes priority, then direct API key
+  const authToken=GAuth.token;
+  const directKey=GeminiDirect.key||(await IDB.loadSetting('geminiApiKey'));
+  if(!authToken&&!directKey){
+    ocrShowErr('No Gemini auth. Enter a Gemini API Key above or connect Google Account.');
+    return;
+  }
+
+  gemSetStep(2);
+  const spinner=document.getElementById('ocr-spinner');
+  spinner.classList.add('active');
+  document.getElementById('ocr-spin-msg').textContent='Analysing with Gemini Vision…';
+  document.getElementById('ocr-err-box').classList.remove('active');
+  document.getElementById('ocr-table-wrap').classList.remove('active');
+  document.getElementById('gem-process-btn').disabled=true;
+
+  const PROMPT=`You are a pharmaceutical sales assistant. Extract Product Name and Quantity from the handwritten order copy (document/image 1). Match each product with its PTS (Price to Stockist), GST% and MRP from the price list (document/image 2). Return ONLY a valid JSON array — no markdown, no explanation. Format: [{"productName":"","quantity":0,"pts":0,"gst":0,"mrp":0}]. Use 0 for missing values.`;
+
+  // Build parts — supports image and PDF inline_data
+  const orderMime=GEM.orderMime||'image/jpeg';
+  const plMime=GEM.plMime||'image/jpeg';
+  const savedPlMime=GEM.savedPLMime||'image/jpeg';
+
+  const body={
+    contents:[{parts:[
+      {inline_data:{mime_type:orderMime,data:GEM.orderB64}},
+      {inline_data:{mime_type:plMime,data:pl}},
+      {text:PROMPT}
+    ]}]
+  };
+
+  // Build URL — API key vs OAuth
+  let url,headers;
+  if(authToken){
+    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent`;
+    headers={'Content-Type':'application/json','Authorization':'Bearer '+authToken};
+  } else {
+    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent?key=${directKey}`;
+    headers={'Content-Type':'application/json'};
+  }
+
+  try{
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+    if(!r.ok){
+      const er=await r.json().catch(()=>({}));
+      const msg=er?.error?.message||'HTTP '+r.status;
+      // Surface API key errors helpfully
+      if(msg.includes('API_KEY_INVALID')||msg.includes('API key not valid'))
+        throw new Error('Invalid Gemini API Key. Check your key at aistudio.google.com');
+      if(msg.includes('PERMISSION_DENIED'))
+        throw new Error('Permission denied. If using OAuth: your Google Client ID may not be authorised for this domain. Try Direct API Key mode instead.');
+      throw new Error(msg);
+    }
+    const data=await r.json();
+    const raw=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    let parsed=ocrParseJSON(raw);
+    if(!Array.isArray(parsed)||!parsed.length)throw new Error('AI returned no products. Try a clearer image or better lighting.');
+    // Save price list
+    if(GEM.plB64&&!GEM.savedPL){
+      const uid=PSP.user?.userId;if(uid)await IDB.savePL(uid,GEM.plB64);
+      GEM.savedPL=GEM.plB64;GEM.savedPLMime=plMime;
+      document.getElementById('gem-saved-badge').style.display='flex';
+      showToast('Price list saved ✓','ok');
+    }
+    OCR.rows=parsed;ocrRenderTable();gemSetStep(3);
+    document.getElementById('ocr-export-row').style.display='flex';
+    showToast('✓ Gemini OCR complete! Review the draft.','ok');
+  }catch(err){
+    ocrShowErr('Extraction failed: '+err.message);gemSetStep(1);
+    document.getElementById('gem-process-btn').disabled=false;
+  }finally{spinner.classList.remove('active')}
+}
+
+function gemClearPriceList(){
+  GEM.savedPL=null;GEM.plB64=null;GEM.savedPLMime=null;
+  document.getElementById('gem-saved-badge').style.display='none';
+  gemUpdateBtn();showToast('Price list cleared.','ok');
+}
+
+/* ══ OCR SCREEN SUB-TABS ══ */
+function ocrSubTab(tab){
+  ['ocr','groq','drmaster','filler'].forEach(t=>{
+    document.getElementById('panel-'+t).style.display=t===tab?'block':'none';
+    const btn=document.getElementById('subtab-'+t);
+    if(btn)btn.classList.toggle('on',t===tab);
+  });
+  if(tab==='filler')ffCheckMaster();
+  if(tab==='groq')groqLoadKeyStatus();
+}
+async function groqLoadKeyStatus(){
+  const k=await IDB.loadSetting('groqApiKey');
+  const inp=document.getElementById('groq-ocr-key-inp');
+  const status=document.getElementById('groq-ocr-key-status');
+  if(k&&k.length>10){
+    if(inp)inp.value=k;
+    status.className='al al-ok';status.textContent='✓ Groq key loaded. Ready to extract!';
+    ocrUpdateBtn();
+  } else {
+    status.className='al al-warn';status.textContent='⚠ No key saved. Enter your Groq API key (gsk_…) above.';
+  }
+}
+function groqOcrKeyCheck(){
+  const v=(document.getElementById('groq-ocr-key-inp').value||'').trim();
+  const status=document.getElementById('groq-ocr-key-status');
+  if(v.startsWith('gsk_')&&v.length>20){status.className='al al-ok';status.textContent='✓ Key looks valid — tap Save Key to store.'}
+  else if(v.length>0){status.className='al al-err';status.textContent='⚠ Groq keys must start with gsk_'}
+  else{status.className='al al-warn';status.textContent='⚠ No key entered.'}
+}
+function groqOcrToggleKey(){const i=document.getElementById('groq-ocr-key-inp');i.type=i.type==='password'?'text':'password'}
+async function groqOcrSaveKey(){
+  const k=(document.getElementById('groq-ocr-key-inp').value||'').trim();
+  const msg=document.getElementById('groq-ocr-key-msg');
+  if(!k.startsWith('gsk_')||k.length<20){msg.className='al al-err';msg.style.display='block';msg.textContent='⚠ Key must start with gsk_ and be >20 chars.';return}
+  await IDB.saveSetting('groqApiKey',k);
+  msg.className='al al-ok';msg.style.display='block';msg.textContent='✓ Key saved successfully! You can now run OCR.';
+  groqLoadKeyStatus();setTimeout(()=>msg.style.display='none',3000);
+  // Also sync to admin panel if open
+  const adminInp=document.getElementById('groq-key-inp');if(adminInp)adminInp.value=k;
+}
+
+/* ══ AUTH ══ */
+function authTab(t){
+  document.getElementById('frm-login').style.display=t==='login'?'block':'none';
+  document.getElementById('frm-signup').style.display=t==='signup'?'block':'none';
+  document.getElementById('tab-l').className='auth-tab'+(t==='login'?' on':'');
+  document.getElementById('tab-s').className='auth-tab'+(t==='signup'?' on':'');
+}
+function showErr(id,msg){const e=document.getElementById(id);e.style.display='block';e.textContent='⚠ '+msg}
+function hideEl(id){const e=document.getElementById(id);if(e)e.style.display='none'}
+
+async function doLogin(){
+  hideEl('lerr');
+  const mob=document.getElementById('lmob').value;
+  const pin=document.getElementById('lpin').value;
+  if(!/^\d{10}$/.test(mob)){showErr('lerr','Enter valid 10-digit mobile.');return}
+  if(pin.length<4){showErr('lerr','PIN must be at least 4 digits.');return}
+  const btn=document.getElementById('lbtn');
+  btn.innerHTML='<span class="spin"></span>Signing in…';btn.disabled=true;
+  const local=Sess.load();
+  if(local&&local.mobile===mob&&local.pin===pin){initApp(local);return}
+  const user=await SheetAPI.findUser(mob);
+  btn.innerHTML='Login →';btn.disabled=false;
+  if(!user){showErr('lerr','Not registered. Please Sign Up.');return}
+  if(user.pin!==pin){showErr('lerr','Incorrect PIN.');return}
+  Sess.save(user);initApp(user);
+}
+
+async function doSignup(){
+  hideEl('serr');hideEl('sok');
+  const name=document.getElementById('sname').value.trim();
+  const mob=document.getElementById('smob').value;
+  const comp=document.getElementById('scomp').value.trim();
+  const desig=document.getElementById('sdesig').value;
+  const city=document.getElementById('scity').value.trim();
+  const place=document.getElementById('splace').value.trim();
+  const pin=document.getElementById('spin').value;
+  const cpin=document.getElementById('scpin').value;
+  if(!name)return showErr('serr','Full name required.');
+  if(!/^\d{10}$/.test(mob))return showErr('serr','Enter valid 10-digit mobile.');
+  if(!comp)return showErr('serr','Company name required.');
+  if(!city)return showErr('serr','City is required.');
+  if(!place)return showErr('serr','Area / Place is required.');
+  if(!/^\d{4,6}$/.test(pin))return showErr('serr','PIN must be 4–6 digits.');
+  if(pin!==cpin)return showErr('serr','PINs do not match.');
+  const uid=Sess.genId(mob);
+  const u={userId:uid,name,mobile:mob,company:comp,designation:desig,city,place,pin,status:'Free',createdAt:new Date().toISOString()};
+  await SheetAPI.appendUser(u);
+  Sess.save(u);
+  const ok=document.getElementById('sok');ok.style.display='block';ok.textContent='✓ Account created! Welcome 🎉';
+  setTimeout(()=>initApp(u),1100);
+}
+
+/* ══ APP INIT ══ */
+async function initApp(user){
+  PSP.user=user;
+  const ret=await IDB.loadSetting('retailerMargin');
+  const stk=await IDB.loadSetting('stockistMargin');
+  const gst=await IDB.loadSetting('defaultGST');
+  if(ret!==null)PSP.settings.retailerMargin=ret;
+  if(stk!==null)PSP.settings.stockistMargin=stk;
+  if(gst!==null)PSP.settings.defaultGST=gst;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('tb-avatar').textContent=user.name.charAt(0).toUpperCase();
+  const b=document.getElementById('tb-badge');b.className='bp '+(user.status==='Paid'?'bp-paid':'bp-free');b.textContent=user.status==='Paid'?'⭐ PRO':'FREE';
+  const h=new Date().getHours();const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('greet-text').textContent=g+' '+user.name.split(' ')[0]+' 👋';
+  document.getElementById('greet-sub').textContent=user.designation+' · '+user.company;
+  document.getElementById('set-avatar').textContent=user.name.charAt(0).toUpperCase();
+  document.getElementById('set-name').textContent=user.name;
+  document.getElementById('set-desig').textContent=user.designation+' · '+user.company;
+  const locEl=document.getElementById('set-location');
+  if(locEl)locEl.textContent=(user.city&&user.place)?'📍 '+user.place+', '+user.city:(user.city||user.place||'');
+  document.getElementById('set-uid').textContent=user.userId;
+  document.getElementById('set-acct-type').textContent=user.status;
+  const sb=document.getElementById('set-badge');sb.className='pill '+(user.status==='Paid'?'pill-paid':'pill-free');sb.textContent=user.status==='Paid'?'⭐ PRO':'FREE';
+  document.getElementById('m-ret').value=PSP.settings.retailerMargin;
+  document.getElementById('m-stk').value=PSP.settings.stockistMargin;
+  document.getElementById('set-ret').value=PSP.settings.retailerMargin;
+  document.getElementById('set-stk').value=PSP.settings.stockistMargin;
+  // Load saved price list
+  if(user.userId){const pl=await IDB.loadPL(user.userId);if(pl){OCR.savedPL=pl;GEM.savedPL=pl}}
+  // Load Dr Master
+  const drRows=await IDB.loadDrMaster();if(drRows){DR.rows=drRows;drRenderList()}
+  // Restore Google auth token — check expiry
+  const tok=await IDB.loadSetting('gauth_token');
+  const em=await IDB.loadSetting('gauth_email');
+  const tokExp=await IDB.loadSetting('gauth_token_exp');
+  if(tok&&tok.length>10){
+    const now=Date.now();const exp=parseInt(tokExp||0);
+    if(exp>now+60000){// still valid for >1 min
+      GAuth.token=tok;GAuth.email=em;gAuthUpdateUI(true);
+    } else {
+      // Token expired — clear and prompt re-connect
+      GAuth.token=null;GAuth.email=null;
+      await IDB.saveSetting('gauth_token','');
+      gAuthUpdateUI(false);
+    }
+  } else {gAuthUpdateUI(false)}
+  // Load Gemini direct API key
+  await geminiKeyLoadOnBoot();
+  nav('dashboard');
+}
+
+function doLogout(){
+  Sess.clear();PSP.user=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('lmob').value='';document.getElementById('lpin').value='';
+}
+
+/* ══ NAVIGATION ══ */
+const SCREENS=['dashboard','ocr','orders','settings','admin'];
+const NAVBTNS=['dashboard','orders','ocr','settings'];
+function nav(s){
+  SCREENS.forEach(sc=>{const el=document.getElementById('scr-'+sc);if(el)el.classList.toggle('active',sc===s)});
+  NAVBTNS.forEach(n=>{const b=document.getElementById('nb-'+n);if(b)b.classList.toggle('on',n===s)});
+  document.getElementById('main-topbar').style.display=s==='dashboard'?'flex':'none';
+  if(s==='admin'){document.getElementById('admin-gate').style.display='block';document.getElementById('admin-content').style.display='none';document.getElementById('admin-key').value='';hideEl('admin-key-err');checkGroqStatus()}
+  window.scrollTo(0,0);
+}
+
+/* ══ SETTINGS ══ */
+async function saveMargins(){
+  const ret=parseFloat(document.getElementById('set-ret').value)||20;
+  const stk=parseFloat(document.getElementById('set-stk').value)||10;
+  const gst=parseFloat(document.getElementById('set-gst').value)||5;
+  await IDB.saveSetting('retailerMargin',ret);await IDB.saveSetting('stockistMargin',stk);await IDB.saveSetting('defaultGST',gst);
+  PSP.settings={retailerMargin:ret,stockistMargin:stk,defaultGST:gst};
+  document.getElementById('m-ret').value=ret;document.getElementById('m-stk').value=stk;
+  const ms=document.getElementById('margins-saved');ms.style.display='inline-block';setTimeout(()=>ms.style.display='none',2000);
+}
+async function clearPL(){
+  if(!PSP.user)return;
+  await IDB.deletePL(PSP.user.userId);OCR.savedPL=null;GEM.savedPL=null;
+  showToast('Price list cleared.','ok');
+}
+
+/* ══ ADMIN ══ */
+function adminUnlock(){
+  const k=document.getElementById('admin-key').value;
+  if(k===CFG.MASTER_KEY){document.getElementById('admin-gate').style.display='none';document.getElementById('admin-content').style.display='block';checkGroqStatus()}
+  else showErr('admin-key-err','Invalid master key.');
+}
+async function checkGroqStatus(){
+  const k=await IDB.loadSetting('groqApiKey');
+  const s=document.getElementById('groq-status');if(!s)return;
+  if(k&&k.length>10){s.className='al al-ok';s.textContent='✓ Groq key saved. Fallback OCR active.';document.getElementById('groq-key-inp').value=k}
+  else{s.className='al al-warn';s.textContent='⚠ No Groq key. Gemini Vision via Google Account is primary.'}
+}
+async function saveGroqKey(){
+  const k=document.getElementById('groq-key-inp').value.trim();
+  const m=document.getElementById('groq-msg');
+  if(!k||!k.startsWith('gsk_')){m.className='al al-err';m.style.display='block';m.textContent='⚠ Groq keys start with gsk_';return}
+  await IDB.saveSetting('groqApiKey',k);
+  m.className='al al-ok';m.style.display='block';m.textContent='✓ Key saved.';
+  checkGroqStatus();setTimeout(()=>m.style.display='none',3000);
+}
+async function deleteGroqKey(){
+  if(!confirm('Delete Groq API key?'))return;
+  await IDB.saveSetting('groqApiKey','');document.getElementById('groq-key-inp').value='';checkGroqStatus();
+}
+function toggleGroqKey(){const i=document.getElementById('groq-key-inp');i.type=i.type==='password'?'text':'password'}
+let _allUsers=[];
+async function fetchUsers(){
+  const sp=document.getElementById('fetch-spin');sp.style.display='inline-block';
+  _allUsers=await SheetAPI.getAll();sp.style.display='none';
+  renderUsers(_allUsers);document.getElementById('user-tbl-wrap').style.display='block';
+}
+function renderUsers(users){
+  const tb=document.getElementById('user-tbody');tb.innerHTML='';
+  if(!users.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem">No users</td></tr>';document.getElementById('user-count').textContent='';return}
+  users.forEach((u,i)=>{
+    const paid=u.status==='Paid';const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="color:var(--muted)">${i+1}</td><td style="font-weight:600;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name||'—'}</td><td style="font-size:.75rem;font-family:var(--mono)">${u.mobile||'—'}</td><td><span class="pill pill-act" style="font-size:.6rem">${u.designation||'—'}</span></td><td><span class="pill ${paid?'pill-paid':'pill-free'}">${paid?'PRO':'Free'}</span></td><td><button class="btn ${paid?'btn-d':'btn-p'} btn-sm" style="font-size:.68rem;padding:3px 8px" onclick="toggleStatus('${u.userId}','${paid?'Free':'Paid'}',this)">${paid?'→Free':'→PRO'}</button></td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('user-count').textContent=`${users.length} user${users.length!==1?'s':''} registered`;
+}
+async function toggleStatus(uid,ns,btn){btn.disabled=true;btn.textContent='…';await SheetAPI.updateStatus(uid,ns);const u=_allUsers.find(x=>x.userId===uid);if(u)u.status=ns;renderUsers(_allUsers);filterUsers()}
+function filterUsers(){const q=document.getElementById('user-search').value.toLowerCase();renderUsers(_allUsers.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.mobile||'').includes(q)||(u.designation||'').toLowerCase().includes(q)||(u.status||'').toLowerCase().includes(q)))}
+
+/* ══ CALC — PTR/PTS ══ */
+function calcLive(){
+  const mrp=parseFloat(document.getElementById('m-mrp').value)||0;
+  const ret=parseFloat(document.getElementById('m-ret').value)||20;
+  const stk=parseFloat(document.getElementById('m-stk').value)||10;
+  const cd=parseFloat(document.getElementById('m-cd').value)||0;
+  const sq=parseFloat(document.getElementById('m-sq').value)||10;
+  const fq=parseFloat(document.getElementById('m-fq').value)||0;
+  const gst=parseFloat(document.getElementById('m-gst').value)||0;
+  if(!mrp){['rv-ptr','rv-pts','rv-nr','rv-gst','rv-scheme','rv-eff','rv-cmargin'].forEach(id=>rv(id,'—'));return}
+  const ptr=PM.PTR(mrp,ret);const pts=PM.PTS(mrp,ret,stk);const nr=PM.netRate(ptr,cd,sq,fq);
+  const ga=pts*gst/100;const sv=pts*fq;const ef=pts+ga;const chemistMargin=mrp>0?((mrp-nr)/mrp*100):0;
+  rv('rv-ptr','₹'+ptr.toFixed(2));rv('rv-pts','₹'+pts.toFixed(2));rv('rv-nr','₹'+nr.toFixed(2));
+  rv('rv-gst','₹'+ga.toFixed(2));rv('rv-scheme','₹'+sv.toFixed(2));rv('rv-eff','₹'+ef.toFixed(2));
+  rv('rv-cmargin',chemistMargin.toFixed(1)+'%');
+}
+function rv(id,val){const e=document.getElementById(id);if(!e)return;e.textContent=val;e.classList.remove('upd');void e.offsetWidth;e.classList.add('upd')}
+async function saveM(){
+  const ret=parseFloat(document.getElementById('m-ret').value)||20;
+  const stk=parseFloat(document.getElementById('m-stk').value)||10;
+  await IDB.saveSetting('retailerMargin',ret);await IDB.saveSetting('stockistMargin',stk);
+  PSP.settings.retailerMargin=ret;PSP.settings.stockistMargin=stk;
+}
+
+/* ══ ACCORDION ══ */
+function accToggle(id){
+  const body=document.getElementById(id);const btn=body.previousElementSibling;
+  const isOpen=body.classList.contains('open');
+  document.querySelectorAll('.acc-body.open').forEach(b=>{b.classList.remove('open');if(b.previousElementSibling)b.previousElementSibling.classList.remove('open')});
+  if(!isOpen){body.classList.add('open');btn.classList.add('open');setTimeout(()=>body.scrollIntoView({behavior:'smooth',block:'nearest'}),80)}
+}
+
+/* ══ NET RATE CALC ══ */
+function nrAuto(){const mrp=parseFloat(document.getElementById('nr-mrp').value)||0;if(mrp>0){const ret=PSP.settings.retailerMargin||20;document.getElementById('nr-ptr').value=PM.PTR(mrp,ret).toFixed(2)}nrCalc()}
+function nrCalc(){
+  const ptr=parseFloat(document.getElementById('nr-ptr').value)||0;
+  const qty=parseFloat(document.getElementById('nr-qty').value)||1;
+  const sch=parseFloat(document.getElementById('nr-scheme').value)||0;
+  const disc=parseFloat(document.getElementById('nr-disc').value)||0;
+  const gst=parseFloat(document.getElementById('nr-gst').value)||0;
+  const ids=['nr-rate','nr-netval','nr-gstamt','nr-total'];
+  if(!ptr){ids.forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='—'});return}
+  const nr=ptr*(qty/(qty+sch))*(1-disc/100);const nv=nr*qty;const ga=nv*gst/100;const tot=nv+ga;
+  function sr(id,v){const e=document.getElementById(id);if(e){e.textContent='₹'+v.toFixed(2);e.classList.remove('upd');void e.offsetWidth;e.classList.add('upd')}}
+  sr('nr-rate',nr);sr('nr-netval',nv);sr('nr-gstamt',ga);sr('nr-total',tot);
+}
+function nrReset(){['nr-brand','nr-mrp','nr-ptr','nr-disc'].forEach(id=>document.getElementById(id).value='');document.getElementById('nr-qty').value='1';document.getElementById('nr-scheme').value='0';document.getElementById('nr-gst').value='12';['nr-rate','nr-netval','nr-gstamt','nr-total'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='—'})}
+
+/* ══ PERFORMANCE CALCULATORS ══ */
+function pbadge(id,val,pos,neg){const b=document.getElementById(id);if(!b)return;let cls='n',icon='📌';if(val>=pos){cls='g';icon='🟢'}else if(val>=neg){cls='a';icon='🟡'}else{cls='r';icon='🔴'}b.className='perf-badge '+cls;b.innerHTML=`<span>${icon}</span> ${val}%`}
+function calcAch(){const a=parseFloat(document.getElementById('pa-actual').value)||0;const t=parseFloat(document.getElementById('pa-target').value)||0;if(!t)return;pbadge('ach-badge',parseFloat(PM.ach(a,t)),100,80)}
+function calcGrowth(){const c=parseFloat(document.getElementById('pg-curr').value)||0;const l=parseFloat(document.getElementById('pg-last').value)||0;if(!l)return;const v=parseFloat(PM.growth(c,l));const b=document.getElementById('growth-badge');b.className='perf-badge '+(v>=0?'g':v>=-10?'a':'r');b.innerHTML=`<span>${v>=0?'📈':'📉'}</span> ${v>0?'+':''}${v}%`}
+function calcCallAvg(){const calls=parseFloat(document.getElementById('pc-calls').value)||0;const days=parseFloat(document.getElementById('pc-days').value)||0;const b=document.getElementById('callavg-badge');if(!days){b.className='perf-badge n';b.innerHTML='<span>📊</span> —';return}const avg=(calls/days).toFixed(1);const cls=avg>=8?'g':avg>=6?'a':'r';b.className='perf-badge '+cls;b.innerHTML=`<span>${avg>=8?'🟢':avg>=6?'🟡':'🔴'}</span> ${avg}/day`}
+function calcCoverage(){const cov=parseFloat(document.getElementById('pc-cov').value)||0;const list=parseFloat(document.getElementById('pc-list').value)||0;const b=document.getElementById('cov-badge');if(!list){b.className='perf-badge n';b.innerHTML='<span>📋</span> —';return}const pct=((cov/list)*100).toFixed(1);b.className='perf-badge '+(pct>=80?'g':pct>=60?'a':'r');b.innerHTML=`<span>${cov}</span>/${list} · ${pct}%`}
+function calcCompliance(){const vis=parseFloat(document.getElementById('pc-vis').value)||0;const list=parseFloat(document.getElementById('pc-clist').value)||0;const b=document.getElementById('comp-badge');if(!list){b.className='perf-badge n';b.innerHTML='<span>📌</span> —';return}const pct=((vis/list)*100).toFixed(1);b.className='perf-badge '+(pct>=80?'g':pct>=60?'a':'r');b.innerHTML=`<span>${vis}</span>/${list} · ${pct}%`}
+
+/* ══ OCR MODULE (Groq fallback) ══ */
+const OCR={orderB64:null,plB64:null,savedPL:null,rows:[],userId:null};
+
+function ocrDragOver(e,id){e.preventDefault();document.getElementById(id).classList.add('drag-over')}
+function ocrDragLeave(id){document.getElementById(id).classList.remove('drag-over')}
+function ocrDrop(e,type){e.preventDefault();const id=type==='order'?'zone-order':'zone-pl';document.getElementById(id).classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))ocrProcessFile(f,type)}
+function ocrHandleFile(e,type){const f=e.target.files[0];if(f)ocrProcessFile(f,type)}
+function ocrProcessFile(file,type){
+  const id=type==='order'?'zone-order':'zone-pl';
+  const zone=document.getElementById(id);
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const du=e.target.result;const b64=du.split(',')[1];
+    if(type==='order')OCR.orderB64=b64;else OCR.plB64=b64;
+    zone.classList.add('has-file');
+    zone.innerHTML=`<img class="ocr-preview" src="${du}" alt="preview"><div class="ocr-preview-ov"><span>✓</span><div style="font-size:.6rem">${file.name.length>12?file.name.substr(0,10)+'…':file.name}</div></div>`;
+    ocrUpdateBtn();
+  };reader.readAsDataURL(file);
+}
+function ocrUpdateBtn(){const hasO=!!OCR.orderB64;const hasPL=!!(OCR.plB64||OCR.savedPL);const btn=document.getElementById('ocr-process-btn');if(btn)btn.disabled=!(hasO&&hasPL)}
+
+async function ocrProcess(){
+  if(!OCR.orderB64){showToast('Upload order copy first.','err');return}
+  const pl=OCR.plB64||OCR.savedPL;if(!pl){showToast('Upload price list.','err');return}
+  const key=await IDB.loadSetting('groqApiKey');if(!key){ocrShowErr('No Groq key. Enter your key in the ⚡ Groq tab above.');return}
+  document.getElementById('groq-spinner').classList.add('active');
+  document.getElementById('groq-err-box').classList.remove('active');
+  document.getElementById('groq-table-wrap').style.display='none';
+  document.getElementById('ocr-process-btn').disabled=true;
+  const PROMPT=`Extract Product Name and Quantity from order image 1. Match with PTS, GST%, MRP from price list image 2. Return ONLY raw JSON array: [{"productName":"","quantity":0,"pts":0,"gst":0,"mrp":0}]. No markdown.`;
+  const body={model:CFG.GROQ_MODEL,max_tokens:2048,messages:[{role:'user',content:[{type:'image_url',image_url:{url:`data:image/jpeg;base64,${OCR.orderB64}`}},{type:'image_url',image_url:{url:`data:image/jpeg;base64,${pl}`}},{type:'text',text:PROMPT}]}]};
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(body)});
+    if(!r.ok){const er=await r.json().catch(()=>({}));throw new Error(er?.error?.message||'HTTP '+r.status)}
+    const data=await r.json();const raw=data?.choices?.[0]?.message?.content||'';
+    let parsed=ocrParseJSON(raw);
+    if(!Array.isArray(parsed)||!parsed.length)throw new Error('AI returned no data. Try a clearer image.');
+    if(OCR.plB64&&!OCR.savedPL){const uid=PSP.user?.userId;if(uid)await IDB.savePL(uid,OCR.plB64);OCR.savedPL=OCR.plB64;
+      document.getElementById('ocr-saved-badge').style.display='flex';showToast('Price list saved ✓','ok')}
+    OCR.rows=parsed;groqRenderTable();
+    document.getElementById('groq-export-row').style.display='flex';
+    showToast('✓ OCR complete! Review the draft below.','ok');
+  }catch(err){
+    const eb=document.getElementById('groq-err-box');eb.classList.add('active');
+    document.getElementById('groq-err-msg').textContent='Extraction failed: '+err.message;
+    document.getElementById('ocr-process-btn').disabled=false;
+  }
+  finally{document.getElementById('groq-spinner').classList.remove('active')}
+}
+
+/* ══ GROQ TABLE RENDERING ══ */
+function groqRenderTable(){
+  const tb=document.getElementById('groq-tbody');tb.innerHTML='';
+  OCR.rows.forEach((r,i)=>tb.appendChild(groqBuildRow(r,i)));
+  groqUpdateTotals();
+  document.getElementById('groq-table-wrap').style.display='block';
+  document.getElementById('groq-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'');
+}
+function groqBuildRow(r,i){
+  const tr=document.createElement('tr');tr.dataset.i=i;
+  const net=ocrCalcNet(r.pts,r.quantity,r.gst);
+  tr.innerHTML=`<td style="color:var(--muted);font-size:.7rem">${i+1}</td><td><input class="ocr-cell wide" value="${esc(r.productName)}" onchange="groqUpd(${i},'productName',this.value)"></td><td><input class="ocr-cell" type="number" style="max-width:50px" value="${r.quantity??''}" onchange="groqUpd(${i},'quantity',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:65px" value="${r.pts??''}" onchange="groqUpd(${i},'pts',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:45px" value="${r.gst??''}" onchange="groqUpd(${i},'gst',+this.value)"></td><td style="color:var(--green);font-weight:600" id="gnet${i}">${net!==null?'₹'+net.toFixed(2):'—'}</td><td><button class="ocr-del-btn" onclick="groqDelRow(${i})">🗑</button></td>`;
+  return tr;
+}
+function groqUpd(i,f,v){OCR.rows[i][f]=v;const net=ocrCalcNet(OCR.rows[i].pts,OCR.rows[i].quantity,OCR.rows[i].gst);const el=document.getElementById('gnet'+i);if(el)el.textContent=net!==null?'₹'+net.toFixed(2):'—';groqUpdateTotals()}
+function groqUpdateTotals(){let tot=0;OCR.rows.forEach(r=>{const n=ocrCalcNet(r.pts,r.quantity,r.gst);if(n!==null)tot+=n});const tf=document.getElementById('groq-tfoot');if(tf)tf.innerHTML=`<tr><td colspan="5" style="color:#a78bfa;font-weight:700;padding:.6rem">Grand Total</td><td style="color:var(--green);font-weight:700">₹${tot.toFixed(2)}</td><td></td></tr>`;document.getElementById('groq-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'')}
+function groqDelRow(i){OCR.rows.splice(i,1);groqRenderTable()}
+function groqAddRow(){OCR.rows.push({productName:'',quantity:1,pts:0,gst:0,mrp:0});const i=OCR.rows.length-1;const tb=document.getElementById('groq-tbody');tb.appendChild(groqBuildRow(OCR.rows[i],i));groqUpdateTotals();setTimeout(()=>{tb.lastElementChild?.querySelector('input')?.focus()},60)}
+function groqReset(){OCR.rows=[];OCR.orderB64=null;OCR.plB64=null;document.getElementById('groq-table-wrap').style.display='none';document.getElementById('groq-export-row').style.display='none';document.getElementById('ocr-process-btn').disabled=true;showToast('Reset ✓','ok')}
+function groqConfirmOrder(){
+  if(!OCR.rows.length){showToast('No rows to confirm.','err');return}
+  let added=0;
+  OCR.rows.forEach(r=>{if(r.productName&&r.quantity>0){orderCtr++;orderItems.push({id:orderCtr,prod:r.productName,qty:r.quantity,free:0,pts:r.pts||0,gst:r.gst||0,netEx:(r.pts||0)*r.quantity,gstA:(r.pts||0)*r.quantity*(r.gst||0)/100,total:(r.pts||0)*r.quantity*(1+(r.gst||0)/100)});added++}});
+  if(added){renderOrder();nav('orders');showToast(added+' items pushed to Orders ✓','ok')}
+  else showToast('No valid rows to push.','err');
+}
+function groqDownloadExcel(){
+  if(!OCR.rows.length){showToast('No data to export.','err');return}
+  const ws=XLSX.utils.json_to_sheet(OCR.rows.map((r,i)=>({'#':i+1,'Product Name':r.productName,'Qty':r.quantity,'PTS (₹)':r.pts,'GST%':r.gst,'Net Amt (₹)':(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)})));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Order');
+  XLSX.writeFile(wb,`GroqOrder_${new Date().toISOString().split('T')[0]}.xlsx`);showToast('Excel downloaded ✓','ok');
+}
+function groqShareWhatsApp(){
+  if(!OCR.rows.length)return;
+  const u=PSP.user||{};const name=u.name||'Rep';const company=u.company||'Company';
+  const date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const lines=OCR.rows.map((r,i)=>`${i+1}. ${r.productName} | Qty:${r.quantity} | PTS:₹${r.pts} | GST:${r.gst}% | Net:₹${(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)}`).join('\n');
+  const grand=OCR.rows.reduce((s,r)=>s+(ocrCalcNet(r.pts,r.quantity,r.gst)||0),0).toFixed(2);
+  const msg=`📋 *Order — PharmaSalesPro*\nRep: ${name} | ${company} | ${date}\n─────\n${lines}\n─────\n*Grand Total: ₹${grand}*\n_Powered by PharmaSalesPro v6_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+function ocrRetry(){
+  if(GAuth.token&&GEM.orderB64)gemProcess();else ocrProcess();
+}
+
+function ocrParseJSON(raw){
+  let c=raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+  const s=c.indexOf('['),e=c.lastIndexOf(']');
+  if(s!==-1&&e!==-1)c=c.slice(s,e+1);
+  return JSON.parse(c);
+}
+function ocrCalcNet(pts,qty,gst){pts=parseFloat(pts);qty=parseFloat(qty);gst=parseFloat(gst);if(isNaN(pts)||isNaN(qty))return null;return pts*qty*(1+(isNaN(gst)?0:gst)/100)}
+function ocrRenderTable(){
+  const tb=document.getElementById('ocr-tbody');tb.innerHTML='';
+  OCR.rows.forEach((r,i)=>tb.appendChild(ocrBuildRow(r,i)));
+  ocrUpdateTotals();
+  document.getElementById('ocr-table-wrap').classList.add('active');
+  document.getElementById('ocr-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'');
+}
+function ocrBuildRow(r,i){
+  const tr=document.createElement('tr');tr.dataset.i=i;
+  const net=ocrCalcNet(r.pts,r.quantity,r.gst);
+  tr.innerHTML=`<td style="color:var(--muted);font-size:.7rem">${i+1}</td><td><input class="ocr-cell wide" value="${esc(r.productName)}" onchange="ocrUpd(${i},'productName',this.value)"></td><td><input class="ocr-cell" type="number" style="max-width:50px" value="${r.quantity??''}" onchange="ocrUpd(${i},'quantity',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:65px" value="${r.pts??''}" onchange="ocrUpd(${i},'pts',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:45px" value="${r.gst??''}" onchange="ocrUpd(${i},'gst',+this.value)"></td><td style="color:var(--green);font-weight:600" id="onet${i}">${net!==null?'₹'+net.toFixed(2):'—'}</td><td><button class="ocr-del-btn" onclick="ocrDelRow(${i})">🗑</button></td>`;
+  return tr;
+}
+function ocrUpd(i,f,v){OCR.rows[i][f]=v;const net=ocrCalcNet(OCR.rows[i].pts,OCR.rows[i].quantity,OCR.rows[i].gst);const el=document.getElementById('onet'+i);if(el)el.textContent=net!==null?'₹'+net.toFixed(2):'—';ocrUpdateTotals()}
+function ocrUpdateTotals(){let tot=0;OCR.rows.forEach(r=>{const n=ocrCalcNet(r.pts,r.quantity,r.gst);if(n!==null)tot+=n});document.getElementById('ocr-tfoot').innerHTML=`<tr><td colspan="5" style="color:var(--accent-a);font-weight:700;padding:.6rem">Grand Total</td><td style="color:var(--green);font-weight:700">₹${tot.toFixed(2)}</td><td></td></tr>`;document.getElementById('ocr-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'')}
+function ocrDelRow(i){OCR.rows.splice(i,1);ocrRenderTable()}
+function ocrAddRow(){OCR.rows.push({productName:'',quantity:1,pts:0,gst:0,mrp:0});const i=OCR.rows.length-1;const tb=document.getElementById('ocr-tbody');tb.appendChild(ocrBuildRow(OCR.rows[i],i));ocrUpdateTotals();setTimeout(()=>{tb.lastElementChild?.querySelector('input')?.focus()},60)}
+function ocrConfirmOrder(){
+  if(!OCR.rows.length){showToast('No rows to confirm.','err');return}
+  let added=0;
+  OCR.rows.forEach(r=>{
+    const prod=(r.productName||'').trim();
+    const qty=parseFloat(r.quantity)||0;
+    const pts=parseFloat(r.pts)||0;
+    const gst=parseFloat(r.gst)||0;
+    if(!prod||qty<=0||pts<=0)return;
+    const netEx=pts*qty;const gstA=netEx*gst/100;const total=netEx+gstA;
+    orderCtr++;orderItems.push({id:orderCtr,prod,qty,free:0,pts,gst,netEx,gstA,total});added++;
+  });
+  if(!added){showToast('No valid rows to push.','err');return}
+  renderOrder();
+  showToast(`✅ ${added} item${added!==1?'s':''} pushed to Orders!`,'ok');
+  setTimeout(()=>nav('orders'),600);
+}
+function ocrReset(){
+  OCR.orderB64=null;OCR.plB64=null;OCR.rows=[];GEM.orderB64=null;GEM.plB64=null;
+  ['zone-order','zone-pl','gem-zone-order','gem-zone-pl'].forEach((id,i)=>{
+    const z=document.getElementById(id);if(!z)return;
+    const isGem=id.startsWith('gem-');
+    const type=(id.includes('order'))?'order':'pricelist';
+    const isPl=id.includes('pl');
+    if(isPl&&(OCR.savedPL||GEM.savedPL))return;
+    const icon=isPl?'💊':'📋';const lbl=isPl?'Company<br>Price List':'Handwritten<br>Order Copy';
+    const inputId=isGem?(isPl?'gem-file-pl':'gem-file-order'):(isPl?'file-pl':'file-order');
+    const handler=isGem?`gemHandleFile(event,'${type}')`:`ocrHandleFile(event,'${type}')`;
+    z.innerHTML=`<input type="file" id="${inputId}" accept="image/*" onchange="${handler}"><div class="ocr-zone-icon">${icon}</div><div class="ocr-zone-lbl">${lbl}</div><div class="ocr-zone-sub">Tap to upload</div>`;
+    z.classList.remove('has-file','drag-over');
+  });
+  document.getElementById('ocr-table-wrap').classList.remove('active');
+  document.getElementById('ocr-export-row').style.display='none';
+  document.getElementById('ocr-spinner').classList.remove('active');
+  document.getElementById('ocr-err-box').classList.remove('active');
+  gemSetStep(1);
+}
+async function ocrClearPriceList(){const uid=PSP.user?.userId;if(uid)await IDB.deletePL(uid);OCR.savedPL=null;GEM.savedPL=null;document.getElementById('ocr-saved-badge').style.display='none';document.getElementById('gem-saved-badge').style.display='none';ocrUpdateBtn();gemUpdateBtn();showToast('Price list cleared.','ok')}
+function ocrShowErr(msg){document.getElementById('ocr-spinner').classList.remove('active');document.getElementById('ocr-err-box').classList.add('active');document.getElementById('ocr-err-msg').textContent=msg}
+function esc(s){return String(s??'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+
+/* OCR Export — Download Excel */
+function ocrDownloadExcel(){
+  if(!OCR.rows.length){showToast('No data to export.','err');return}
+  const ws=XLSX.utils.json_to_sheet(OCR.rows.map((r,i)=>({'#':i+1,'Product Name':r.productName,'Qty':r.quantity,'PTS (₹)':r.pts,'GST%':r.gst,'Net Amt (₹)':(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)})));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Order');
+  const date=new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb,`Order_${date}.xlsx`);showToast('Excel downloaded ✓','ok');
+}
+
+/* OCR Export — WhatsApp */
+function ocrShareWhatsApp(){
+  if(!OCR.rows.length)return;
+  const u=PSP.user||{};const name=u.name||'Rep';const company=u.company||'Company';
+  const date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const lines=OCR.rows.map((r,i)=>`${i+1}. ${r.productName} | Qty:${r.quantity} | PTS:₹${r.pts} | GST:${r.gst}% | Net:₹${(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)}`).join('\n');
+  const grand=OCR.rows.reduce((s,r)=>s+(ocrCalcNet(r.pts,r.quantity,r.gst)||0),0).toFixed(2);
+  const msg=`📋 *Order — PharmaSalesPro*\nRep: ${name} | ${company} | ${date}\n─────\n${lines}\n─────\n*Grand Total: ₹${grand}*\n_Powered by PharmaSalesPro v5_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+/* ══ ORDER ACCUMULATOR ══ */
+let orderItems=[],orderCtr=0;
+function oAutoCalcPTS(){const mrp=parseFloat(document.getElementById('o-mrp').value)||0;if(mrp>0)document.getElementById('o-pts').value=PM.PTS(mrp,PSP.settings.retailerMargin||20,PSP.settings.stockistMargin||10).toFixed(2)}
+function oClearMRP(){document.getElementById('o-mrp').value=''}
+function orderAdd(){
+  const prod=(document.getElementById('o-prod').value||'').trim();const qty=parseFloat(document.getElementById('o-qty').value)||0;const free=parseFloat(document.getElementById('o-free').value)||0;let pts=parseFloat(document.getElementById('o-pts').value)||0;const mrp=parseFloat(document.getElementById('o-mrp').value)||0;const gst=parseFloat(document.getElementById('o-gst').value)||0;
+  if(!pts&&mrp>0){pts=PM.PTS(mrp,PSP.settings.retailerMargin||20,PSP.settings.stockistMargin||10);document.getElementById('o-pts').value=pts.toFixed(2)}
+  if(!prod){shakeI('o-prod');return}if(qty<=0){shakeI('o-qty');return}if(pts<=0){shakeI('o-pts');return}
+  const netEx=pts*qty;const gstA=netEx*gst/100;const total=netEx+gstA;
+  orderCtr++;orderItems.push({id:orderCtr,prod,qty,free,pts,gst,netEx,gstA,total});renderOrder();clearOForm();
+}
+function shakeI(id){const e=document.getElementById(id);e.style.borderColor='var(--red)';e.focus();setTimeout(()=>e.style.borderColor='',900)}
+function clearOForm(){document.getElementById('o-prod').value='';document.getElementById('o-qty').value='1';document.getElementById('o-free').value='0';document.getElementById('o-pts').value='';document.getElementById('o-mrp').value='';document.getElementById('o-gst').value='12';document.getElementById('o-prod').focus()}
+function orderRemove(id){orderItems=orderItems.filter(i=>i.id!==id);renderOrder()}
+function renderOrder(){
+  const empty=document.getElementById('o-empty');const wrap=document.getElementById('o-tbl-wrap');const tb=document.getElementById('o-tbody');const bar=document.getElementById('o-sumbar');const waBtn=document.getElementById('o-wa-btn');const cnt=document.getElementById('o-count');const tfoot=document.getElementById('o-tfoot');
+  if(!orderItems.length){empty.style.display='block';wrap.style.display='none';bar.style.display='none';waBtn.style.display='none';cnt.textContent='';if(tfoot)tfoot.innerHTML='';return}
+  empty.style.display='none';wrap.style.display='block';bar.style.display='flex';waBtn.style.display='flex';
+  cnt.textContent=orderItems.length+' item'+(orderItems.length!==1?'s':'');
+  tb.innerHTML=orderItems.map((item,i)=>`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-weight:500;max-width:100px;overflow:hidden;text-overflow:ellipsis">${item.prod}</td><td>${item.qty}</td><td>${item.free>0?item.free:'—'}</td><td>₹${item.pts.toFixed(2)}</td><td>₹${item.netEx.toFixed(2)}</td><td>${item.gst}%</td><td style="color:var(--amber)">₹${item.gstA.toFixed(2)}</td><td style="color:var(--accent-a);font-weight:600">₹${item.total.toFixed(2)}</td><td><button class="rm-btn" onclick="orderRemove(${item.id})">✕</button></td></tr>`).join('');
+  const tEx=orderItems.reduce((s,i)=>s+i.netEx,0);const tGST=orderItems.reduce((s,i)=>s+i.gstA,0);const tAll=orderItems.reduce((s,i)=>s+i.total,0);
+  if(tfoot)tfoot.innerHTML=`<tr><td colspan="5" style="color:var(--accent-a);padding:.65rem">Grand Total</td><td>₹${tEx.toFixed(2)}</td><td></td><td style="color:var(--amber)">₹${tGST.toFixed(2)}</td><td style="color:var(--gold);font-size:.9rem;font-weight:700">₹${tAll.toFixed(2)}</td><td></td></tr>`;
+  document.getElementById('o-total').textContent='₹'+tAll.toFixed(2);
+  const tq=orderItems.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('o-sub').textContent=`${orderItems.length} products · ${tq} units · GST ₹${tGST.toFixed(2)}`;
+}
+function orderWhatsApp(){
+  if(!orderItems.length)return;
+  const u=PSP.user||{};const name=u.name||'Rep';const company=u.company||'Company';
+  const date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const lines=orderItems.map((item,i)=>`${i+1}. ${item.prod} | Qty:${item.qty}${item.free>0?' +'+item.free+'F':''} | PTS:₹${item.pts.toFixed(2)} | GST:${item.gst}% | Net:₹${item.netEx.toFixed(2)} | GST Amt:₹${item.gstA.toFixed(2)} | Total:₹${item.total.toFixed(2)}`).join('\n');
+  const tEx=orderItems.reduce((s,i)=>s+i.netEx,0).toFixed(2);const tGST=orderItems.reduce((s,i)=>s+i.gstA,0).toFixed(2);const grand=orderItems.reduce((s,i)=>s+i.total,0).toFixed(2);
+  const msg=`📋 *Stockist Order — PharmaSalesPro*\nRep: ${name} | Company: ${company} | Date: ${date}\n─────────────────────\n${lines}\n─────────────────────\nNet (ex-GST): ₹${tEx}\nGST Total: ₹${tGST}\n*Grand Total: ₹${grand}* (incl. GST)\n_Powered by PharmaSalesPro v5_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+/* ══════════════════════════════════
+   CHANGE 3A: DR MASTER LIST
+══════════════════════════════════ */
+const DR={rows:[],filtered:[],selected:new Set()};
+
+// Fuzzy-ish column name detection
+const DR_COL_MAP={
+  name:['doctor name','dr name','name','doctor','physician name','physician','doc name','dr.name'],
+  mobile:['mobile','mobile no','phone','contact','number','mob','cell','whatsapp'],
+  speciality:['speciality','specialty','specialization','dept','department','category','type'],
+  area:['area','location','territory','place','zone','sector','address','city','town'],
+};
+
+function drFindCol(headers,fieldKeys){
+  for(const h of headers){
+    const lh=h.toLowerCase().trim();
+    for(const k of fieldKeys){if(lh.includes(k)||k.includes(lh))return h}
+  }return null;
+}
+
+function drLoadFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!raw.length){showToast('No data found in file.','err');return}
+      const headers=Object.keys(raw[0]);
+      const nameCol=drFindCol(headers,DR_COL_MAP.name);
+      const mobCol=drFindCol(headers,DR_COL_MAP.mobile);
+      const specCol=drFindCol(headers,DR_COL_MAP.speciality);
+      const areaCol=drFindCol(headers,DR_COL_MAP.area);
+      DR.rows=raw.map((row,i)=>({
+        _id:i,
+        name:String(row[nameCol]||row[headers[0]]||'Dr '+(i+1)).trim(),
+        mobile:String(row[mobCol]||'').trim(),
+        speciality:String(row[specCol]||'').trim(),
+        area:String(row[areaCol]||'').trim(),
+        _raw:row,_headers:headers
+      }));
+      IDB.saveDrMaster(DR.rows);
+      drRenderList();
+      const zone=document.getElementById('drzone');
+      zone.innerHTML=`<div class="ocr-zone-icon">✅</div><div class="ocr-zone-lbl">${f.name}</div><div class="ocr-zone-sub">${DR.rows.length} doctors loaded</div>`;
+      zone.classList.add('has-file');
+      const info=document.getElementById('dr-loaded-info');
+      info.style.display='block';info.textContent=`✓ ${DR.rows.length} doctors loaded · Columns: name${nameCol?'':' (guessed)'}, mobile, speciality, area`;
+      showToast(`${DR.rows.length} doctors loaded ✓`,'ok');
+    }catch(err){showToast('Error reading file: '+err.message,'err')}
+  };
+  if(f.name.endsWith('.csv')){
+    reader.readAsText(f);
+    reader.onload=ev=>{
+      const rows=XLSX.utils.sheet_to_json(XLSX.read(ev.target.result,{type:'string'}).Sheets[XLSX.read(ev.target.result,{type:'string'}).SheetNames[0]],{defval:''});
+      drParseAndLoad(rows,f.name);
+    };return;
+  }
+  reader.readAsArrayBuffer(f);
+}
+
+function drParseAndLoad(raw,fname){
+  if(!raw.length){showToast('No data found.','err');return}
+  const headers=Object.keys(raw[0]);
+  const nameCol=drFindCol(headers,DR_COL_MAP.name);
+  const mobCol=drFindCol(headers,DR_COL_MAP.mobile);
+  const specCol=drFindCol(headers,DR_COL_MAP.speciality);
+  const areaCol=drFindCol(headers,DR_COL_MAP.area);
+  DR.rows=raw.map((row,i)=>({
+    _id:i,name:String(row[nameCol]||row[headers[0]]||'Dr '+(i+1)).trim(),
+    mobile:String(row[mobCol]||'').trim(),speciality:String(row[specCol]||'').trim(),
+    area:String(row[areaCol]||'').trim(),_raw:row,_headers:headers
+  }));
+  IDB.saveDrMaster(DR.rows);drRenderList();showToast(`${DR.rows.length} doctors loaded ✓`,'ok');
+}
+
+function drDrop(e){e.preventDefault();document.getElementById('drzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)drLoadFile({target:{files:[f]}})}
+
+function drRenderList(){
+  DR.filtered=[...DR.rows];
+  document.getElementById('dr-list-panel').style.display='block';
+  document.getElementById('dr-count-badge').textContent=`${DR.rows.length} total · ${DR.selected.size} selected`;
+  drRenderItems(DR.filtered);
+}
+
+function drRenderItems(rows){
+  const container=document.getElementById('dr-list-scroll');
+  container.innerHTML='';
+  rows.forEach(dr=>{
+    const div=document.createElement('div');div.className='dr-list-item';
+    const checked=DR.selected.has(dr._id)?'checked':'';
+    div.innerHTML=`<input type="checkbox" class="dr-checkbox" ${checked} onchange="drToggle(${dr._id},this.checked)">
+      <div class="dr-info">
+        <div class="dr-name">${esc(dr.name)}</div>
+        <div class="dr-meta">${[dr.speciality,dr.area,dr.mobile].filter(Boolean).join(' · ')}</div>
+      </div>`;
+    container.appendChild(div);
+  });
+  const pool=document.getElementById('dr-selected-pool');
+  const fillerBtn=document.getElementById('dr-goto-filler-btn');
+  if(DR.selected.size>0){
+    pool.style.display='block';
+    pool.textContent=`✓ ${DR.selected.size} Dr${DR.selected.size!==1?'s':''} selected for this month`;
+    if(fillerBtn)fillerBtn.style.display='block';
+  } else {pool.style.display='none';if(fillerBtn)fillerBtn.style.display='none'}
+  document.getElementById('dr-count-badge').textContent=`${DR.rows.length} total · ${DR.selected.size} selected`;
+}
+
+function drToggle(id,checked){if(checked)DR.selected.add(id);else DR.selected.delete(id);drRenderItems(DR.filtered)}
+function drFilter(){const q=document.getElementById('dr-search').value.toLowerCase();DR.filtered=DR.rows.filter(d=>d.name.toLowerCase().includes(q)||d.speciality.toLowerCase().includes(q)||d.area.toLowerCase().includes(q)||d.mobile.includes(q));drRenderItems(DR.filtered)}
+function drSelectAll(){DR.filtered.forEach(d=>DR.selected.add(d._id));drRenderItems(DR.filtered)}
+function drClearSelection(){DR.selected.clear();drRenderItems(DR.filtered)}
+
+function drExportSelected(){
+  const sel=DR.rows.filter(d=>DR.selected.has(d._id));
+  if(!sel.length){showToast('No Drs selected.','err');return}
+  const ws=XLSX.utils.json_to_sheet(sel.map(d=>({Name:d.name,Mobile:d.mobile,Speciality:d.speciality,Area:d.area})));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Selected Drs');
+  XLSX.writeFile(wb,`Selected_Drs_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast(`${sel.length} Drs exported ✓`,'ok');
+}
+
+/* ══════════════════════════════════
+   CHANGE 3B: FORMAT FILLER
+══════════════════════════════════ */
+let FF={wb:null,ws:null,headers:[],colMap:{},filledWb:null};
+
+function ffCheckMaster(){
+  const hasM=DR.rows.length>0;
+  const noM=document.getElementById('ff-no-master');
+  const okM=document.getElementById('ff-master-ok');
+  if(hasM){noM.style.display='none';okM.style.display='block';okM.textContent=`✓ Dr Master loaded — ${DR.rows.length} doctors (${DR.selected.size} selected)`}
+  else{noM.style.display='block';okM.style.display='none'}
+}
+
+function ffDrop(e){e.preventDefault();document.getElementById('ff-zone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)ffLoadFile({target:{files:[f]}})}
+
+function ffLoadFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      FF.wb=XLSX.read(data,{type:'array'});
+      FF.ws=FF.wb.Sheets[FF.wb.SheetNames[0]];
+      // Read first row as headers
+      const range=XLSX.utils.decode_range(FF.ws['!ref']||'A1');
+      FF.headers=[];
+      for(let c=range.s.c;c<=range.e.c;c++){
+        const cell=FF.ws[XLSX.utils.encode_cell({r:range.s.r,c})];
+        FF.headers.push(cell?String(cell.v):'');
+      }
+      // Smart map: which format col maps to which Dr field
+      FF.colMap={};
+      FF.headers.forEach(h=>{
+        const lh=h.toLowerCase().trim();
+        if(DR_COL_MAP.name.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='name';
+        else if(DR_COL_MAP.mobile.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='mobile';
+        else if(DR_COL_MAP.speciality.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='speciality';
+        else if(DR_COL_MAP.area.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='area';
+      });
+      const zone=document.getElementById('ff-zone');
+      zone.classList.add('has-file');
+      zone.innerHTML=`<div class="ocr-zone-icon">✅</div><div class="ocr-zone-lbl">${f.name}</div><div class="ocr-zone-sub">${FF.headers.length} columns detected</div>`;
+      const colsInfo=document.getElementById('ff-cols-info');
+      colsInfo.style.display='block';
+      const mapped=Object.entries(FF.colMap).map(([h,f])=>`<span style="color:var(--green)">✓ ${h}</span> → ${f}`).join('&nbsp;&nbsp;');
+      const unmapped=FF.headers.filter(h=>!FF.colMap[h]).map(h=>`<span style="color:var(--muted)">${h}</span>`).join(', ');
+      document.getElementById('ff-cols-list').innerHTML=(mapped||'None matched')+((unmapped)?'<br><span style="font-size:.65rem;color:rgba(255,255,255,.25)">Blank (no match): '+unmapped+'</span>':'');
+      document.getElementById('ff-fill-btn').style.display='block';
+      // Show OCR card if Gemini connected
+      if(GAuth.token)document.getElementById('ff-ocr-card').style.display='block';
+      showToast('Format loaded ✓','ok');
+    }catch(err){showToast('Error reading file: '+err.message,'err')}
+  };reader.readAsArrayBuffer(f);
+}
+
+function ffFillFormat(){
+  if(!FF.wb||!FF.ws){showToast('Upload a format first.','err');return}
+  const selDrs=DR.rows.filter(d=>DR.selected.has(d._id));
+  if(!selDrs.length){showToast('No Drs selected in Dr Master tab.','err');return}
+
+  // Clone workbook
+  FF.filledWb=XLSX.utils.book_new();
+  const sheetName=FF.wb.SheetNames[0];
+
+  // Get existing data (header row + template rows)
+  const existingRows=XLSX.utils.sheet_to_json(FF.ws,{header:1,defval:''});
+  const headerRow=existingRows[0]||[];
+  const templateRows=existingRows.slice(1);// keep extra template rows if any
+
+  // Build output rows
+  const outRows=[headerRow];
+  selDrs.forEach(dr=>{
+    const row=new Array(headerRow.length).fill('');
+    headerRow.forEach((h,ci)=>{
+      const field=FF.colMap[h];
+      if(field&&dr[field]!==undefined)row[ci]=dr[field];
+    });
+    // Copy template row extra data if exists
+    if(templateRows.length>0){
+      templateRows[0].forEach((v,ci)=>{if(!FF.colMap[headerRow[ci]]&&v!=='')row[ci]=v});
+    }
+    outRows.push(row);
+  });
+
+  const ws=XLSX.utils.aoa_to_sheet(outRows);
+  XLSX.utils.book_append_sheet(FF.filledWb,ws,sheetName);
+
+  document.getElementById('ff-result-card').style.display='block';
+  document.getElementById('ff-result-info').textContent=`${selDrs.length} Drs filled in format. ${FF.headers.filter(h=>!FF.colMap[h]).length} columns left blank for manual entry.`;
+  showToast('Format filled ✓','ok');
+  setTimeout(()=>document.getElementById('ff-result-card').scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+
+function ffDownload(){
+  if(!FF.filledWb){showToast('Fill the format first.','err');return}
+  XLSX.writeFile(FF.filledWb,`FilledFormat_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast('Excel downloaded ✓','ok');
+}
+
+// OCR for handwritten data in format
+let FF_OCR_B64=null;
+function ffOcrHandleFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    FF_OCR_B64=ev.target.result.split(',')[1];
+    const zone=document.getElementById('ff-ocr-zone');
+    zone.classList.add('has-file');
+    zone.innerHTML=`<img class="ocr-preview" src="${ev.target.result}" alt="preview"><div class="ocr-preview-ov"><span>✓</span></div>`;
+    showToast('Image ready','ok');
+  };reader.readAsDataURL(f);
+}
+
+async function ffOcrProcess(){
+  if(!FF_OCR_B64){showToast('Upload an image first.','err');return}
+  const authToken=GAuth.token;
+  const directKey=GeminiDirect.key||(await IDB.loadSetting('geminiApiKey'));
+  if(!authToken&&!directKey){showToast('Set a Gemini API Key in the 🤖 Gemini tab first.','err');return}
+  showToast('Extracting with Gemini…','ok');
+  const PROMPT=`Extract all text from this handwritten data image as JSON key-value pairs. Each key should be a column name and value should be the data. Return ONLY a raw JSON object.`;
+  const body={contents:[{parts:[{inline_data:{mime_type:'image/jpeg',data:FF_OCR_B64}},{text:PROMPT}]}]};
+  let url,headers;
+  if(authToken){
+    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent`;
+    headers={'Content-Type':'application/json','Authorization':'Bearer '+authToken};
+  } else {
+    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent?key=${directKey}`;
+    headers={'Content-Type':'application/json'};
+  }
+  try{
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+    const data=await r.json();const raw=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    let parsed;try{parsed=JSON.parse(raw.replace(/```json|```/g,'').trim())}catch{parsed=null}
+    if(parsed&&typeof parsed==='object'&&FF.filledWb){
+      showToast('OCR data extracted — merge manually if needed.','ok');
+    } else {showToast('OCR extracted — check console for data.','ok')}
+  }catch(err){showToast('OCR failed: '+err.message,'err')}
+}
+
+/* ══ DOWNLOAD CODE.GS ══ */
+function downloadCodeGS(){
+  const gs=`// PharmaSalesPro v6 — Code.gs
+// Sheet columns: userId | name | mobile | company | designation | city | place | pin | status | createdAt
+// Deploy: Extensions > Apps Script > paste this > Deploy > Web App > Execute as Me > Anyone
+
+function doGet(e){
+  const ss=SpreadsheetApp.openById('${CFG.SHEET_ID}');
+  const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
+  const p=e.parameter,action=p.action;
+  if(action==='findUser'){
+    const rows=ws.getDataRange().getValues();const h=rows[0];
+    const mi=h.indexOf('mobile');
+    for(let i=1;i<rows.length;i++){
+      if(String(rows[i][mi])===p.mobile){
+        const obj={};h.forEach((k,j)=>obj[k]=rows[i][j]);
+        return out({user:obj});
+      }
+    }
+    return out({user:null});
+  }
+  if(action==='getAllUsers'){
+    const rows=ws.getDataRange().getValues();const h=rows[0];
+    const users=rows.slice(1).filter(r=>r[0]).map(r=>{const o={};h.forEach((k,j)=>o[k]=r[j]);return o});
+    return out({users});
+  }
+  return out({error:'unknown action'});
+}
+
+function doPost(e){
+  const ss=SpreadsheetApp.openById('${CFG.SHEET_ID}');
+  const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
+  const body=JSON.parse(e.postData.contents);
+  const action=body.action;
+  if(action==='appendUser'){
+    const d=body.data;
+    if(ws.getLastRow()===0){
+      ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
+    }
+    ws.appendRow([d.userId,d.name,d.mobile,d.company,d.designation,d.city||'',d.place||'',d.pin,d.status||'Free',d.createdAt]);
+    return out({ok:true});
+  }
+  if(action==='updateStatus'){
+    const rows=ws.getDataRange().getValues();const h=rows[0];
+    const ui=h.indexOf('userId');const si=h.indexOf('status');
+    for(let i=1;i<rows.length;i++){
+      if(rows[i][ui]===body.userId){ws.getRange(i+1,si+1).setValue(body.status);break}
+    }
+    return out({ok:true});
+  }
+  return out({error:'unknown'});
+}
+
+function out(obj){
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+  const blob=new Blob([gs],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Code.gs';a.click();
+  showToast('Code.gs downloaded ✓','ok');
+}
+
+/* ══ TOAST ══ */
+let _toastT=null;
+function showToast(msg,type='ok'){const e=document.getElementById('ocr-toast');e.textContent=msg;e.className='ocr-toast '+type+' show';clearTimeout(_toastT);_toastT=setTimeout(()=>e.classList.remove('show'),3200)}
+
+/* ══ BOOT ══ */
+window.addEventListener('DOMContentLoaded',()=>{
+  const s=Sess.load();if(s)initApp(s);
+  document.getElementById('lpin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+  window.addEventListener('hashchange',()=>{const h=location.hash.replace('#','');if(h&&PSP.user)nav(h)});
+});
+</script>
+</body>
+</html>
