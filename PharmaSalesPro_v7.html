@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <meta name="theme-color" content="#040d18"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<title>PharmaSalesPro — Field Sales Intelligence v6</title>
+<title>PharmaSalesPro — Field Sales Intelligence v13</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -374,13 +374,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <div class="calc-field"><label>Standard Qty</label><input type="number" id="m-sq" value="10" oninput="calcLive()"></div>
           <div class="calc-field"><label>Free Qty (Scheme)</label><input type="number" id="m-fq" value="0" oninput="calcLive()"></div>
           <div class="calc-field"><label>GST %</label>
-            <select id="m-gst" onchange="calcLive()">
-              <option value="0">0%</option><option value="5">5%</option>
-              <option value="12" selected>12%</option><option value="18">18%</option><option value="28">28%</option>
+            <select id="m-gst" oninput="calcLive()" onchange="calcLive()">
+              <option value="0">0%</option><option value="5" selected>5%</option>
+              <option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
             </select></div>
         </div>
         <div class="res-grid">
-          <div class="res-box"><div class="res-lbl">PTR</div><div class="res-val" id="rv-ptr">—</div><div class="res-frm">MRP÷(1+Ret%)</div></div>
+          <div class="res-box"><div class="res-lbl">PTR</div><div class="res-val" id="rv-ptr">—</div><div class="res-frm">MRP÷(1+GST%)÷(1+Ret%)</div></div>
           <div class="res-box"><div class="res-lbl">PTS</div><div class="res-val" id="rv-pts">—</div><div class="res-frm">PTR÷(1+Stk%)</div></div>
           <div class="res-box green"><div class="res-lbl">Net Rate (Chemist)</div><div class="res-val" id="rv-nr">—</div><div class="res-frm">PTR×(1−CD%)×Qty/(Qty+Free)</div></div>
           <div class="res-box amber"><div class="res-lbl">GST Amount</div><div class="res-val" id="rv-gst">—</div><div class="res-frm">PTS×GST%</div></div>
@@ -408,7 +408,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <div class="calc-field"><label>Bill Qty</label><input type="number" id="nr-qty" value="1" min="1" oninput="nrCalc()"></div>
           <div class="calc-field"><label>Free Qty (Scheme)</label><input type="number" id="nr-scheme" value="0" min="0" oninput="nrCalc()"></div>
           <div class="calc-field"><label>Discount %</label><input type="number" id="nr-disc" value="0" oninput="nrCalc()"></div>
-          <div class="calc-field"><label>GST %</label><input type="number" id="nr-gst" value="12" oninput="nrCalc()"></div>
+          <div class="calc-field"><label>GST %</label><input type="number" id="nr-gst" value="5" oninput="nrCalc()"></div>
         </div>
         <div class="res-grid">
           <div class="res-box"><div class="res-lbl">Net Rate / Unit</div><div class="res-val" id="nr-rate">—</div><div class="res-frm">PTR×Qty/(Qty+Scheme)×(1−Disc%)</div></div>
@@ -496,6 +496,25 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div class="perf-badge n" id="comp-badge"><span>📌</span> —</div>
       </div>
 
+      <!-- 8. PRPM — Per Rep Per Month -->
+      <button class="acc-btn" onclick="accToggle('acc-prpm')">
+        <div class="acc-left"><span class="acc-emoji">👤</span>
+          <div class="acc-label"><span class="acc-title">PRPM — Per Rep Per Month</span><span class="acc-sub">Total sale ÷ reps ÷ months</span></div>
+        </div><span class="acc-arrow">▼</span>
+      </button>
+      <div class="acc-body" id="acc-prpm">
+        <div class="calc-grid">
+          <div class="calc-field"><label>Total Sale (₹)</label><input type="number" id="prpm-sale" placeholder="0" oninput="calcPRPM()"></div>
+          <div class="calc-field"><label>No. of Persons in Pool</label><input type="number" id="prpm-persons" placeholder="1" min="1" value="1" oninput="calcPRPM()"></div>
+          <div class="calc-field"><label>No. of Months</label><input type="number" id="prpm-months" placeholder="1" min="1" value="1" oninput="calcPRPM()"></div>
+        </div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:.6rem">Single month: Total ÷ Persons · Multi-month: Total ÷ (Persons × Months)</div>
+        <div class="res-grid">
+          <div class="res-box gold"><div class="res-lbl">PRPM</div><div class="res-val" id="prpm-result">—</div><div class="res-frm" id="prpm-formula">—</div></div>
+          <div class="res-box green"><div class="res-lbl">Total Pool Sale</div><div class="res-val" id="prpm-total">—</div><div class="res-frm">Input total sale</div></div>
+        </div>
+      </div>
+
       <div style="height:.5rem"></div>
     </div>
   </div>
@@ -511,160 +530,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
       <!-- Sub-tabs -->
       <div class="sub-tab-row" style="flex-wrap:wrap;gap:3px">
-        <button class="sub-tab on" id="subtab-ocr" onclick="ocrSubTab('ocr')" style="flex:1;min-width:80px">🤖 Gemini</button>
-        <button class="sub-tab" id="subtab-groq" onclick="ocrSubTab('groq')" style="flex:1;min-width:80px">⚡ Groq</button>
+        <button class="sub-tab on" id="subtab-groq" onclick="ocrSubTab('groq')" style="flex:1;min-width:80px">⚡ Groq</button>
         <button class="sub-tab" id="subtab-drmaster" onclick="ocrSubTab('drmaster')" style="flex:1;min-width:80px">👨‍⚕️ Dr Master</button>
         <button class="sub-tab" id="subtab-filler" onclick="ocrSubTab('filler')" style="flex:1;min-width:80px">📋 Format Filler</button>
       </div>
 
-      <!-- ── OCR TAB (Gemini) ── -->
-      <div id="panel-ocr">
-
-        <!-- Gemini Auth — two options -->
-        <div class="gauth-card" id="gauth-card">
-          <div class="flex-row mb-1">
-            <div style="font-size:.78rem;font-weight:700;color:#7cb4ff">🤖 Gemini Vision — Connect</div>
-          </div>
-
-          <!-- Option A: Google OAuth (connected state) -->
-          <div id="gauth-connected" style="display:none">
-            <div class="flex-row">
-              <div class="gauth-avatar" id="gauth-initial">G</div>
-              <div style="flex:1">
-                <div style="font-size:.82rem;font-weight:600" id="gauth-email">Connected</div>
-                <div style="font-size:.68rem;color:var(--green)">✓ Gemini via Google Account</div>
-              </div>
-              <button class="btn btn-d btn-sm" onclick="gAuthRevoke()">Disconnect</button>
-            </div>
-          </div>
-
-          <!-- Option B: Direct Gemini API Key -->
-          <div id="gemini-direct-key-section">
-            <!-- Status badge -->
-            <div id="gemini-key-status" class="al al-info" style="font-size:.76rem;margin-bottom:.7rem">ℹ Use Google Account login OR enter a Gemini API key directly below.</div>
-
-            <!-- Sub-toggle: show key input -->
-            <div id="gemini-key-input-wrap">
-              <div class="fg" style="margin-bottom:.6rem">
-                <label class="fl">Gemini API Key (Direct — no Google login needed)</label>
-                <div class="flex-row" style="gap:.5rem">
-                  <input class="fi flex-1" type="password" id="gemini-direct-key-inp" placeholder="AIza…" oninput="geminiKeyCheck()">
-                  <button class="btn btn-g btn-sm" onclick="geminiKeyToggle()" style="flex-shrink:0">👁</button>
-                </div>
-              </div>
-              <div class="flex-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
-                <button class="btn btn-p btn-sm" onclick="geminiKeySave()">💾 Save Key</button>
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn btn-g btn-sm" style="text-decoration:none;font-size:.75rem">🔗 Get Free Key</a>
-              </div>
-              <div id="gemini-key-msg" class="al" style="display:none;margin-top:.4rem;font-size:.76rem"></div>
-            </div>
-
-            <!-- Divider -->
-            <div class="divider" style="margin:.7rem 0"></div>
-            <div id="gauth-disconnected">
-              <p style="font-size:.7rem;color:var(--muted);margin-bottom:.6rem">— OR connect via Google Account (uses your Gemini quota) —</p>
-              <button class="btn btn-google btn-block" onclick="gAuthStart()" style="font-size:.82rem">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Connect Google Account
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Groq Vision card hidden (stub for gAuthUpdateUI ref) -->
-        <div id="groq-mode-card" style="display:none"></div>
-
-        <!-- Gemini Vision Mode Card (shown when any Gemini auth is ready) -->
-        <div class="calc-card" id="gemini-mode-card" style="display:none">
-          <div class="calc-title">🤖 Gemini Vision — Auto Extract</div>
-          <div id="gemini-active-mode-badge" class="al al-ok" style="font-size:.72rem;margin-bottom:.7rem">✓ Gemini ready</div>
-
-          <div class="ocr-saved-badge" id="gem-saved-badge" style="display:none">
-            <span>✅</span>
-            <span class="sb-text">Price List saved — upload Order Copy only</span>
-            <button class="sb-clear" onclick="gemClearPriceList()">Clear</button>
-          </div>
-
-          <div class="ocr-steps">
-            <div class="ocr-step active" id="gstep1"><div class="ocr-step-dot">1</div><div class="ocr-step-lbl">Upload</div></div>
-            <div class="ocr-step" id="gstep2"><div class="ocr-step-dot">2</div><div class="ocr-step-lbl">Extract</div></div>
-            <div class="ocr-step" id="gstep3"><div class="ocr-step-dot">✓</div><div class="ocr-step-lbl">Review</div></div>
-          </div>
-
-          <!-- File type selector -->
-          <div class="flex-row mb-1" style="gap:.5rem">
-            <label class="fl" style="margin-bottom:0;align-self:center">File type:</label>
-            <select id="gem-file-type" class="fsel" style="flex:1;padding:.4rem .7rem;font-size:.8rem" onchange="gemFileTypeChange()">
-              <option value="image">📷 Image (JPG/PNG)</option>
-              <option value="pdf">📄 PDF Document</option>
-            </select>
-          </div>
-
-          <div class="ocr-upload-grid">
-            <div class="ocr-zone" id="gem-zone-order" ondragover="ocrDragOver(event,'gem-zone-order')" ondragleave="ocrDragLeave('gem-zone-order')" ondrop="gemDrop(event,'order')">
-              <input type="file" id="gem-file-order" accept="image/*" onchange="gemHandleFile(event,'order')">
-              <div class="ocr-zone-icon">📋</div>
-              <div class="ocr-zone-lbl">Handwritten<br>Order Copy</div>
-              <div class="ocr-zone-sub">Tap to upload</div>
-            </div>
-            <div class="ocr-zone" id="gem-zone-pl" ondragover="ocrDragOver(event,'gem-zone-pl')" ondragleave="ocrDragLeave('gem-zone-pl')" ondrop="gemDrop(event,'pricelist')">
-              <input type="file" id="gem-file-pl" accept="image/*" onchange="gemHandleFile(event,'pricelist')">
-              <div class="ocr-zone-icon">💊</div>
-              <div class="ocr-zone-lbl">Company<br>Price List</div>
-              <div class="ocr-zone-sub">Tap to upload</div>
-            </div>
-          </div>
-          <button class="btn btn-p btn-block mt-2" id="gem-process-btn" onclick="gemProcess()" disabled>
-            🤖 Extract with Gemini Vision
-          </button>
-        </div>
-
-        <!-- Spinner (shared) -->
-        <div class="ocr-spin-wrap" id="ocr-spinner">
-          <div class="ocr-spinner"></div>
-          <div style="font-size:.8rem;color:var(--muted)" id="ocr-spin-msg">Analysing with Gemini…</div>
-          <div style="font-size:.7rem;color:rgba(255,255,255,.28);max-width:220px;margin-top:4px">Extracting products &amp; matching prices…</div>
-        </div>
-
-        <!-- Error -->
-        <div class="ocr-err-box" id="ocr-err-box">
-          <p id="ocr-err-msg" style="font-size:.8rem;color:var(--red);margin-bottom:.6rem">Error</p>
-          <button class="btn btn-d btn-sm" onclick="ocrRetry()">↺ Retry</button>
-        </div>
-
-        <!-- Draft Table -->
-        <div class="calc-card ocr-table-wrap" id="ocr-table-wrap">
-          <div class="flex-row mb-1">
-            <div style="font-size:.8rem;font-weight:700;color:var(--accent-a)">📦 Order Draft</div>
-            <span id="ocr-row-count" style="font-size:.66rem;background:rgba(0,198,255,.12);color:var(--accent-a);border-radius:20px;padding:2px 8px;margin-left:.4rem"></span>
-          </div>
-          <div class="ocr-tbl-scroll">
-            <table class="ocr-tbl">
-              <thead><tr><th>#</th><th>Product Name</th><th>Qty</th><th>PTS(₹)</th><th>GST%</th><th>Net Amt(₹)</th><th></th></tr></thead>
-              <tbody id="ocr-tbody"></tbody>
-              <tfoot id="ocr-tfoot"></tfoot>
-            </table>
-          </div>
-          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap">
-            <button class="btn btn-g" style="flex:1;min-width:90px" onclick="ocrAddRow()">+ Row</button>
-            <button class="btn btn-p" style="flex:1;min-width:110px" onclick="ocrConfirmOrder()">🚀 Push to Orders</button>
-            <button class="btn btn-d btn-sm" onclick="ocrReset()">✕</button>
-          </div>
-          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap;display:none" id="ocr-export-row">
-            <button class="btn btn-gold" style="flex:1" onclick="ocrDownloadExcel()">⬇ Download Excel</button>
-            <button class="btn btn-wa" style="flex:1" onclick="ocrShareWhatsApp()">📲 WhatsApp</button>
-          </div>
-        </div>
-
-      </div><!-- /panel-ocr -->
-
       <!-- ── GROQ TAB ── -->
-      <div id="panel-groq" style="display:none">
+      <div id="panel-groq">
 
         <!-- Groq API Key Quick-Enter Card -->
         <div class="calc-card" id="groq-key-card-ocr" style="border-color:rgba(130,80,255,.35);background:rgba(130,80,255,.06)">
           <div class="calc-title" style="color:#a78bfa">⚡ Groq API Key — Direct OCR</div>
-          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.75rem">Enter your Groq key to run OCR without Google login. Uses <b style="color:#a78bfa">llama-4-scout-17b</b> (vision-capable, multi-image). For PDFs, use the Gemini tab instead.</p>
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.75rem">Enter your Groq key to run OCR without Google login. Uses <b style="color:#a78bfa">llama-4-scout-17b</b> (vision-capable, multi-image).</p>
+          <div class="al al-info" style="font-size:.72rem;margin-bottom:.75rem">💡 <b>PDF Tip:</b> For PDF price lists, convert to Excel first using <b>Gemini / ChatGPT</b>, then upload below as CSV/XLSX for 100% accurate matching!</div>
           <div id="groq-ocr-key-status" class="al al-warn" style="font-size:.76rem;margin-bottom:.7rem">⚠ No key loaded yet. Enter below or save from Admin panel.</div>
           <div class="fg mb-1">
             <label class="fl">Groq API Key</label>
@@ -683,6 +561,18 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <!-- Groq OCR Upload Card -->
         <div class="calc-card">
           <div class="calc-title" style="color:#a78bfa">📸 Groq Vision OCR</div>
+
+          <!-- Price List Excel/CSV Upload -->
+          <div class="calc-card" style="background:rgba(0,232,122,.06);border-color:rgba(0,232,122,.25);margin-bottom:.75rem;padding:.75rem">
+            <div style="font-size:.78rem;font-weight:700;color:var(--green);margin-bottom:.4rem">📊 Upload Price List (Excel/CSV — Optional)</div>
+            <div class="ocr-zone" id="groq-pl-zone" style="height:72px" ondragover="ocrDragOver(event,'groq-pl-zone')" ondragleave="ocrDragLeave('groq-pl-zone')" ondrop="groqPlDrop(event)">
+              <input type="file" id="groq-pl-file" accept=".xlsx,.xls,.csv" onchange="groqPlLoad(event)">
+              <div class="ocr-zone-icon" style="font-size:1.2rem">📊</div>
+              <div class="ocr-zone-lbl" style="font-size:.72rem">Price List (.xlsx / .csv)</div>
+              <div class="ocr-zone-sub">Tap to upload</div>
+            </div>
+            <div id="groq-pl-info" class="al al-ok" style="display:none;margin-top:.5rem;font-size:.73rem"></div>
+          </div>
 
           <div class="ocr-saved-badge" id="ocr-saved-badge" style="display:none">
             <span>✅</span>
@@ -705,7 +595,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
             </div>
           </div>
 
-          <!-- Spinner & Error (shared with Gemini tab via same IDs — groq uses its own) -->
+          <!-- Spinner & Error -->
           <div class="ocr-spin-wrap" id="groq-spinner">
             <div class="ocr-spinner"></div>
             <div style="font-size:.8rem;color:var(--muted)">Analysing with Llama Vision…</div>
@@ -721,7 +611,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </button>
         </div>
 
-        <!-- Results table (shared OCR table) -->
+        <!-- Results table -->
         <div class="calc-card ocr-table-wrap" id="groq-table-wrap" style="display:none;animation:fadeUp .35s ease">
           <div class="flex-row mb-1">
             <div style="font-size:.8rem;font-weight:700;color:#a78bfa">📦 Order Draft (Groq)</div>
@@ -729,7 +619,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </div>
           <div class="ocr-tbl-scroll">
             <table class="ocr-tbl">
-              <thead><tr><th>#</th><th>Product Name</th><th>Qty</th><th>PTS(₹)</th><th>GST%</th><th>Net Amt(₹)</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Free</th><th>Unit</th><th>Pack</th><th>PTS/Box(₹)</th><th>PTS/Strip(₹)</th><th>GST%</th><th>Net(₹)</th><th></th></tr></thead>
               <tbody id="groq-tbody"></tbody>
               <tfoot id="groq-tfoot"></tfoot>
             </table>
@@ -740,7 +630,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
             <button class="btn btn-d btn-sm" onclick="groqReset()">✕</button>
           </div>
           <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap" id="groq-export-row" style="display:none">
-            <button class="btn btn-gold" style="flex:1" onclick="groqDownloadExcel()">⬇ Download Excel</button>
+            <button class="btn btn-gold" style="flex:1" onclick="groqDownloadFile()">⬇ Download</button>
             <button class="btn btn-wa" style="flex:1" onclick="groqShareWhatsApp()">📲 WhatsApp</button>
           </div>
         </div>
@@ -814,19 +704,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </button>
         </div>
 
-        <!-- OCR for handwritten data in format -->
-        <div class="calc-card" id="ff-ocr-card" style="display:none">
-          <div class="calc-title">🖊 Add Handwritten Data via Gemini</div>
-          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.75rem">Upload a photo of handwritten data to extract and add to the filled format.</p>
-          <div class="ocr-zone" id="ff-ocr-zone" style="height:90px">
-            <input type="file" id="ff-ocr-file" accept="image/*" onchange="ffOcrHandleFile(event)">
-            <div class="ocr-zone-icon">📸</div>
-            <div class="ocr-zone-lbl">Handwritten Data Image</div>
-            <div class="ocr-zone-sub">Tap to upload</div>
-          </div>
-          <button class="btn btn-p btn-block mt-2" onclick="ffOcrProcess()">🤖 Extract &amp; Merge</button>
-        </div>
-
         <!-- Download result -->
         <div id="ff-result-card" class="calc-card" style="display:none">
           <div class="calc-title">✅ Format Ready</div>
@@ -856,7 +733,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.75rem">
           <div class="calc-field"><label>MRP (₹) → auto PTS</label><input type="number" id="o-mrp" placeholder="Optional" step="0.01" oninput="oAutoCalcPTS()"></div>
           <div class="calc-field"><label>PTS (₹)</label><input type="number" id="o-pts" placeholder="0.00" step="0.01" oninput="oClearMRP()"></div>
-          <div class="calc-field"><label>GST %</label><input type="number" id="o-gst" value="12" min="0" max="28"></div>
+          <div class="calc-field"><label>GST %</label><input type="number" id="o-gst" value="5" min="0" max="28" oninput="oAutoCalcPTS()"></div>
         </div>
         <button class="btn btn-p btn-block" onclick="orderAdd()" style="padding:.75rem">+ Add Item</button>
       </div>
@@ -932,6 +809,135 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     </div>
   </div>
 
+  <!-- ═══ TOUR PLAN / MTP ═══ -->
+  <div id="scr-tour" class="screen">
+    <div class="topbar">
+      <div class="tb-logo"><span style="font-size:1.1rem">🗓️</span><span class="tb-brand">Tour Plan</span></div>
+      <div class="tb-right">
+        <button class="btn btn-g btn-sm" id="tp-download-btn" onclick="tpDownloadExcel()" style="display:none">⬇ Excel</button>
+        <button class="btn btn-wa btn-sm" id="tp-wa-btn" onclick="tpShareWhatsApp()" style="display:none">📲 WA</button>
+      </div>
+    </div>
+    <div class="screen-body">
+
+      <!-- STEP 1: Setup Card -->
+      <div class="calc-card" id="tp-setup-card">
+        <div class="calc-title">🗓️ Monthly Tour Plan (MTP) Generator</div>
+        <p style="font-size:.74rem;color:var(--muted);margin-bottom:.9rem">Upload your area patch Excel → select month → system auto-generates your full tour plan with doctor visits.</p>
+
+        <!-- Upload Patch Excel -->
+        <div class="fg mb-1">
+          <label class="fl">Step 1 — Upload Area Patch Excel</label>
+          <div class="ocr-zone" id="tp-patch-zone" style="height:80px" ondragover="ocrDragOver(event,'tp-patch-zone')" ondragleave="ocrDragLeave('tp-patch-zone')" ondrop="tpPatchDrop(event)">
+            <input type="file" id="tp-patch-file" accept=".xlsx,.xls,.csv" onchange="tpLoadPatch(event)">
+            <div class="ocr-zone-icon" style="font-size:1.4rem">📊</div>
+            <div class="ocr-zone-lbl" style="font-size:.76rem">Patch Master Excel</div>
+            <div class="ocr-zone-sub">Columns: Patch Name, Area, Gap Days, Dr Names</div>
+          </div>
+          <div id="tp-patch-info" class="al al-ok" style="display:none;margin-top:.5rem;font-size:.76rem"></div>
+        </div>
+
+        <!-- Sample Excel download -->
+        <button class="btn btn-g btn-sm" style="margin-bottom:.9rem;font-size:.73rem" onclick="tpDownloadSample()">⬇ Download Sample Patch Excel</button>
+
+        <!-- Month & Year picker -->
+        <div class="frow mb-1">
+          <div class="fg">
+            <label class="fl">Step 2 — Select Month</label>
+            <select class="fsel fi" id="tp-month">
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+              <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Year</label>
+            <select class="fsel fi" id="tp-year">
+              <option value="2025">2025</option><option value="2026">2026</option>
+              <option value="2027">2027</option><option value="2028">2028</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Gap mode -->
+        <div class="fg mb-1">
+          <label class="fl">Default Gap (days between visits)</label>
+          <select class="fsel fi" id="tp-default-gap">
+            <option value="7">7 Days (Weekly)</option>
+            <option value="10" selected>10 Days</option>
+            <option value="15">15 Days (Fortnightly)</option>
+            <option value="30">30 Days (Monthly)</option>
+          </select>
+        </div>
+
+        <!-- Skip Sundays -->
+        <div class="flex-row mb-1" style="gap:.5rem">
+          <input type="checkbox" id="tp-skip-sunday" checked style="width:16px;height:16px;accent-color:var(--accent-a)">
+          <label style="font-size:.8rem;cursor:pointer" for="tp-skip-sunday">Skip Sundays automatically</label>
+        </div>
+
+        <!-- Sunday shift direction -->
+        <div class="fg mb-1">
+          <label class="fl">Sunday Shift Direction</label>
+          <select class="fsel fi" id="tp-sunday-shift">
+            <option value="next">→ Shift to Monday</option>
+            <option value="prev">← Shift to Saturday</option>
+          </select>
+        </div>
+
+        <!-- Meeting Days -->
+        <div class="fg mb-1">
+          <label class="fl">Meeting Days (blocked — highest priority)</label>
+          <input class="fi" type="text" id="tp-meeting-days" placeholder="e.g. 3, 10, 24 (comma-separated dates)">
+          <div style="font-size:.62rem;color:var(--muted);margin-top:3px">These dates are fully blocked. Fill manually in the schedule.</div>
+        </div>
+
+        <!-- Holidays -->
+        <div class="fg mb-1">
+          <label class="fl">Holidays (blocked — second priority)</label>
+          <input class="fi" type="text" id="tp-holidays" placeholder="e.g. 15, 26 (comma-separated dates)">
+          <div style="font-size:.62rem;color:var(--muted);margin-top:3px">Public holidays or leave days. Patches will be shifted around these.</div>
+        </div>
+
+        <button class="btn btn-p btn-block mt-2" id="tp-generate-btn" onclick="tpGenerate()" disabled>
+          🗓️ Generate Tour Plan
+        </button>
+      </div>
+
+      <!-- Patch List Preview -->
+      <div class="calc-card" id="tp-patch-preview" style="display:none">
+        <div class="calc-title">📍 Loaded Patches</div>
+        <div id="tp-patch-list" style="max-height:200px;overflow-y:auto"></div>
+      </div>
+
+      <!-- Generated Calendar -->
+      <div id="tp-calendar-wrap" style="display:none">
+        <div class="calc-card">
+          <div class="flex-row mb-1">
+            <div style="font-size:.8rem;font-weight:700;color:var(--accent-a)" id="tp-cal-title">Tour Plan</div>
+            <div style="display:flex;gap:.4rem;margin-left:auto">
+              <button class="btn btn-g btn-sm" onclick="tpDownloadExcel()">⬇ Excel</button>
+              <button class="btn btn-wa btn-sm" onclick="tpShareWhatsApp()">📲 WA</button>
+            </div>
+          </div>
+          <!-- Summary badges -->
+          <div class="flex-row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.85rem" id="tp-summary-badges"></div>
+          <!-- Calendar grid -->
+          <div id="tp-calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:.65rem"></div>
+          <!-- Day headers -->
+        </div>
+
+        <!-- Daily Detail List -->
+        <div class="calc-card">
+          <div class="calc-title">📋 Day-wise Schedule</div>
+          <div id="tp-day-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ═══ ADMIN ═══ -->
   <div id="scr-admin" class="screen">
     <div class="sub-topbar">
@@ -952,18 +958,38 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div class="gc gcp mb-2" style="border-color:rgba(255,210,0,.25)">
           <div class="sec-title" style="color:var(--gold)">🔗 Google Sheet Setup</div>
           <div style="font-size:.74rem;color:var(--muted);line-height:1.7;margin-bottom:.85rem">
-            <b style="color:var(--text)">Step 1:</b> Open your Google Sheet (ID already set in code).<br>
-            <b style="color:var(--text)">Step 2:</b> Go to <b>Extensions → Apps Script</b> → paste Code.gs (see below).<br>
+            <b style="color:var(--text)">Step 1:</b> Create Google Sheet → name first tab <b>Users</b> → copy the Sheet ID from the URL.<br>
+            <b style="color:var(--text)">Step 2:</b> Go to <b>Extensions → Apps Script</b> → paste Code.gs (download below).<br>
             <b style="color:var(--text)">Step 3:</b> Deploy → <b>New deployment → Web App → Execute as: Me → Anyone access</b>.<br>
-            <b style="color:var(--text)">Step 4:</b> Copy the Web App URL → paste in CFG.SCRIPT_URL in code.
+            <b style="color:var(--text)">Step 4:</b> Paste Sheet ID and Script URL in the fields below → Save.
           </div>
-          <button class="btn btn-gold btn-sm" onclick="downloadCodeGS()">⬇ Download Code.gs</button>
+          <div class="fg mb-1"><label class="fl">Google Sheet ID</label>
+            <div class="flex-row" style="gap:.5rem">
+              <input class="fi flex-1" type="text" id="cfg-sheet-id" placeholder="1Q0l01LZg6l…" style="font-family:var(--mono);font-size:.8rem">
+              <button class="btn btn-p btn-sm" onclick="saveCfgField('sheet')">Save</button>
+            </div>
+            <div id="cfg-sheet-msg" class="al" style="display:none;margin-top:.4rem;font-size:.75rem"></div>
+          </div>
+          <div class="fg mb-1"><label class="fl">Apps Script URL (/exec)</label>
+            <div class="flex-row" style="gap:.5rem">
+              <input class="fi flex-1" type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/…/exec" style="font-family:var(--mono);font-size:.75rem">
+              <button class="btn btn-p btn-sm" onclick="saveCfgField('script')">Save</button>
+            </div>
+            <div id="cfg-script-msg" class="al" style="display:none;margin-top:.4rem;font-size:.75rem"></div>
+          </div>
+          <div class="fg mb-1"><label class="fl">Change Master Key</label>
+            <div class="flex-row" style="gap:.5rem">
+              <input class="fi flex-1" type="password" id="cfg-new-master" placeholder="New master key (min 8 chars)" autocomplete="new-password">
+              <button class="btn btn-p btn-sm" onclick="saveMasterKey()">Save</button>
+            </div>
+            <div id="cfg-master-msg" class="al" style="display:none;margin-top:.4rem;font-size:.75rem"></div>
+          </div>
+          <button class="btn btn-gold btn-sm mt-1" onclick="downloadCodeGS()">⬇ Download Code.gs</button>
         </div>
         <div class="sec-title" style="color:var(--gold)">🔑 Groq API Key (Fallback OCR)</div>
         <div class="gc gcp mb-2">
           <div id="groq-status" class="al al-info mb-1" style="font-size:.78rem">Checking…</div>
-          <div class="fg"><label class="fl">Groq API Key (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
-)</label>
+          <div class="fg"><label class="fl">Groq API Key</label>
             <input class="fi" type="password" id="groq-key-inp" placeholder="gsk_xxxxxxxxxxxxxxxx"></div>
           <div class="flex-row" style="flex-wrap:wrap;gap:.5rem">
             <button class="btn btn-p btn-sm" onclick="saveGroqKey()">Save Key</button>
@@ -996,7 +1022,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   <nav class="bottom-nav">
     <button class="nb on" id="nb-dashboard" onclick="nav('dashboard')">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      <span>Calculators</span>
+      <span>Calc</span>
     </button>
     <button class="nb" id="nb-orders" onclick="nav('orders')">
       <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
@@ -1005,6 +1031,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <button class="nb" id="nb-ocr" onclick="nav('ocr')">
       <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
       <span>OCR</span>
+    </button>
+    <button class="nb" id="nb-tour" onclick="nav('tour')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="14" x2="12" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="14" x2="16" y2="14" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Tour Plan</span>
     </button>
     <button class="nb" id="nb-settings" onclick="nav('settings')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -1020,66 +1050,66 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
    CONFIG
 ══════════════════════════════════ */
 const CFG={
-  SHEET_ID:'1Q0l01LZg6lcoU-HvcnNX6bEKiZDJO1NwX-LI5QjDScc',
+  SHEET_ID:'',
   // ⬇ Paste your Google Apps Script Web App URL here after deploying Code.gs
-  SCRIPT_URL:'https://script.google.com/macros/s/AKfycbzXVLfX-06JIKCIyWQgk_6n8RN2_c3mruCYbLSXfhdu80BhCNUHsrDkjkIkFbdvyJZm/exec',
-  MASTER_KEY:'PHARMA_ADMIN_2024',
+  SCRIPT_URL:'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL',
+  MASTER_KEY:'',
   IDB_NAME:'PharmaSalesProDB',IDB_VER:2,SESS_KEY:'psp_session',
   // Change 2: Google OAuth — your registered Client ID
-  GOOGLE_CLIENT_ID:'155551737382-9bdvgsreqntt38vcjm3ib2it3j1eoja9.apps.googleusercontent.com',
+  GOOGLE_CLIENT_ID:'',
   GEMINI_MODEL:'gemini-2.0-flash',
   // Groq vision model — llama-4-scout supports multi-image vision
   GROQ_MODEL:'meta-llama/llama-4-scout-17b-16e-instruct',
 };
 
-/* ══════════════════════════════════
-   CODE.gs — Apps Script (paste in script.google.com, deploy as Web App)
-   Sheet columns: userId | name | mobile | company | designation | city | place | pin | status | createdAt
-   
-   function doGet(e){
-     const ss=SpreadsheetApp.openById('SHEET_ID');
-     const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
-     const p=e.parameter,action=p.action;
-     if(action==='findUser'){
-       const rows=ws.getDataRange().getValues();
-       const h=rows[0];const mi=h.indexOf('mobile');const pi=h.indexOf('pin');
-       for(let i=1;i<rows.length;i++){if(String(rows[i][mi])===p.mobile){
-         const obj={};h.forEach((k,j)=>obj[k]=rows[i][j]);
-         return ContentService.createTextOutput(JSON.stringify({user:obj})).setMimeType(ContentService.MimeType.JSON);
-       }}
-       return ContentService.createTextOutput(JSON.stringify({user:null})).setMimeType(ContentService.MimeType.JSON);
-     }
-     if(action==='getAllUsers'){
-       const rows=ws.getDataRange().getValues();const h=rows[0];
-       const users=rows.slice(1).map(r=>{const o={};h.forEach((k,j)=>o[k]=r[j]);return o});
-       return ContentService.createTextOutput(JSON.stringify({users})).setMimeType(ContentService.MimeType.JSON);
-     }
-     return ContentService.createTextOutput(JSON.stringify({error:'unknown action'})).setMimeType(ContentService.MimeType.JSON);
-   }
-   
-   function doPost(e){
-     const ss=SpreadsheetApp.openById('SHEET_ID');
-     const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
-     const body=JSON.parse(e.postData.contents);
-     const action=body.action;
-     if(action==='appendUser'){
-       const d=body.data;
-       // Header row auto-create if empty
-       if(ws.getLastRow()===0){
-         ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
-       }
-       ws.appendRow([d.userId,d.name,d.mobile,d.company,d.designation,d.city||'',d.place||'',d.pin,d.status||'Free',d.createdAt]);
-       return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
-     }
-     if(action==='updateStatus'){
-       const rows=ws.getDataRange().getValues();const h=rows[0];
-       const ui=h.indexOf('userId');const si=h.indexOf('status');
-       for(let i=1;i<rows.length;i++){if(rows[i][ui]===body.userId){ws.getRange(i+1,si+1).setValue(body.status);break}}
-       return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
-     }
-     return ContentService.createTextOutput(JSON.stringify({error:'unknown'})).setMimeType(ContentService.MimeType.JSON);
-   }
-══════════════════════════════════ */
+// ══════════════════════════════════
+// CODE.gs — Apps Script (paste in script.google.com, deploy as Web App)
+// Sheet columns: userId | name | mobile | company | designation | city | place | pin | status | createdAt
+//
+// function doGet(e){
+//   const ss=SpreadsheetApp.openById('SHEET_ID');
+//   const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
+//   const p=e.parameter,action=p.action;
+//   if(action==='findUser'){
+//     const rows=ws.getDataRange().getValues();
+//     const h=rows[0];const mi=h.indexOf('mobile');const pi=h.indexOf('pin');
+//     for(let i=1;i<rows.length;i++){if(String(rows[i][mi])===p.mobile){
+//       const obj={};h.forEach((k,j)=>obj[k]=rows[i][j]);
+//       return ContentService.createTextOutput(JSON.stringify({user:obj})).setMimeType(ContentService.MimeType.JSON);
+//     }}
+//     return ContentService.createTextOutput(JSON.stringify({user:null})).setMimeType(ContentService.MimeType.JSON);
+//   }
+//   if(action==='getAllUsers'){
+//     const rows=ws.getDataRange().getValues();const h=rows[0];
+//     const users=rows.slice(1).map(r=>{const o={};h.forEach((k,j)=>o[k]=r[j]);return o});
+//     return ContentService.createTextOutput(JSON.stringify({users})).setMimeType(ContentService.MimeType.JSON);
+//   }
+//   return ContentService.createTextOutput(JSON.stringify({error:'unknown action'})).setMimeType(ContentService.MimeType.JSON);
+// }
+//
+// function doPost(e){
+//   const ss=SpreadsheetApp.openById('SHEET_ID');
+//   const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
+//   const body=JSON.parse(e.postData.contents);
+//   const action=body.action;
+//   if(action==='appendUser'){
+//     const d=body.data;
+//     // Header row auto-create if empty
+//     if(ws.getLastRow()===0){
+//       ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
+//     }
+//     ws.appendRow([d.userId,d.name,d.mobile,d.company,d.designation,d.city||'',d.place||'',d.pin,d.status||'Free',d.createdAt]);
+//     return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+//   }
+//   if(action==='updateStatus'){
+//     const rows=ws.getDataRange().getValues();const h=rows[0];
+//     const ui=h.indexOf('userId');const si=h.indexOf('status');
+//     for(let i=1;i<rows.length;i++){if(rows[i][ui]===body.userId){ws.getRange(i+1,si+1).setValue(body.status);break}}
+//     return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+//   }
+//   return ContentService.createTextOutput(JSON.stringify({error:'unknown'})).setMimeType(ContentService.MimeType.JSON);
+// }
+// ══════════════════════════════════
 
 window.PSP={user:null,settings:{retailerMargin:20,stockistMargin:10,defaultGST:5},priceList:[]};
 
@@ -1132,8 +1162,9 @@ const SheetAPI={
 
 /* ══ PHARMAMATH ══ */
 const PM={
-  PTR:(mrp,ret)=>mrp/(1+ret/100),
-  PTS:(mrp,ret,stk)=>(mrp/(1+ret/100))/(1+stk/100),
+  // MRP is inclusive of GST. Derive excl-GST MRP first, then compute PTR and PTS.
+  PTR:(mrp,ret,gst)=>{const mrpEx=mrp/(1+(gst||0)/100);return mrpEx/(1+ret/100)},
+  PTS:(mrp,ret,stk,gst)=>{const mrpEx=mrp/(1+(gst||0)/100);const ptr=mrpEx/(1+ret/100);return ptr/(1+stk/100)},
   netRate:(ptr,cd,sq,fq)=>fq+sq>0?(ptr*(1-cd/100))*(sq/(sq+fq)):ptr*(1-cd/100),
   ach:(act,tgt)=>(act/tgt*100).toFixed(2),
   growth:(cur,ly)=>((cur-ly)/ly*100).toFixed(2),
@@ -1142,277 +1173,37 @@ const PM={
 /* ══════════════════════════════════
    GEMINI DIRECT API KEY (no OAuth needed)
 ══════════════════════════════════ */
+/* ══ GEMINI STUBS (removed in v12 — Groq is primary OCR) ══ */
 let GeminiDirect={key:null};
-
-async function geminiKeyLoadOnBoot(){
-  const k=await IDB.loadSetting('geminiApiKey');
-  if(k&&k.length>10){GeminiDirect.key=k;document.getElementById('gemini-direct-key-inp').value=k;geminiKeyUpdateStatus(true)}
-  else geminiKeyUpdateStatus(false);
-}
-function geminiKeyCheck(){
-  const v=(document.getElementById('gemini-direct-key-inp').value||'').trim();
-  const s=document.getElementById('gemini-key-status');
-  if(v.startsWith('AIza')&&v.length>20){s.className='al al-ok';s.textContent='✓ Key looks valid — tap Save Key to activate.'}
-  else if(v.length>0){s.className='al al-err';s.textContent='⚠ Gemini API keys start with AIza…'}
-  else{s.className='al al-info';s.textContent='ℹ Enter Gemini API key or connect Google Account below.'}
-}
-function geminiKeyToggle(){const i=document.getElementById('gemini-direct-key-inp');i.type=i.type==='password'?'text':'password'}
-async function geminiKeySave(){
-  const k=(document.getElementById('gemini-direct-key-inp').value||'').trim();
-  const msg=document.getElementById('gemini-key-msg');
-  if(!k.startsWith('AIza')||k.length<20){msg.className='al al-err';msg.style.display='block';msg.textContent='⚠ Key must start with AIza and be valid length.';return}
-  await IDB.saveSetting('geminiApiKey',k);
-  GeminiDirect.key=k;
-  msg.className='al al-ok';msg.style.display='block';msg.textContent='✓ Gemini API Key saved! Gemini OCR is now ready.';
-  geminiKeyUpdateStatus(true);
-  setTimeout(()=>msg.style.display='none',3000);
-}
-function geminiKeyUpdateStatus(hasKey){
-  const s=document.getElementById('gemini-key-status');
-  if(GAuth.token){// Google OAuth connected — takes priority
-    s.className='al al-ok';s.textContent='✓ Google Account connected — using OAuth token for Gemini.';
-    document.getElementById('gemini-mode-card').style.display='block';
-    const badge=document.getElementById('gemini-active-mode-badge');
-    if(badge){badge.className='al al-ok';badge.textContent='✓ Gemini ready via Google Account (OAuth)'}
-  } else if(hasKey&&GeminiDirect.key){
-    s.className='al al-ok';s.textContent='✓ Gemini API Key active — ready for image & PDF OCR.';
-    document.getElementById('gemini-mode-card').style.display='block';
-    const badge=document.getElementById('gemini-active-mode-badge');
-    if(badge){badge.className='al al-ok';badge.textContent='✓ Gemini ready via Direct API Key (AIza…)'}
-  } else {
-    s.className='al al-info';s.textContent='ℹ Enter a Gemini API Key above, or connect Google Account below.';
-    document.getElementById('gemini-mode-card').style.display='none';
-  }
-}
-
-/* ══ FILE TYPE TOGGLE (image / PDF) ══ */
-function gemFileTypeChange(){
-  const t=document.getElementById('gem-file-type').value;
-  const accept=t==='pdf'?'.pdf':'image/*';
-  document.getElementById('gem-file-order').accept=accept;
-  document.getElementById('gem-file-pl').accept=accept;
-  // Reset zones
-  ['gem-zone-order','gem-zone-pl'].forEach(id=>{
-    const z=document.getElementById(id);
-    z.classList.remove('has-file');
-    z.innerHTML=`<div class="ocr-zone-icon">${id.includes('order')?'📋':'💊'}</div><div class="ocr-zone-lbl">${id.includes('order')?'Handwritten<br>Order Copy':'Company<br>Price List'}</div><div class="ocr-zone-sub">Tap to upload</div>`;
-  });
-  GEM.orderB64=null;GEM.plB64=null;GEM.orderMime=null;GEM.plMime=null;
-  gemUpdateBtn();
-  showToast(t==='pdf'?'PDF mode — upload PDF files':'Image mode — upload JPG/PNG','ok');
-}
-
-/* ══════════════════════════════════
-   CHANGE 2: GOOGLE OAUTH + GEMINI
-══════════════════════════════════ */
 let GAuth={token:null,email:null,_client:null};
-
-function gAuthStart(){
-  if(!document.getElementById('gis-script')){
-    const s=document.createElement('script');s.id='gis-script';s.src='https://accounts.google.com/gsi/client';
-    s.onload=()=>_gAuthInitAndLogin();
-    s.onerror=()=>showToast('Failed to load Google script. Check internet.','err');
-    document.head.appendChild(s);
-  } else {
-    _gAuthInitAndLogin();
-  }
-}
-
-function _gAuthInitAndLogin(){
-  try{
-    const client=google.accounts.oauth2.initTokenClient({
-      client_id:CFG.GOOGLE_CLIENT_ID,
-      scope:'https://www.googleapis.com/auth/generative-language.retriever openid email profile',
-      callback:(resp)=>{
-        if(resp.error){
-          let msg='Google auth failed: '+resp.error;
-          if(resp.error==='access_denied')msg='Access denied. Check that your Google Client ID has this domain authorised in Google Cloud Console → OAuth consent screen → Authorised domains.';
-          if(resp.error==='popup_closed_by_user')msg='Popup closed. Please try again.';
-          if(resp.error==='popup_blocked_by_browser')msg='Popup blocked by browser. Allow popups for this page.';
-          showToast(msg,'err');
-          document.getElementById('ocr-err-box').classList.add('active');
-          document.getElementById('ocr-err-msg').innerHTML=`<b>Google OAuth Error: ${resp.error}</b><br><span style="font-size:.72rem">Fix: Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#00c6ff">Google Cloud Console</a> → Your OAuth Client → Authorised JavaScript Origins → add this file's origin (or use a Direct Gemini API Key instead).</span>`;
-          return;
-        }
-        GAuth.token=resp.access_token;
-        const expMs=Date.now()+(resp.expires_in||3600)*1000;
-        IDB.saveSetting('gauth_token_exp',String(expMs));
-        fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+resp.access_token}})
-          .then(r=>r.json()).then(info=>{
-            GAuth.email=info.email||'Google User';
-            IDB.saveSetting('gauth_token',resp.access_token);
-            IDB.saveSetting('gauth_email',GAuth.email);
-            gAuthUpdateUI(true);
-            showToast('Google connected ✓ Gemini ready!','ok');
-          }).catch(()=>{GAuth.email='Google User';gAuthUpdateUI(true)});
-      }
-    });
-    GAuth._client=client;
-    client.requestAccessToken();
-  }catch(e){
-    showToast('Google OAuth init failed: '+e.message,'err');
-  }
-}
-
-function gAuthRevoke(){
-  if(GAuth.token)try{google.accounts.oauth2.revoke(GAuth.token,()=>{})}catch(e){}
-  GAuth.token=null;GAuth.email=null;
-  IDB.saveSetting('gauth_token','');IDB.saveSetting('gauth_email','');
-  gAuthUpdateUI(false);
-  showToast('Google disconnected','ok');
-}
-
-function gAuthUpdateUI(connected){
-  const disc=document.getElementById('gauth-disconnected');
-  const conn=document.getElementById('gauth-connected');
-  const card=document.getElementById('gauth-card');
-  if(connected){
-    if(disc)disc.style.display='none';
-    if(conn)conn.style.display='block';
-    card.classList.add('gauth-connected');
-    document.getElementById('gauth-email').textContent=GAuth.email||'Connected';
-    document.getElementById('gauth-initial').textContent=(GAuth.email||'G').charAt(0).toUpperCase();
-    // Hide direct key input section when OAuth is active (cleaner UI)
-    const directSection=document.getElementById('gemini-key-input-wrap');
-    if(directSection)directSection.style.display='none';
-  } else {
-    if(disc)disc.style.display='block';
-    if(conn)conn.style.display='none';
-    card.classList.remove('gauth-connected');
-    const directSection=document.getElementById('gemini-key-input-wrap');
-    if(directSection)directSection.style.display='block';
-  }
-  // Update Gemini mode card visibility based on any auth available
-  geminiKeyUpdateStatus(!!GeminiDirect.key);
-}
-
-/* ══ GEMINI OCR MODULE ══ */
 const GEM={orderB64:null,plB64:null,savedPL:null,rows:[],orderMime:'image/jpeg',plMime:'image/jpeg'};
-
-async function gemHandleFile(e,type){const f=e.target.files[0];if(f)gemProcessFile(f,type)}
-
-function gemDrop(e,type){
-  e.preventDefault();
-  const id=type==='order'?'gem-zone-order':'gem-zone-pl';
-  document.getElementById(id).classList.remove('drag-over');
-  const f=e.dataTransfer.files[0];
-  if(f&&(f.type.startsWith('image/')||f.type==='application/pdf'))gemProcessFile(f,type);
-}
-
-function gemProcessFile(file,type){
-  const id=type==='order'?'gem-zone-order':'gem-zone-pl';
-  const zone=document.getElementById(id);
-  const isPDF=file.type==='application/pdf';
-  const mime=file.type||'image/jpeg';
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const du=e.target.result;const b64=du.split(',')[1];
-    if(type==='order'){GEM.orderB64=b64;GEM.orderMime=mime}
-    else{GEM.plB64=b64;GEM.plMime=mime}
-    zone.classList.add('has-file');
-    const icon=isPDF?'📄':'🖼️';
-    zone.innerHTML=`<div class="ocr-preview-ov" style="position:relative;inset:auto;background:transparent;flex-direction:column;gap:6px;padding:.8rem"><div style="font-size:2rem">${icon}</div><div style="font-size:.68rem;color:var(--green);font-weight:700">✓ ${file.name.length>14?file.name.substr(0,12)+'…':file.name}</div><div style="font-size:.6rem;color:var(--muted)">${isPDF?'PDF':'Image'} · ${(file.size/1024).toFixed(0)}KB</div></div>`;
-    gemUpdateBtn();
-  };
-  reader.readAsDataURL(file);
-}
-
-function gemUpdateBtn(){
-  const hasO=!!GEM.orderB64;const hasPL=!!(GEM.plB64||GEM.savedPL);
-  const btn=document.getElementById('gem-process-btn');
-  if(btn)btn.disabled=!(hasO&&hasPL);
-}
-
-function gemSetStep(n){[1,2,3].forEach(i=>{const el=document.getElementById('gstep'+i);if(!el)return;el.classList.remove('active','done');if(i<n)el.classList.add('done');if(i===n)el.classList.add('active')})}
-
-async function gemProcess(){
-  if(!GEM.orderB64){showToast('Upload order copy first.','err');return}
-  const pl=GEM.plB64||GEM.savedPL;
-  if(!pl){showToast('Upload price list.','err');return}
-
-  // Determine auth: OAuth token takes priority, then direct API key
-  const authToken=GAuth.token;
-  const directKey=GeminiDirect.key||(await IDB.loadSetting('geminiApiKey'));
-  if(!authToken&&!directKey){
-    ocrShowErr('No Gemini auth. Enter a Gemini API Key above or connect Google Account.');
-    return;
-  }
-
-  gemSetStep(2);
-  const spinner=document.getElementById('ocr-spinner');
-  spinner.classList.add('active');
-  document.getElementById('ocr-spin-msg').textContent='Analysing with Gemini Vision…';
-  document.getElementById('ocr-err-box').classList.remove('active');
-  document.getElementById('ocr-table-wrap').classList.remove('active');
-  document.getElementById('gem-process-btn').disabled=true;
-
-  const PROMPT=`You are a pharmaceutical sales assistant. Extract Product Name and Quantity from the handwritten order copy (document/image 1). Match each product with its PTS (Price to Stockist), GST% and MRP from the price list (document/image 2). Return ONLY a valid JSON array — no markdown, no explanation. Format: [{"productName":"","quantity":0,"pts":0,"gst":0,"mrp":0}]. Use 0 for missing values.`;
-
-  // Build parts — supports image and PDF inline_data
-  const orderMime=GEM.orderMime||'image/jpeg';
-  const plMime=GEM.plMime||'image/jpeg';
-  const savedPlMime=GEM.savedPLMime||'image/jpeg';
-
-  const body={
-    contents:[{parts:[
-      {inline_data:{mime_type:orderMime,data:GEM.orderB64}},
-      {inline_data:{mime_type:plMime,data:pl}},
-      {text:PROMPT}
-    ]}]
-  };
-
-  // Build URL — API key vs OAuth
-  let url,headers;
-  if(authToken){
-    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent`;
-    headers={'Content-Type':'application/json','Authorization':'Bearer '+authToken};
-  } else {
-    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent?key=${directKey}`;
-    headers={'Content-Type':'application/json'};
-  }
-
-  try{
-    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
-    if(!r.ok){
-      const er=await r.json().catch(()=>({}));
-      const msg=er?.error?.message||'HTTP '+r.status;
-      // Surface API key errors helpfully
-      if(msg.includes('API_KEY_INVALID')||msg.includes('API key not valid'))
-        throw new Error('Invalid Gemini API Key. Check your key at aistudio.google.com');
-      if(msg.includes('PERMISSION_DENIED'))
-        throw new Error('Permission denied. If using OAuth: your Google Client ID may not be authorised for this domain. Try Direct API Key mode instead.');
-      throw new Error(msg);
-    }
-    const data=await r.json();
-    const raw=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    let parsed=ocrParseJSON(raw);
-    if(!Array.isArray(parsed)||!parsed.length)throw new Error('AI returned no products. Try a clearer image or better lighting.');
-    // Save price list
-    if(GEM.plB64&&!GEM.savedPL){
-      const uid=PSP.user?.userId;if(uid)await IDB.savePL(uid,GEM.plB64);
-      GEM.savedPL=GEM.plB64;GEM.savedPLMime=plMime;
-      document.getElementById('gem-saved-badge').style.display='flex';
-      showToast('Price list saved ✓','ok');
-    }
-    OCR.rows=parsed;ocrRenderTable();gemSetStep(3);
-    document.getElementById('ocr-export-row').style.display='flex';
-    showToast('✓ Gemini OCR complete! Review the draft.','ok');
-  }catch(err){
-    ocrShowErr('Extraction failed: '+err.message);gemSetStep(1);
-    document.getElementById('gem-process-btn').disabled=false;
-  }finally{spinner.classList.remove('active')}
-}
-
-function gemClearPriceList(){
-  GEM.savedPL=null;GEM.plB64=null;GEM.savedPLMime=null;
-  document.getElementById('gem-saved-badge').style.display='none';
-  gemUpdateBtn();showToast('Price list cleared.','ok');
-}
+function geminiKeyLoadOnBoot(){}
+function geminiKeyCheck(){}
+function geminiKeyToggle(){}
+function geminiKeySave(){}
+function geminiKeyUpdateStatus(){}
+function gemFileTypeChange(){}
+function gAuthStart(){showToast('Gemini / Google Auth removed in v12. Use ⚡ Groq tab.','err')}
+function gAuthRevoke(){}
+function gAuthUpdateUI(){}
+function gemHandleFile(){}
+function gemDrop(){}
+function gemProcessFile(){}
+function gemUpdateBtn(){}
+function gemSetStep(){}
+async function gemProcess(){showToast('Gemini removed. Use ⚡ Groq tab.','err')}
+function gemClearPriceList(){}
+function xlPlLoad(){}
+function xlPlDrop(){}
+function ffOcrHandleFile(){}
+async function ffOcrProcess(){showToast('Gemini OCR removed. Use ⚡ Groq tab.','err')}
 
 /* ══ OCR SCREEN SUB-TABS ══ */
 function ocrSubTab(tab){
-  ['ocr','groq','drmaster','filler'].forEach(t=>{
-    document.getElementById('panel-'+t).style.display=t===tab?'block':'none';
+  if(tab==='ocr')tab='groq'; // Gemini tab removed — redirect to Groq
+  ['groq','drmaster','filler'].forEach(t=>{
+    const panel=document.getElementById('panel-'+t);
+    if(panel)panel.style.display=t===tab?'block':'none';
     const btn=document.getElementById('subtab-'+t);
     if(btn)btn.classList.toggle('on',t===tab);
   });
@@ -1531,26 +1322,9 @@ async function initApp(user){
   document.getElementById('set-ret').value=PSP.settings.retailerMargin;
   document.getElementById('set-stk').value=PSP.settings.stockistMargin;
   // Load saved price list
-  if(user.userId){const pl=await IDB.loadPL(user.userId);if(pl){OCR.savedPL=pl;GEM.savedPL=pl}}
+  if(user.userId){const pl=await IDB.loadPL(user.userId);if(pl){OCR.savedPL=pl;}}
   // Load Dr Master
   const drRows=await IDB.loadDrMaster();if(drRows){DR.rows=drRows;drRenderList()}
-  // Restore Google auth token — check expiry
-  const tok=await IDB.loadSetting('gauth_token');
-  const em=await IDB.loadSetting('gauth_email');
-  const tokExp=await IDB.loadSetting('gauth_token_exp');
-  if(tok&&tok.length>10){
-    const now=Date.now();const exp=parseInt(tokExp||0);
-    if(exp>now+60000){// still valid for >1 min
-      GAuth.token=tok;GAuth.email=em;gAuthUpdateUI(true);
-    } else {
-      // Token expired — clear and prompt re-connect
-      GAuth.token=null;GAuth.email=null;
-      await IDB.saveSetting('gauth_token','');
-      gAuthUpdateUI(false);
-    }
-  } else {gAuthUpdateUI(false)}
-  // Load Gemini direct API key
-  await geminiKeyLoadOnBoot();
   nav('dashboard');
 }
 
@@ -1562,9 +1336,17 @@ function doLogout(){
 }
 
 /* ══ NAVIGATION ══ */
-const SCREENS=['dashboard','ocr','orders','settings','admin'];
-const NAVBTNS=['dashboard','orders','ocr','settings'];
+const SCREENS=['dashboard','ocr','orders','settings','admin','tour'];
+const NAVBTNS=['dashboard','orders','ocr','tour','settings'];
 function nav(s){
+  if(s==='tour'){
+    // Set default month/year to current
+    const now=new Date();
+    const mSel=document.getElementById('tp-month');
+    const ySel=document.getElementById('tp-year');
+    if(mSel&&!mSel.dataset.set){mSel.value=now.getMonth()+1;mSel.dataset.set='1'}
+    if(ySel&&!ySel.dataset.set){ySel.value=now.getFullYear();ySel.dataset.set='1'}
+  }
   SCREENS.forEach(sc=>{const el=document.getElementById('scr-'+sc);if(el)el.classList.toggle('active',sc===s)});
   NAVBTNS.forEach(n=>{const b=document.getElementById('nb-'+n);if(b)b.classList.toggle('on',n===s)});
   document.getElementById('main-topbar').style.display=s==='dashboard'?'flex':'none';
@@ -1584,21 +1366,76 @@ async function saveMargins(){
 }
 async function clearPL(){
   if(!PSP.user)return;
-  await IDB.deletePL(PSP.user.userId);OCR.savedPL=null;GEM.savedPL=null;
+  await IDB.deletePL(PSP.user.userId);OCR.savedPL=null;
   showToast('Price list cleared.','ok');
 }
 
 /* ══ ADMIN ══ */
-function adminUnlock(){
-  const k=document.getElementById('admin-key').value;
-  if(k===CFG.MASTER_KEY){document.getElementById('admin-gate').style.display='none';document.getElementById('admin-content').style.display='block';checkGroqStatus()}
-  else showErr('admin-key-err','Invalid master key.');
+async function adminUnlock(){
+  const k=document.getElementById('admin-key').value.trim();
+  if(!k){showErr('admin-key-err','Enter master key.');return}
+  // Load stored master key from IndexedDB; fall back to CFG.MASTER_KEY (empty in repo)
+  const storedKey=await IDB.loadSetting('masterKey');
+  const validKey=storedKey||CFG.MASTER_KEY;
+  if(!validKey){
+    // First time — no master key set yet. Treat any non-empty input as setup mode.
+    await IDB.saveSetting('masterKey',k);
+    document.getElementById('admin-gate').style.display='none';
+    document.getElementById('admin-content').style.display='block';
+    adminLoadCfgFields();checkGroqStatus();
+    showToast('Master key set for first time ✓','ok');
+    return;
+  }
+  if(k===validKey){
+    document.getElementById('admin-gate').style.display='none';
+    document.getElementById('admin-content').style.display='block';
+    adminLoadCfgFields();checkGroqStatus();
+  } else {
+    showErr('admin-key-err','Invalid master key.');
+  }
+}
+async function adminLoadCfgFields(){
+  const sheetId=await IDB.loadSetting('sheetId');
+  const scriptUrl=await IDB.loadSetting('scriptUrl');
+  const si=document.getElementById('cfg-sheet-id');
+  const su=document.getElementById('cfg-script-url');
+  if(si&&sheetId)si.value=sheetId;
+  if(su&&scriptUrl)su.value=scriptUrl;
+  // Apply to live CFG
+  if(sheetId)CFG.SHEET_ID=sheetId;
+  if(scriptUrl)CFG.SCRIPT_URL=scriptUrl;
+}
+async function saveCfgField(type){
+  if(type==='sheet'){
+    const v=document.getElementById('cfg-sheet-id').value.trim();
+    const m=document.getElementById('cfg-sheet-msg');
+    if(!v){m.className='al al-err';m.style.display='block';m.textContent='⚠ Enter a Sheet ID.';return}
+    await IDB.saveSetting('sheetId',v);CFG.SHEET_ID=v;
+    m.className='al al-ok';m.style.display='block';m.textContent='✓ Sheet ID saved.';
+    setTimeout(()=>m.style.display='none',2500);
+  } else {
+    const v=document.getElementById('cfg-script-url').value.trim();
+    const m=document.getElementById('cfg-script-msg');
+    if(!v||!v.includes('script.google.com')){m.className='al al-err';m.style.display='block';m.textContent='⚠ Enter a valid Apps Script URL.';return}
+    await IDB.saveSetting('scriptUrl',v);CFG.SCRIPT_URL=v;
+    m.className='al al-ok';m.style.display='block';m.textContent='✓ Script URL saved.';
+    setTimeout(()=>m.style.display='none',2500);
+  }
+}
+async function saveMasterKey(){
+  const v=document.getElementById('cfg-new-master').value.trim();
+  const m=document.getElementById('cfg-master-msg');
+  if(!v||v.length<8){m.className='al al-err';m.style.display='block';m.textContent='⚠ Min 8 characters.';return}
+  await IDB.saveSetting('masterKey',v);
+  m.className='al al-ok';m.style.display='block';m.textContent='✓ Master key updated. Use new key next login.';
+  document.getElementById('cfg-new-master').value='';
+  setTimeout(()=>m.style.display='none',3000);
 }
 async function checkGroqStatus(){
   const k=await IDB.loadSetting('groqApiKey');
   const s=document.getElementById('groq-status');if(!s)return;
-  if(k&&k.length>10){s.className='al al-ok';s.textContent='✓ Groq key saved. Fallback OCR active.';document.getElementById('groq-key-inp').value=k}
-  else{s.className='al al-warn';s.textContent='⚠ No Groq key. Gemini Vision via Google Account is primary.'}
+  if(k&&k.length>10){s.className='al al-ok';s.textContent='✓ Groq key saved. OCR active.';document.getElementById('groq-key-inp').value=k}
+  else{s.className='al al-warn';s.textContent='⚠ No Groq key saved. Enter key in the ⚡ Groq tab.'}
 }
 async function saveGroqKey(){
   const k=document.getElementById('groq-key-inp').value.trim();
@@ -1642,7 +1479,7 @@ function calcLive(){
   const fq=parseFloat(document.getElementById('m-fq').value)||0;
   const gst=parseFloat(document.getElementById('m-gst').value)||0;
   if(!mrp){['rv-ptr','rv-pts','rv-nr','rv-gst','rv-scheme','rv-eff','rv-cmargin'].forEach(id=>rv(id,'—'));return}
-  const ptr=PM.PTR(mrp,ret);const pts=PM.PTS(mrp,ret,stk);const nr=PM.netRate(ptr,cd,sq,fq);
+  const ptr=PM.PTR(mrp,ret,gst);const pts=PM.PTS(mrp,ret,stk,gst);const nr=PM.netRate(ptr,cd,sq,fq);
   const ga=pts*gst/100;const sv=pts*fq;const ef=pts+ga;const chemistMargin=mrp>0?((mrp-nr)/mrp*100):0;
   rv('rv-ptr','₹'+ptr.toFixed(2));rv('rv-pts','₹'+pts.toFixed(2));rv('rv-nr','₹'+nr.toFixed(2));
   rv('rv-gst','₹'+ga.toFixed(2));rv('rv-scheme','₹'+sv.toFixed(2));rv('rv-eff','₹'+ef.toFixed(2));
@@ -1665,7 +1502,7 @@ function accToggle(id){
 }
 
 /* ══ NET RATE CALC ══ */
-function nrAuto(){const mrp=parseFloat(document.getElementById('nr-mrp').value)||0;if(mrp>0){const ret=PSP.settings.retailerMargin||20;document.getElementById('nr-ptr').value=PM.PTR(mrp,ret).toFixed(2)}nrCalc()}
+function nrAuto(){const mrp=parseFloat(document.getElementById('nr-mrp').value)||0;if(mrp>0){const ret=PSP.settings.retailerMargin||20;const gst=parseFloat(document.getElementById('nr-gst').value)||5;document.getElementById('nr-ptr').value=PM.PTR(mrp,ret,gst).toFixed(2)}nrCalc()}
 function nrCalc(){
   const ptr=parseFloat(document.getElementById('nr-ptr').value)||0;
   const qty=parseFloat(document.getElementById('nr-qty').value)||1;
@@ -1678,7 +1515,7 @@ function nrCalc(){
   function sr(id,v){const e=document.getElementById(id);if(e){e.textContent='₹'+v.toFixed(2);e.classList.remove('upd');void e.offsetWidth;e.classList.add('upd')}}
   sr('nr-rate',nr);sr('nr-netval',nv);sr('nr-gstamt',ga);sr('nr-total',tot);
 }
-function nrReset(){['nr-brand','nr-mrp','nr-ptr','nr-disc'].forEach(id=>document.getElementById(id).value='');document.getElementById('nr-qty').value='1';document.getElementById('nr-scheme').value='0';document.getElementById('nr-gst').value='12';['nr-rate','nr-netval','nr-gstamt','nr-total'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='—'})}
+function nrReset(){['nr-brand','nr-mrp','nr-ptr','nr-disc'].forEach(id=>document.getElementById(id).value='');document.getElementById('nr-qty').value='1';document.getElementById('nr-scheme').value='0';document.getElementById('nr-gst').value='5';['nr-rate','nr-netval','nr-gstamt','nr-total'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='—'})}
 
 /* ══ PERFORMANCE CALCULATORS ══ */
 function pbadge(id,val,pos,neg){const b=document.getElementById(id);if(!b)return;let cls='n',icon='📌';if(val>=pos){cls='g';icon='🟢'}else if(val>=neg){cls='a';icon='🟡'}else{cls='r';icon='🔴'}b.className='perf-badge '+cls;b.innerHTML=`<span>${icon}</span> ${val}%`}
@@ -1688,8 +1525,27 @@ function calcCallAvg(){const calls=parseFloat(document.getElementById('pc-calls'
 function calcCoverage(){const cov=parseFloat(document.getElementById('pc-cov').value)||0;const list=parseFloat(document.getElementById('pc-list').value)||0;const b=document.getElementById('cov-badge');if(!list){b.className='perf-badge n';b.innerHTML='<span>📋</span> —';return}const pct=((cov/list)*100).toFixed(1);b.className='perf-badge '+(pct>=80?'g':pct>=60?'a':'r');b.innerHTML=`<span>${cov}</span>/${list} · ${pct}%`}
 function calcCompliance(){const vis=parseFloat(document.getElementById('pc-vis').value)||0;const list=parseFloat(document.getElementById('pc-clist').value)||0;const b=document.getElementById('comp-badge');if(!list){b.className='perf-badge n';b.innerHTML='<span>📌</span> —';return}const pct=((vis/list)*100).toFixed(1);b.className='perf-badge '+(pct>=80?'g':pct>=60?'a':'r');b.innerHTML=`<span>${vis}</span>/${list} · ${pct}%`}
 
+/* ══ PRPM CALCULATOR ══ */
+function calcPRPM(){
+  const sale=parseFloat(document.getElementById('prpm-sale').value)||0;
+  const persons=Math.max(1,parseFloat(document.getElementById('prpm-persons').value)||1);
+  const months=Math.max(1,parseFloat(document.getElementById('prpm-months').value)||1);
+  const rTotal=document.getElementById('prpm-total');
+  const rResult=document.getElementById('prpm-result');
+  const rFormula=document.getElementById('prpm-formula');
+  if(!sale){
+    rResult.textContent='—';rTotal.textContent='—';rFormula.textContent='—';return;
+  }
+  const prpm=months===1?(sale/persons):(sale/(persons*months));
+  const fmt=v=>'₹'+v.toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});
+  rResult.textContent=fmt(prpm);
+  rTotal.textContent=fmt(sale);
+  rFormula.textContent=months===1?`${fmt(sale)} ÷ ${persons} person${persons>1?'s':''}`:`${fmt(sale)} ÷ (${persons}p × ${months}mo)`;
+  [rResult,rTotal].forEach(el=>{el.classList.remove('upd');void el.offsetWidth;el.classList.add('upd')});
+}
+
 /* ══ OCR MODULE (Groq fallback) ══ */
-const OCR={orderB64:null,plB64:null,savedPL:null,rows:[],userId:null};
+const OCR={orderB64:null,plB64:null,savedPL:null,rows:[],userId:null,plExcelData:null};
 
 function ocrDragOver(e,id){e.preventDefault();document.getElementById(id).classList.add('drag-over')}
 function ocrDragLeave(id){document.getElementById(id).classList.remove('drag-over')}
@@ -1707,18 +1563,76 @@ function ocrProcessFile(file,type){
     ocrUpdateBtn();
   };reader.readAsDataURL(file);
 }
-function ocrUpdateBtn(){const hasO=!!OCR.orderB64;const hasPL=!!(OCR.plB64||OCR.savedPL);const btn=document.getElementById('ocr-process-btn');if(btn)btn.disabled=!(hasO&&hasPL)}
+function ocrUpdateBtn(){const hasO=!!OCR.orderB64;const hasPL=!!(OCR.plB64||OCR.savedPL||OCR.plExcelData);const btn=document.getElementById('ocr-process-btn');if(btn)btn.disabled=!(hasO&&hasPL)}
 
 async function ocrProcess(){
   if(!OCR.orderB64){showToast('Upload order copy first.','err');return}
-  const pl=OCR.plB64||OCR.savedPL;if(!pl){showToast('Upload price list.','err');return}
+  const pl=OCR.plB64||OCR.savedPL;
+  const hasExcel=OCR.plExcelData&&OCR.plExcelData.length>0;
+  if(!pl&&!hasExcel){showToast('Upload price list image or Excel/CSV.','err');return}
   const key=await IDB.loadSetting('groqApiKey');if(!key){ocrShowErr('No Groq key. Enter your key in the ⚡ Groq tab above.');return}
   document.getElementById('groq-spinner').classList.add('active');
   document.getElementById('groq-err-box').classList.remove('active');
   document.getElementById('groq-table-wrap').style.display='none';
   document.getElementById('ocr-process-btn').disabled=true;
-  const PROMPT=`Extract Product Name and Quantity from order image 1. Match with PTS, GST%, MRP from price list image 2. Return ONLY raw JSON array: [{"productName":"","quantity":0,"pts":0,"gst":0,"mrp":0}]. No markdown.`;
-  const body={model:CFG.GROQ_MODEL,max_tokens:2048,messages:[{role:'user',content:[{type:'image_url',image_url:{url:`data:image/jpeg;base64,${OCR.orderB64}`}},{type:'image_url',image_url:{url:`data:image/jpeg;base64,${pl}`}},{type:'text',text:PROMPT}]}]};
+  const excelContext=hasExcel?`\n\nPRICE LIST DATA (from uploaded Excel/CSV — use this for exact price matching):\n${JSON.stringify(OCR.plExcelData.slice(0,200),null,1)}`:'';
+  const PROMPT=`You are an expert pharmaceutical sales order analyst with 15 years of experience reading handwritten chemist/stockist orders in India.
+
+TASK: Extract order items from IMAGE 1 (handwritten order copy)${pl?' and match prices from IMAGE 2 (company price list)':''}.${excelContext}
+
+STRICT PHARMA RULES — FOLLOW EXACTLY:
+
+1. PRODUCT NAME: Extract exactly as written. Common abbreviations: Tab=Tablet, Cap=Capsule, Inj=Injection, Syp=Syrup, Oint=Ointment, Sach=Sachet, Susp=Suspension, Crm=Cream, Gel=Gel, Drp=Drops.
+
+2. QUANTITY (qty): Extract ONLY the saleable/chargeable quantity — NOT the free quantity.
+   - If written as "10+1" or "10 + 1 free" → qty=10 (saleable), freeQty=1 (free)
+   - If written as "50+5" → qty=50, freeQty=5
+   - If written as "2+1" scheme → qty=2, freeQty=1
+   - NEVER add free qty to saleable qty. NEVER.
+
+3. UNIT (unit): Identify what unit the quantity is in:
+   - "Box", "Bx", "B" → unit="Box"
+   - "Strip", "Str", "S", "Pkt" → unit="Strip"
+   - "Piece", "Pc", "Tab", numbers alone → unit="Strip" (default for tablets/capsules)
+   - "Bottle", "Bot" → unit="Bottle"
+   - If unclear → unit="Strip"
+
+4. PACKING (packingPerBox): Extract packing info like "10×10", "1×10", "6×10", "10x10" etc. from the price list.
+   - "10×10" means 10 strips of 10 tablets = 100 tablets per box → packingPerBox=10 (strips per box)
+   - "1×10" means 1 strip of 10 tablets → packingPerBox=1
+   - "6×10" means 6 strips per box → packingPerBox=6
+   - If not found → packingPerBox=10 (default assumption)
+
+5. PRICE BASIS (priceUnit): Determine if the PTS price in the price list is per "box" or per "strip".
+   - If price list shows PTS per STRIP → priceUnit="strip"
+   - If price list shows PTS per BOX → priceUnit="box"
+   - If unclear → priceUnit="box" (default for pharma)
+
+6. PTS (Price to Stockist): 
+   - From price list, find the column labeled "PTS" or "Price to Stockist" or "Stockist Price" or "Net Rate"
+   - NEVER use MRP as PTS. MRP is Maximum Retail Price — always higher than PTS.
+   - PTS is always LESS than MRP. If your value is same as MRP, you picked wrong column.
+   - Extract the RAW PTS as found in price list (don't convert — we will handle conversion).
+
+7. GST%: 
+   - Take ONLY from the GST% column in the price list.
+   - Common pharma GST rates: 5%, 12%, 18%. Never guess.
+   - If not found in price list → use 12 as default (most common for pharma).
+
+8. MRP: Maximum Retail Price from price list. Always highest price column.
+
+9. FREE SCHEME: Many orders have schemes like "10+1", "5+1", "100+10" etc.
+   - The "+" means free goods.
+   - freeQty = the number after "+".
+   - qty = the number before "+".
+
+Return ONLY a valid raw JSON array. No markdown. No explanation. No extra text.
+Format: [{"productName":"","qty":0,"freeQty":0,"unit":"Strip","pts":0,"gst":5,"mrp":0,"packingPerBox":10,"priceUnit":"box"}]
+Use 0 for any numeric value not found. Match product names fuzzy (ignore case, spaces, abbreviations).`;
+  const contentArr=[{type:'image_url',image_url:{url:`data:image/jpeg;base64,${OCR.orderB64}`}}];
+  if(pl)contentArr.push({type:'image_url',image_url:{url:`data:image/jpeg;base64,${pl}`}});
+  contentArr.push({type:'text',text:PROMPT});
+  const body={model:CFG.GROQ_MODEL,max_tokens:3000,messages:[{role:'user',content:contentArr}]};
   try{
     const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(body)});
     if(!r.ok){const er=await r.json().catch(()=>({}));throw new Error(er?.error?.message||'HTTP '+r.status)}
@@ -1746,42 +1660,201 @@ function groqRenderTable(){
   document.getElementById('groq-table-wrap').style.display='block';
   document.getElementById('groq-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'');
 }
+function groqCalcPtsBoxStrip(r){
+  // Returns {ptsBox, ptsStrip} regardless of how the price was given
+  const pts=parseFloat(r.pts)||0;
+  const pack=parseFloat(r.packingPerBox)||10;
+  const priceUnit=(r.priceUnit||'box').toLowerCase();
+  let ptsBox,ptsStrip;
+  if(priceUnit==='strip'){
+    ptsStrip=pts;
+    ptsBox=pts*pack;
+  } else {
+    // default: price is per box
+    ptsBox=pts;
+    ptsStrip=pack>0?pts/pack:pts;
+  }
+  return{ptsBox,ptsStrip,pack};
+}
+
 function groqBuildRow(r,i){
   const tr=document.createElement('tr');tr.dataset.i=i;
-  const net=ocrCalcNet(r.pts,r.quantity,r.gst);
-  tr.innerHTML=`<td style="color:var(--muted);font-size:.7rem">${i+1}</td><td><input class="ocr-cell wide" value="${esc(r.productName)}" onchange="groqUpd(${i},'productName',this.value)"></td><td><input class="ocr-cell" type="number" style="max-width:50px" value="${r.quantity??''}" onchange="groqUpd(${i},'quantity',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:65px" value="${r.pts??''}" onchange="groqUpd(${i},'pts',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:45px" value="${r.gst??''}" onchange="groqUpd(${i},'gst',+this.value)"></td><td style="color:var(--green);font-weight:600" id="gnet${i}">${net!==null?'₹'+net.toFixed(2):'—'}</td><td><button class="ocr-del-btn" onclick="groqDelRow(${i})">🗑</button></td>`;
+  const{ptsBox,ptsStrip,pack}=groqCalcPtsBoxStrip(r);
+  // Effective PTS for net calc: use per-unit basis matching the order unit
+  const isBoxOrder=(r.unit||'Strip').toLowerCase()==='box';
+  const effectivePts=isBoxOrder?ptsBox:ptsStrip;
+  const net=ocrCalcNet(effectivePts,r.qty||r.quantity||0,r.gst);
+  const freeLabel=r.freeQty>0?`<span style="color:#f59e0b;font-size:.65rem;font-weight:700">+${r.freeQty}F</span>`:'';
+  const unitSel=`<select class="ocr-cell" style="max-width:58px;padding:2px 3px;font-size:.68rem" onchange="groqUpd(${i},'unit',this.value);groqUpdPts(${i})">
+    ${['Strip','Box','Bottle','Vial','Sachet','Tube'].map(u=>`<option${(r.unit||'Strip')===u?' selected':''}>${u}</option>`).join('')}
+  </select>`;
+  tr.innerHTML=`<td style="color:var(--muted);font-size:.7rem">${i+1}</td>
+    <td><input class="ocr-cell wide" value="${esc(r.productName||'')}" onchange="groqUpd(${i},'productName',this.value)"></td>
+    <td><div style="display:flex;align-items:center;gap:2px"><input class="ocr-cell" type="number" style="max-width:44px" value="${r.qty||r.quantity||0}" onchange="groqUpd(${i},'qty',+this.value)">${freeLabel}</div></td>
+    <td><input class="ocr-cell" type="number" style="max-width:36px" value="${r.freeQty||0}" onchange="groqUpd(${i},'freeQty',+this.value)"></td>
+    <td>${unitSel}</td>
+    <td><input class="ocr-cell" type="number" step="1" style="max-width:38px" title="Strips per box" value="${pack}" onchange="groqUpd(${i},'packingPerBox',+this.value);groqUpdPts(${i})"></td>
+    <td><input class="ocr-cell" type="number" step="0.01" style="max-width:58px" value="${ptsBox.toFixed(2)}" onchange="groqUpdBoxPts(${i},+this.value)" title="PTS per Box"></td>
+    <td style="color:var(--accent-a);font-size:.72rem;padding:4px" id="gstrip${i}">₹${ptsStrip.toFixed(2)}</td>
+    <td><select class="ocr-cell" style="max-width:50px;padding:2px 2px;font-size:.68rem" onchange="groqUpd(${i},'gst',+this.value)">
+      ${[5,12,18].map(g=>`<option value="${g}"${(r.gst||5)===g?' selected':''}>${g}%</option>`).join('')}
+    </select></td>
+    <td style="color:var(--green);font-weight:600;white-space:nowrap" id="gnet${i}">${net!==null?'₹'+net.toFixed(2):'—'}</td>
+    <td><button class="ocr-del-btn" onclick="groqDelRow(${i})">🗑</button></td>`;
   return tr;
 }
-function groqUpd(i,f,v){OCR.rows[i][f]=v;const net=ocrCalcNet(OCR.rows[i].pts,OCR.rows[i].quantity,OCR.rows[i].gst);const el=document.getElementById('gnet'+i);if(el)el.textContent=net!==null?'₹'+net.toFixed(2):'—';groqUpdateTotals()}
-function groqUpdateTotals(){let tot=0;OCR.rows.forEach(r=>{const n=ocrCalcNet(r.pts,r.quantity,r.gst);if(n!==null)tot+=n});const tf=document.getElementById('groq-tfoot');if(tf)tf.innerHTML=`<tr><td colspan="5" style="color:#a78bfa;font-weight:700;padding:.6rem">Grand Total</td><td style="color:var(--green);font-weight:700">₹${tot.toFixed(2)}</td><td></td></tr>`;document.getElementById('groq-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'')}
+// Update strip display + net when box PTS changes
+function groqUpdBoxPts(i,boxPts){
+  if(!OCR.rows[i])return;
+  OCR.rows[i].pts=boxPts;
+  OCR.rows[i].priceUnit='box';
+  groqUpdPts(i);
+}
+// Refresh strip cell and net cell for row i
+function groqUpdPts(i){
+  if(!OCR.rows[i])return;
+  const{ptsBox,ptsStrip}=groqCalcPtsBoxStrip(OCR.rows[i]);
+  const el=document.getElementById('gstrip'+i);
+  if(el)el.textContent='₹'+ptsStrip.toFixed(2);
+  const isBoxOrder=(OCR.rows[i].unit||'Strip').toLowerCase()==='box';
+  const effectivePts=isBoxOrder?ptsBox:ptsStrip;
+  const qty=OCR.rows[i].qty||OCR.rows[i].quantity||0;
+  const net=ocrCalcNet(effectivePts,qty,OCR.rows[i].gst);
+  const nel=document.getElementById('gnet'+i);
+  if(nel)nel.textContent=net!==null?'₹'+net.toFixed(2):'—';
+  groqUpdateTotals();
+}
+function groqUpd(i,f,v){
+  if(!OCR.rows[i])return;
+  OCR.rows[i][f]=v;
+  groqUpdPts(i);
+  groqUpdateTotals();
+}
+function groqUpdateTotals(){
+  let tot=0,totalFree=0;
+  OCR.rows.forEach(r=>{
+    const qty=r.qty||r.quantity||0;
+    const{ptsBox,ptsStrip}=groqCalcPtsBoxStrip(r);
+    const isBoxOrder=(r.unit||'Strip').toLowerCase()==='box';
+    const effectivePts=isBoxOrder?ptsBox:ptsStrip;
+    const n=ocrCalcNet(effectivePts,qty,r.gst);
+    if(n!==null)tot+=n;
+    totalFree+=(r.freeQty||0);
+  });
+  const tf=document.getElementById('groq-tfoot');
+  if(tf)tf.innerHTML=`<tr>
+    <td colspan="8" style="color:#a78bfa;font-weight:700;padding:.6rem">Grand Total${totalFree>0?` <span style="color:#f59e0b;font-size:.7rem">(+${totalFree} free units)</span>`:''}</td>
+    <td style="color:var(--green);font-weight:700">₹${tot.toFixed(2)}</td><td></td></tr>`;
+  document.getElementById('groq-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'');
+}
 function groqDelRow(i){OCR.rows.splice(i,1);groqRenderTable()}
-function groqAddRow(){OCR.rows.push({productName:'',quantity:1,pts:0,gst:0,mrp:0});const i=OCR.rows.length-1;const tb=document.getElementById('groq-tbody');tb.appendChild(groqBuildRow(OCR.rows[i],i));groqUpdateTotals();setTimeout(()=>{tb.lastElementChild?.querySelector('input')?.focus()},60)}
-function groqReset(){OCR.rows=[];OCR.orderB64=null;OCR.plB64=null;document.getElementById('groq-table-wrap').style.display='none';document.getElementById('groq-export-row').style.display='none';document.getElementById('ocr-process-btn').disabled=true;showToast('Reset ✓','ok')}
+function groqAddRow(){
+  OCR.rows.push({productName:'',qty:1,freeQty:0,unit:'Strip',pts:0,gst:5,mrp:0});
+  const i=OCR.rows.length-1;
+  const tb=document.getElementById('groq-tbody');
+  tb.appendChild(groqBuildRow(OCR.rows[i],i));
+  groqUpdateTotals();
+  setTimeout(()=>{tb.lastElementChild?.querySelector('input')?.focus()},60);
+}
+function groqReset(){
+  OCR.rows=[];OCR.orderB64=null;OCR.plB64=null;OCR.plExcelData=null;
+  document.getElementById('groq-table-wrap').style.display='none';
+  document.getElementById('groq-export-row').style.display='none';
+  document.getElementById('ocr-process-btn').disabled=true;
+  const pi=document.getElementById('groq-pl-info');if(pi){pi.style.display='none';}
+  showToast('Reset ✓','ok');
+}
 function groqConfirmOrder(){
   if(!OCR.rows.length){showToast('No rows to confirm.','err');return}
   let added=0;
-  OCR.rows.forEach(r=>{if(r.productName&&r.quantity>0){orderCtr++;orderItems.push({id:orderCtr,prod:r.productName,qty:r.quantity,free:0,pts:r.pts||0,gst:r.gst||0,netEx:(r.pts||0)*r.quantity,gstA:(r.pts||0)*r.quantity*(r.gst||0)/100,total:(r.pts||0)*r.quantity*(1+(r.gst||0)/100)});added++}});
+  OCR.rows.forEach(r=>{
+    const prod=(r.productName||'').trim();
+    const qty=parseFloat(r.qty||r.quantity)||0;
+    const freeQty=parseFloat(r.freeQty)||0;
+    const gst=parseFloat(r.gst)||5;
+    const{ptsBox,ptsStrip}=groqCalcPtsBoxStrip(r);
+    const isBoxOrder=(r.unit||'Strip').toLowerCase()==='box';
+    const pts=isBoxOrder?ptsBox:ptsStrip;
+    if(!prod||qty<=0)return;
+    const netEx=pts*qty;const gstA=netEx*gst/100;const total=netEx+gstA;
+    orderCtr++;
+    orderItems.push({id:orderCtr,prod,qty,free:freeQty,pts,gst,netEx,gstA,total});
+    added++;
+  });
   if(added){renderOrder();nav('orders');showToast(added+' items pushed to Orders ✓','ok')}
   else showToast('No valid rows to push.','err');
 }
-function groqDownloadExcel(){
+function groqDownloadFile(){
   if(!OCR.rows.length){showToast('No data to export.','err');return}
-  const ws=XLSX.utils.json_to_sheet(OCR.rows.map((r,i)=>({'#':i+1,'Product Name':r.productName,'Qty':r.quantity,'PTS (₹)':r.pts,'GST%':r.gst,'Net Amt (₹)':(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)})));
+  const ws=XLSX.utils.json_to_sheet(OCR.rows.map((r,i)=>{
+    const{ptsBox,ptsStrip,pack}=groqCalcPtsBoxStrip(r);
+    const isBoxOrder=(r.unit||'Strip').toLowerCase()==='box';
+    const effectivePts=isBoxOrder?ptsBox:ptsStrip;
+    return{
+      '#':i+1,
+      'Product Name':r.productName,
+      'Qty (Saleable)':r.qty||r.quantity||0,
+      'Free Qty':r.freeQty||0,
+      'Unit':r.unit||'Strip',
+      'Pack (strips/box)':pack,
+      'PTS/Box (₹)':ptsBox.toFixed(2),
+      'PTS/Strip (₹)':ptsStrip.toFixed(2),
+      'GST%':r.gst,
+      'MRP (₹)':r.mrp||0,
+      'Net Amt (₹)':(ocrCalcNet(effectivePts,r.qty||r.quantity||0,r.gst)||0).toFixed(2)
+    };
+  }));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Order');
-  XLSX.writeFile(wb,`GroqOrder_${new Date().toISOString().split('T')[0]}.xlsx`);showToast('Excel downloaded ✓','ok');
+  XLSX.writeFile(wb,`GroqOrder_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast('Excel downloaded ✓','ok');
+}
+function groqPlLoad(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      OCR.plExcelData=rows;
+      const el=document.getElementById('groq-pl-info');
+      if(el){el.style.display='block';el.textContent=`✓ Price list loaded: ${rows.length} products from ${f.name}`;}
+      showToast('Price list loaded ✓','ok');
+    }catch(err){showToast('Could not read file: '+err.message,'err');}
+  };
+  reader.readAsArrayBuffer(f);
+}
+function groqPlDrop(e){
+  e.preventDefault();ocrDragLeave('groq-pl-zone');
+  const f=e.dataTransfer.files[0];if(!f)return;
+  const inp=document.getElementById('groq-pl-file');
+  const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;
+  groqPlLoad({target:{files:[f]}});
 }
 function groqShareWhatsApp(){
   if(!OCR.rows.length)return;
   const u=PSP.user||{};const name=u.name||'Rep';const company=u.company||'Company';
   const date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-  const lines=OCR.rows.map((r,i)=>`${i+1}. ${r.productName} | Qty:${r.quantity} | PTS:₹${r.pts} | GST:${r.gst}% | Net:₹${(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)}`).join('\n');
-  const grand=OCR.rows.reduce((s,r)=>s+(ocrCalcNet(r.pts,r.quantity,r.gst)||0),0).toFixed(2);
-  const msg=`📋 *Order — PharmaSalesPro*\nRep: ${name} | ${company} | ${date}\n─────\n${lines}\n─────\n*Grand Total: ₹${grand}*\n_Powered by PharmaSalesPro v6_`;
+  const lines=OCR.rows.map((r,i)=>{
+    const qty=r.qty||r.quantity||0;
+    const scheme=r.freeQty>0?`+${r.freeQty}F`:'';
+    const{ptsBox,ptsStrip}=groqCalcPtsBoxStrip(r);
+    const isBoxOrder=(r.unit||'Strip').toLowerCase()==='box';
+    const effectivePts=isBoxOrder?ptsBox:ptsStrip;
+    const net=(ocrCalcNet(effectivePts,qty,r.gst)||0).toFixed(2);
+    return `${i+1}. ${r.productName} | ${qty}${scheme} ${r.unit||'Strip'} | PTS/Box:₹${ptsBox.toFixed(2)} | PTS/Strip:₹${ptsStrip.toFixed(2)} | GST:${r.gst}% | Net:₹${net}`;
+  }).join('\n');
+  const grand=OCR.rows.reduce((s,r)=>{
+    const{ptsBox,ptsStrip}=groqCalcPtsBoxStrip(r);
+    const isBoxOrder=(r.unit||'Strip').toLowerCase()==='box';
+    return s+(ocrCalcNet(isBoxOrder?ptsBox:ptsStrip,r.qty||r.quantity||0,r.gst)||0);
+  },0).toFixed(2);
+  const msg=`📋 *Order — PharmaSalesPro*\nRep: ${name} | ${company} | ${date}\n─────\n${lines}\n─────\n*Grand Total: ₹${grand}*\n_via PharmaSalesPro_`;
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
 
 function ocrRetry(){
-  if(GAuth.token&&GEM.orderB64)gemProcess();else ocrProcess();
+  ocrProcess();
 }
 
 function ocrParseJSON(raw){
@@ -1790,72 +1863,63 @@ function ocrParseJSON(raw){
   if(s!==-1&&e!==-1)c=c.slice(s,e+1);
   return JSON.parse(c);
 }
-function ocrCalcNet(pts,qty,gst){pts=parseFloat(pts);qty=parseFloat(qty);gst=parseFloat(gst);if(isNaN(pts)||isNaN(qty))return null;return pts*qty*(1+(isNaN(gst)?0:gst)/100)}
+// Net = PTS × qty × (1 + GST/100). qty here is saleable qty only.
+function ocrCalcNet(pts,qty,gst){
+  pts=parseFloat(pts);qty=parseFloat(qty);gst=parseFloat(gst);
+  if(isNaN(pts)||isNaN(qty))return null;
+  return pts*qty*(1+(isNaN(gst)?0:gst)/100);
+}
+
+/* ══ GROQ/OCR TABLE RENDERING (shared) ══ */
 function ocrRenderTable(){
-  const tb=document.getElementById('ocr-tbody');tb.innerHTML='';
-  OCR.rows.forEach((r,i)=>tb.appendChild(ocrBuildRow(r,i)));
-  ocrUpdateTotals();
-  document.getElementById('ocr-table-wrap').classList.add('active');
-  document.getElementById('ocr-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'');
+  // Redirects to groqRenderTable in v12 (Gemini removed)
+  groqRenderTable();
 }
-function ocrBuildRow(r,i){
-  const tr=document.createElement('tr');tr.dataset.i=i;
-  const net=ocrCalcNet(r.pts,r.quantity,r.gst);
-  tr.innerHTML=`<td style="color:var(--muted);font-size:.7rem">${i+1}</td><td><input class="ocr-cell wide" value="${esc(r.productName)}" onchange="ocrUpd(${i},'productName',this.value)"></td><td><input class="ocr-cell" type="number" style="max-width:50px" value="${r.quantity??''}" onchange="ocrUpd(${i},'quantity',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:65px" value="${r.pts??''}" onchange="ocrUpd(${i},'pts',+this.value)"></td><td><input class="ocr-cell" type="number" step="0.01" style="max-width:45px" value="${r.gst??''}" onchange="ocrUpd(${i},'gst',+this.value)"></td><td style="color:var(--green);font-weight:600" id="onet${i}">${net!==null?'₹'+net.toFixed(2):'—'}</td><td><button class="ocr-del-btn" onclick="ocrDelRow(${i})">🗑</button></td>`;
-  return tr;
-}
-function ocrUpd(i,f,v){OCR.rows[i][f]=v;const net=ocrCalcNet(OCR.rows[i].pts,OCR.rows[i].quantity,OCR.rows[i].gst);const el=document.getElementById('onet'+i);if(el)el.textContent=net!==null?'₹'+net.toFixed(2):'—';ocrUpdateTotals()}
-function ocrUpdateTotals(){let tot=0;OCR.rows.forEach(r=>{const n=ocrCalcNet(r.pts,r.quantity,r.gst);if(n!==null)tot+=n});document.getElementById('ocr-tfoot').innerHTML=`<tr><td colspan="5" style="color:var(--accent-a);font-weight:700;padding:.6rem">Grand Total</td><td style="color:var(--green);font-weight:700">₹${tot.toFixed(2)}</td><td></td></tr>`;document.getElementById('ocr-row-count').textContent=OCR.rows.length+' item'+(OCR.rows.length!==1?'s':'')}
-function ocrDelRow(i){OCR.rows.splice(i,1);ocrRenderTable()}
-function ocrAddRow(){OCR.rows.push({productName:'',quantity:1,pts:0,gst:0,mrp:0});const i=OCR.rows.length-1;const tb=document.getElementById('ocr-tbody');tb.appendChild(ocrBuildRow(OCR.rows[i],i));ocrUpdateTotals();setTimeout(()=>{tb.lastElementChild?.querySelector('input')?.focus()},60)}
-function ocrConfirmOrder(){
-  if(!OCR.rows.length){showToast('No rows to confirm.','err');return}
-  let added=0;
-  OCR.rows.forEach(r=>{
-    const prod=(r.productName||'').trim();
-    const qty=parseFloat(r.quantity)||0;
-    const pts=parseFloat(r.pts)||0;
-    const gst=parseFloat(r.gst)||0;
-    if(!prod||qty<=0||pts<=0)return;
-    const netEx=pts*qty;const gstA=netEx*gst/100;const total=netEx+gstA;
-    orderCtr++;orderItems.push({id:orderCtr,prod,qty,free:0,pts,gst,netEx,gstA,total});added++;
-  });
-  if(!added){showToast('No valid rows to push.','err');return}
-  renderOrder();
-  showToast(`✅ ${added} item${added!==1?'s':''} pushed to Orders!`,'ok');
-  setTimeout(()=>nav('orders'),600);
-}
+function ocrBuildRow(r,i){return groqBuildRow(r,i)}
+function ocrUpd(i,f,v){groqUpd(i,f,v)}
+function ocrUpdateTotals(){groqUpdateTotals()}
+function ocrDelRow(i){OCR.rows.splice(i,1);groqRenderTable()}
+function ocrAddRow(){groqAddRow()}
+function ocrConfirmOrder(){groqConfirmOrder()}
 function ocrReset(){
-  OCR.orderB64=null;OCR.plB64=null;OCR.rows=[];GEM.orderB64=null;GEM.plB64=null;
-  ['zone-order','zone-pl','gem-zone-order','gem-zone-pl'].forEach((id,i)=>{
+  OCR.orderB64=null;OCR.plB64=null;OCR.rows=[];OCR.plExcelData=null;
+  ['zone-order','zone-pl'].forEach(id=>{
     const z=document.getElementById(id);if(!z)return;
-    const isGem=id.startsWith('gem-');
-    const type=(id.includes('order'))?'order':'pricelist';
     const isPl=id.includes('pl');
-    if(isPl&&(OCR.savedPL||GEM.savedPL))return;
+    if(isPl&&OCR.savedPL)return;
     const icon=isPl?'💊':'📋';const lbl=isPl?'Company<br>Price List':'Handwritten<br>Order Copy';
-    const inputId=isGem?(isPl?'gem-file-pl':'gem-file-order'):(isPl?'file-pl':'file-order');
-    const handler=isGem?`gemHandleFile(event,'${type}')`:`ocrHandleFile(event,'${type}')`;
-    z.innerHTML=`<input type="file" id="${inputId}" accept="image/*" onchange="${handler}"><div class="ocr-zone-icon">${icon}</div><div class="ocr-zone-lbl">${lbl}</div><div class="ocr-zone-sub">Tap to upload</div>`;
+    const inputId=isPl?'file-pl':'file-order';
+    const type=isPl?'pricelist':'order';
+    z.innerHTML=`<input type="file" id="${inputId}" accept="image/*" onchange="ocrHandleFile(event,'${type}')"><div class="ocr-zone-icon">${icon}</div><div class="ocr-zone-lbl">${lbl}</div><div class="ocr-zone-sub">Tap to upload</div>`;
     z.classList.remove('has-file','drag-over');
   });
-  document.getElementById('ocr-table-wrap').classList.remove('active');
-  document.getElementById('ocr-export-row').style.display='none';
-  document.getElementById('ocr-spinner').classList.remove('active');
-  document.getElementById('ocr-err-box').classList.remove('active');
-  gemSetStep(1);
+  const tw=document.getElementById('groq-table-wrap');if(tw)tw.style.display='none';
+  const er=document.getElementById('groq-export-row');if(er)er.style.display='none';
+  const sp=document.getElementById('groq-spinner');if(sp)sp.classList.remove('active');
+  const eb=document.getElementById('groq-err-box');if(eb)eb.classList.remove('active');
+  const pi=document.getElementById('groq-pl-info');if(pi)pi.style.display='none';
 }
-async function ocrClearPriceList(){const uid=PSP.user?.userId;if(uid)await IDB.deletePL(uid);OCR.savedPL=null;GEM.savedPL=null;document.getElementById('ocr-saved-badge').style.display='none';document.getElementById('gem-saved-badge').style.display='none';ocrUpdateBtn();gemUpdateBtn();showToast('Price list cleared.','ok')}
-function ocrShowErr(msg){document.getElementById('ocr-spinner').classList.remove('active');document.getElementById('ocr-err-box').classList.add('active');document.getElementById('ocr-err-msg').textContent=msg}
+async function ocrClearPriceList(){const uid=PSP.user?.userId;if(uid)await IDB.deletePL(uid);OCR.savedPL=null;document.getElementById('ocr-saved-badge').style.display='none';ocrUpdateBtn();showToast('Price list cleared.','ok')}
+function ocrShowErr(msg){const sp=document.getElementById('groq-spinner');const eb=document.getElementById('groq-err-box');const em=document.getElementById('groq-err-msg');if(sp)sp.classList.remove('active');if(eb)eb.classList.add('active');if(em)em.textContent=msg;}
 function esc(s){return String(s??'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
 
 /* OCR Export — Download Excel */
 function ocrDownloadExcel(){
   if(!OCR.rows.length){showToast('No data to export.','err');return}
-  const ws=XLSX.utils.json_to_sheet(OCR.rows.map((r,i)=>({'#':i+1,'Product Name':r.productName,'Qty':r.quantity,'PTS (₹)':r.pts,'GST%':r.gst,'Net Amt (₹)':(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)})));
+  const ws=XLSX.utils.json_to_sheet(OCR.rows.map((r,i)=>({
+    '#':i+1,
+    'Product Name':r.productName,
+    'Qty (Saleable)':r.qty||r.quantity||0,
+    'Free Qty':r.freeQty||0,
+    'Unit':r.unit||'Strip',
+    'PTS (₹)':r.pts,
+    'GST%':r.gst,
+    'MRP (₹)':r.mrp||0,
+    'Net Amt (₹)':(ocrCalcNet(r.pts,r.qty||r.quantity||0,r.gst)||0).toFixed(2)
+  })));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Order');
   const date=new Date().toISOString().split('T')[0];
-  XLSX.writeFile(wb,`Order_${date}.xlsx`);showToast('Excel downloaded ✓','ok');
+  XLSX.writeFile(wb,`GeminiOrder_${date}.xlsx`);showToast('Excel downloaded ✓','ok');
 }
 
 /* OCR Export — WhatsApp */
@@ -1863,25 +1927,30 @@ function ocrShareWhatsApp(){
   if(!OCR.rows.length)return;
   const u=PSP.user||{};const name=u.name||'Rep';const company=u.company||'Company';
   const date=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-  const lines=OCR.rows.map((r,i)=>`${i+1}. ${r.productName} | Qty:${r.quantity} | PTS:₹${r.pts} | GST:${r.gst}% | Net:₹${(ocrCalcNet(r.pts,r.quantity,r.gst)||0).toFixed(2)}`).join('\n');
-  const grand=OCR.rows.reduce((s,r)=>s+(ocrCalcNet(r.pts,r.quantity,r.gst)||0),0).toFixed(2);
-  const msg=`📋 *Order — PharmaSalesPro*\nRep: ${name} | ${company} | ${date}\n─────\n${lines}\n─────\n*Grand Total: ₹${grand}*\n_Powered by PharmaSalesPro v5_`;
+  const lines=OCR.rows.map((r,i)=>{
+    const qty=r.qty||r.quantity||0;
+    const scheme=r.freeQty>0?`+${r.freeQty}F`:'';
+    const net=(ocrCalcNet(r.pts,qty,r.gst)||0).toFixed(2);
+    return `${i+1}. ${r.productName} | ${qty}${scheme} ${r.unit||'Strip'} | PTS:₹${r.pts} | GST:${r.gst}% | Net:₹${net}`;
+  }).join('\n');
+  const grand=OCR.rows.reduce((s,r)=>s+(ocrCalcNet(r.pts,r.qty||r.quantity||0,r.gst)||0),0).toFixed(2);
+  const msg=`📋 *Order — PharmaSalesPro*\nRep: ${name} | ${company} | ${date}\n─────\n${lines}\n─────\n*Grand Total: ₹${grand}*\n_via PharmaSalesPro_`;
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
 
 /* ══ ORDER ACCUMULATOR ══ */
 let orderItems=[],orderCtr=0;
-function oAutoCalcPTS(){const mrp=parseFloat(document.getElementById('o-mrp').value)||0;if(mrp>0)document.getElementById('o-pts').value=PM.PTS(mrp,PSP.settings.retailerMargin||20,PSP.settings.stockistMargin||10).toFixed(2)}
+function oAutoCalcPTS(){const mrp=parseFloat(document.getElementById('o-mrp').value)||0;const gst=parseFloat(document.getElementById('o-gst').value)||0;if(mrp>0)document.getElementById('o-pts').value=PM.PTS(mrp,PSP.settings.retailerMargin||20,PSP.settings.stockistMargin||10,gst).toFixed(2)}
 function oClearMRP(){document.getElementById('o-mrp').value=''}
 function orderAdd(){
   const prod=(document.getElementById('o-prod').value||'').trim();const qty=parseFloat(document.getElementById('o-qty').value)||0;const free=parseFloat(document.getElementById('o-free').value)||0;let pts=parseFloat(document.getElementById('o-pts').value)||0;const mrp=parseFloat(document.getElementById('o-mrp').value)||0;const gst=parseFloat(document.getElementById('o-gst').value)||0;
-  if(!pts&&mrp>0){pts=PM.PTS(mrp,PSP.settings.retailerMargin||20,PSP.settings.stockistMargin||10);document.getElementById('o-pts').value=pts.toFixed(2)}
+  if(!pts&&mrp>0){pts=PM.PTS(mrp,PSP.settings.retailerMargin||20,PSP.settings.stockistMargin||10,gst);document.getElementById('o-pts').value=pts.toFixed(2)}
   if(!prod){shakeI('o-prod');return}if(qty<=0){shakeI('o-qty');return}if(pts<=0){shakeI('o-pts');return}
   const netEx=pts*qty;const gstA=netEx*gst/100;const total=netEx+gstA;
   orderCtr++;orderItems.push({id:orderCtr,prod,qty,free,pts,gst,netEx,gstA,total});renderOrder();clearOForm();
 }
 function shakeI(id){const e=document.getElementById(id);e.style.borderColor='var(--red)';e.focus();setTimeout(()=>e.style.borderColor='',900)}
-function clearOForm(){document.getElementById('o-prod').value='';document.getElementById('o-qty').value='1';document.getElementById('o-free').value='0';document.getElementById('o-pts').value='';document.getElementById('o-mrp').value='';document.getElementById('o-gst').value='12';document.getElementById('o-prod').focus()}
+function clearOForm(){document.getElementById('o-prod').value='';document.getElementById('o-qty').value='1';document.getElementById('o-free').value='0';document.getElementById('o-pts').value='';document.getElementById('o-mrp').value='';document.getElementById('o-gst').value='5';document.getElementById('o-prod').focus()}
 function orderRemove(id){orderItems=orderItems.filter(i=>i.id!==id);renderOrder()}
 function renderOrder(){
   const empty=document.getElementById('o-empty');const wrap=document.getElementById('o-tbl-wrap');const tb=document.getElementById('o-tbody');const bar=document.getElementById('o-sumbar');const waBtn=document.getElementById('o-wa-btn');const cnt=document.getElementById('o-count');const tfoot=document.getElementById('o-tfoot');
@@ -1912,16 +1981,37 @@ const DR={rows:[],filtered:[],selected:new Set()};
 
 // Fuzzy-ish column name detection
 const DR_COL_MAP={
-  name:['doctor name','dr name','name','doctor','physician name','physician','doc name','dr.name'],
+  name:['doctor name','dr name','name','doctor','physician name','physician','doc name','dr.name','dr name'],
   mobile:['mobile','mobile no','phone','contact','number','mob','cell','whatsapp'],
-  speciality:['speciality','specialty','specialization','dept','department','category','type'],
-  area:['area','location','territory','place','zone','sector','address','city','town'],
+  speciality:['speciality','specialty','specialization','dept','department','category','type','qualification'],
+  area:['area','location','territory','place','zone','sector','address','city','town','patch','headquarter','hq'],
+  frequency:['frequency','freq','visit freq','visit frequency','call freq','call frequency','visits per month','visit/month','visit per month','monthly visits','gap','gap days','cycle'],
+  category:['category','cat','class','abc','grading','grade','potential','pot','segment'],
 };
 
 function drFindCol(headers,fieldKeys){
+  // Word-boundary match: keyword must equal full header OR be a whole word inside it.
+  // Splits on spaces and non-alphanumeric chars.
+  // e.g. keyword "name" matches "Doctor Name" or "Name" but NOT "Frequency Name".
+  function headerWords(h){return h.toLowerCase().trim().split(/[\s\-\/\.\,\(\)\_]+/).filter(Boolean)}
   for(const h of headers){
     const lh=h.toLowerCase().trim();
-    for(const k of fieldKeys){if(lh.includes(k)||k.includes(lh))return h}
+    const words=headerWords(h);
+    for(const k of fieldKeys){
+      // Exact full-header match
+      if(lh===k)return h;
+      // Keyword equals one of the whole words in the header
+      if(words.includes(k))return h;
+      // Multi-word keyword: all words of keyword appear as consecutive tokens in header
+      const kWords=k.split(/[\s\-\/\.\,\(\)\_]+/).filter(Boolean);
+      if(kWords.length>1){
+        // Check if kWords appear as a contiguous subsequence in words
+        outer: for(let i=0;i<=words.length-kWords.length;i++){
+          for(let j=0;j<kWords.length;j++){if(words[i+j]!==kWords[j])continue outer;}
+          return h;
+        }
+      }
+    }
   }return null;
 }
 
@@ -1975,10 +2065,17 @@ function drParseAndLoad(raw,fname){
   const mobCol=drFindCol(headers,DR_COL_MAP.mobile);
   const specCol=drFindCol(headers,DR_COL_MAP.speciality);
   const areaCol=drFindCol(headers,DR_COL_MAP.area);
+  const freqCol=drFindCol(headers,DR_COL_MAP.frequency);
+  const catCol=drFindCol(headers,DR_COL_MAP.category);
   DR.rows=raw.map((row,i)=>({
-    _id:i,name:String(row[nameCol]||row[headers[0]]||'Dr '+(i+1)).trim(),
-    mobile:String(row[mobCol]||'').trim(),speciality:String(row[specCol]||'').trim(),
-    area:String(row[areaCol]||'').trim(),_raw:row,_headers:headers
+    _id:i,
+    name:String(row[nameCol]||row[headers[0]]||'Dr '+(i+1)).trim(),
+    mobile:String(row[mobCol]||'').trim(),
+    speciality:String(row[specCol]||'').trim(),
+    area:String(row[areaCol]||'').trim(),
+    frequency:String(row[freqCol]||'Monthly').trim(),
+    category:String(row[catCol]||'').trim(),
+    _raw:row,_headers:headers
   }));
   IDB.saveDrMaster(DR.rows);drRenderList();showToast(`${DR.rows.length} doctors loaded ✓`,'ok');
 }
@@ -1998,10 +2095,13 @@ function drRenderItems(rows){
   rows.forEach(dr=>{
     const div=document.createElement('div');div.className='dr-list-item';
     const checked=DR.selected.has(dr._id)?'checked':'';
+    const freqLabel=dr.frequency&&dr.frequency!==dr.name?dr.frequency:'Monthly';
+    const catLabel=dr.category?` · ${dr.category}`:'';
     div.innerHTML=`<input type="checkbox" class="dr-checkbox" ${checked} onchange="drToggle(${dr._id},this.checked)">
       <div class="dr-info">
         <div class="dr-name">${esc(dr.name)}</div>
-        <div class="dr-meta">${[dr.speciality,dr.area,dr.mobile].filter(Boolean).join(' · ')}</div>
+        <div class="dr-meta">${[dr.speciality,dr.area].filter(Boolean).join(' · ')}<span style="color:var(--green);margin-left:4px">· ${freqLabel}${catLabel}</span></div>
+        ${dr.mobile?`<div class="dr-meta" style="font-size:.66rem;opacity:.6">${dr.mobile}</div>`:''}
       </div>`;
     container.appendChild(div);
   });
@@ -2009,7 +2109,7 @@ function drRenderItems(rows){
   const fillerBtn=document.getElementById('dr-goto-filler-btn');
   if(DR.selected.size>0){
     pool.style.display='block';
-    pool.textContent=`✓ ${DR.selected.size} Dr${DR.selected.size!==1?'s':''} selected for this month`;
+    pool.textContent=`✓ ${DR.selected.size} Dr${DR.selected.size!==1?'s':''} selected`;
     if(fillerBtn)fillerBtn.style.display='block';
   } else {pool.style.display='none';if(fillerBtn)fillerBtn.style.display='none'}
   document.getElementById('dr-count-badge').textContent=`${DR.rows.length} total · ${DR.selected.size} selected`;
@@ -2032,7 +2132,7 @@ function drExportSelected(){
 /* ══════════════════════════════════
    CHANGE 3B: FORMAT FILLER
 ══════════════════════════════════ */
-let FF={wb:null,ws:null,headers:[],colMap:{},filledWb:null};
+let FF={wb:null,ws:null,headers:[],colMap:{},filledWb:null,_pendingAmbiguous:[]};
 
 function ffCheckMaster(){
   const hasM=DR.rows.length>0;
@@ -2059,14 +2159,11 @@ function ffLoadFile(e){
         const cell=FF.ws[XLSX.utils.encode_cell({r:range.s.r,c})];
         FF.headers.push(cell?String(cell.v):'');
       }
-      // Smart map: which format col maps to which Dr field
+      // Smart map: which format col maps to which Dr field (word-boundary safe)
       FF.colMap={};
       FF.headers.forEach(h=>{
-        const lh=h.toLowerCase().trim();
-        if(DR_COL_MAP.name.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='name';
-        else if(DR_COL_MAP.mobile.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='mobile';
-        else if(DR_COL_MAP.speciality.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='speciality';
-        else if(DR_COL_MAP.area.some(k=>lh.includes(k)||k.includes(lh)))FF.colMap[h]='area';
+        const field=['name','mobile','speciality','area'].find(f=>drFindCol([h],DR_COL_MAP[f])!==null);
+        if(field)FF.colMap[h]=field;
       });
       const zone=document.getElementById('ff-zone');
       zone.classList.add('has-file');
@@ -2077,8 +2174,6 @@ function ffLoadFile(e){
       const unmapped=FF.headers.filter(h=>!FF.colMap[h]).map(h=>`<span style="color:var(--muted)">${h}</span>`).join(', ');
       document.getElementById('ff-cols-list').innerHTML=(mapped||'None matched')+((unmapped)?'<br><span style="font-size:.65rem;color:rgba(255,255,255,.25)">Blank (no match): '+unmapped+'</span>':'');
       document.getElementById('ff-fill-btn').style.display='block';
-      // Show OCR card if Gemini connected
-      if(GAuth.token)document.getElementById('ff-ocr-card').style.display='block';
       showToast('Format loaded ✓','ok');
     }catch(err){showToast('Error reading file: '+err.message,'err')}
   };reader.readAsArrayBuffer(f);
@@ -2089,32 +2184,74 @@ function ffFillFormat(){
   const selDrs=DR.rows.filter(d=>DR.selected.has(d._id));
   if(!selDrs.length){showToast('No Drs selected in Dr Master tab.','err');return}
 
-  // Clone workbook
-  FF.filledWb=XLSX.utils.book_new();
-  const sheetName=FF.wb.SheetNames[0];
+  // Deep-clone workbook to preserve styles, merges, col widths etc.
+  const clonedWb=JSON.parse(JSON.stringify(FF.wb));
+  const sheetName=clonedWb.SheetNames[0];
+  const ws=clonedWb.Sheets[sheetName];
 
-  // Get existing data (header row + template rows)
-  const existingRows=XLSX.utils.sheet_to_json(FF.ws,{header:1,defval:''});
-  const headerRow=existingRows[0]||[];
-  const templateRows=existingRows.slice(1);// keep extra template rows if any
-
-  // Build output rows
-  const outRows=[headerRow];
-  selDrs.forEach(dr=>{
-    const row=new Array(headerRow.length).fill('');
-    headerRow.forEach((h,ci)=>{
-      const field=FF.colMap[h];
-      if(field&&dr[field]!==undefined)row[ci]=dr[field];
-    });
-    // Copy template row extra data if exists
-    if(templateRows.length>0){
-      templateRows[0].forEach((v,ci)=>{if(!FF.colMap[headerRow[ci]]&&v!=='')row[ci]=v});
+  // Detect header row index (scan first 5 rows for the one with most mapped cols)
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+  let headerRowIdx=range.s.r;
+  let bestScore=0;
+  for(let r=range.s.r;r<=Math.min(range.s.r+4,range.e.r);r++){
+    let score=0;
+    for(let c=range.s.c;c<=range.e.c;c++){
+      const cell=ws[XLSX.utils.encode_cell({r,c})];
+      if(cell&&FF.colMap[String(cell.v)])score++;
     }
-    outRows.push(row);
+    if(score>bestScore){bestScore=score;headerRowIdx=r;}
+  }
+
+  // Build col index → Dr field mapping from header row
+  const colFieldMap={};
+  for(let c=range.s.c;c<=range.e.c;c++){
+    const cell=ws[XLSX.utils.encode_cell({r:headerRowIdx,c})];
+    if(cell){const field=FF.colMap[String(cell.v)];if(field)colFieldMap[c]=field;}
+  }
+
+  // Find first data row (row after header)
+  const firstDataRow=headerRowIdx+1;
+
+  // Collect a template row (first data row after header) to copy non-mapped cell styles
+  const templateCells={};
+  for(let c=range.s.c;c<=range.e.c;c++){
+    const addr=XLSX.utils.encode_cell({r:firstDataRow,c});
+    if(ws[addr])templateCells[c]=JSON.parse(JSON.stringify(ws[addr]));
+  }
+
+  // Clear all existing data rows (keep header + everything above it)
+  for(let r=firstDataRow;r<=range.e.r;r++){
+    for(let c=range.s.c;c<=range.e.c;c++){
+      const addr=XLSX.utils.encode_cell({r,c});
+      delete ws[addr];
+    }
+  }
+
+  // Write one row per selected Dr
+  selDrs.forEach((dr,di)=>{
+    const rowIdx=firstDataRow+di;
+    for(let c=range.s.c;c<=range.e.c;c++){
+      const field=colFieldMap[c];
+      const tmpl=templateCells[c]||{};
+      const newCell=Object.assign({},tmpl); // clone style from template
+      if(field&&dr[field]!==undefined&&dr[field]!==''){
+        newCell.v=dr[field];
+        newCell.t='s'; // string type
+        delete newCell.f; // remove any formula from template
+      } else {
+        newCell.v=tmpl.v!==undefined&&!colFieldMap[c]?tmpl.v:'';
+        newCell.t='s';
+        delete newCell.f;
+      }
+      ws[XLSX.utils.encode_cell({r:rowIdx,c})]=newCell;
+    }
   });
 
-  const ws=XLSX.utils.aoa_to_sheet(outRows);
-  XLSX.utils.book_append_sheet(FF.filledWb,ws,sheetName);
+  // Update sheet range to reflect new last row
+  range.e.r=firstDataRow+selDrs.length-1;
+  ws['!ref']=XLSX.utils.encode_range(range);
+
+  FF.filledWb=clonedWb;
 
   document.getElementById('ff-result-card').style.display='block';
   document.getElementById('ff-result-info').textContent=`${selDrs.length} Drs filled in format. ${FF.headers.filter(h=>!FF.colMap[h]).length} columns left blank for manual entry.`;
@@ -2129,55 +2266,18 @@ function ffDownload(){
 }
 
 // OCR for handwritten data in format
-let FF_OCR_B64=null;
-function ffOcrHandleFile(e){
-  const f=e.target.files[0];if(!f)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    FF_OCR_B64=ev.target.result.split(',')[1];
-    const zone=document.getElementById('ff-ocr-zone');
-    zone.classList.add('has-file');
-    zone.innerHTML=`<img class="ocr-preview" src="${ev.target.result}" alt="preview"><div class="ocr-preview-ov"><span>✓</span></div>`;
-    showToast('Image ready','ok');
-  };reader.readAsDataURL(f);
-}
-
-async function ffOcrProcess(){
-  if(!FF_OCR_B64){showToast('Upload an image first.','err');return}
-  const authToken=GAuth.token;
-  const directKey=GeminiDirect.key||(await IDB.loadSetting('geminiApiKey'));
-  if(!authToken&&!directKey){showToast('Set a Gemini API Key in the 🤖 Gemini tab first.','err');return}
-  showToast('Extracting with Gemini…','ok');
-  const PROMPT=`Extract all text from this handwritten data image as JSON key-value pairs. Each key should be a column name and value should be the data. Return ONLY a raw JSON object.`;
-  const body={contents:[{parts:[{inline_data:{mime_type:'image/jpeg',data:FF_OCR_B64}},{text:PROMPT}]}]};
-  let url,headers;
-  if(authToken){
-    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent`;
-    headers={'Content-Type':'application/json','Authorization':'Bearer '+authToken};
-  } else {
-    url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent?key=${directKey}`;
-    headers={'Content-Type':'application/json'};
-  }
-  try{
-    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
-    const data=await r.json();const raw=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    let parsed;try{parsed=JSON.parse(raw.replace(/```json|```/g,'').trim())}catch{parsed=null}
-    if(parsed&&typeof parsed==='object'&&FF.filledWb){
-      showToast('OCR data extracted — merge manually if needed.','ok');
-    } else {showToast('OCR extracted — check console for data.','ok')}
-  }catch(err){showToast('OCR failed: '+err.message,'err')}
-}
-
 /* ══ DOWNLOAD CODE.GS ══ */
 function downloadCodeGS(){
-  const gs=`// PharmaSalesPro v6 — Code.gs
+  const gs=`// PharmaSalesPro v12 — Code.gs
 // Sheet columns: userId | name | mobile | company | designation | city | place | pin | status | createdAt
 // Deploy: Extensions > Apps Script > paste this > Deploy > Web App > Execute as Me > Anyone
+// NOTE: All actions handled via doGet (GET params) — v10+ sends everything as GET requests
 
 function doGet(e){
   const ss=SpreadsheetApp.openById('${CFG.SHEET_ID}');
   const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
   const p=e.parameter,action=p.action;
+
   if(action==='findUser'){
     const rows=ws.getDataRange().getValues();const h=rows[0];
     const mi=h.indexOf('mobile');
@@ -2189,36 +2289,64 @@ function doGet(e){
     }
     return out({user:null});
   }
+
   if(action==='getAllUsers'){
     const rows=ws.getDataRange().getValues();const h=rows[0];
     const users=rows.slice(1).filter(r=>r[0]).map(r=>{const o={};h.forEach((k,j)=>o[k]=r[j]);return o});
     return out({users});
   }
-  return out({error:'unknown action'});
-}
 
-function doPost(e){
-  const ss=SpreadsheetApp.openById('${CFG.SHEET_ID}');
-  const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
-  const body=JSON.parse(e.postData.contents);
-  const action=body.action;
+  // appendUser via GET params (v10+ sends as GET with URLSearchParams)
   if(action==='appendUser'){
-    const d=body.data;
     if(ws.getLastRow()===0){
       ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
     }
-    ws.appendRow([d.userId,d.name,d.mobile,d.company,d.designation,d.city||'',d.place||'',d.pin,d.status||'Free',d.createdAt]);
+    ws.appendRow([
+      p.userId||'', p.name||'', p.mobile||'', p.company||'',
+      p.designation||'', p.city||'', p.place||'', p.pin||'',
+      p.status||'Free', p.createdAt||new Date().toISOString()
+    ]);
     return out({ok:true});
   }
+
+  // updateStatus via GET params (v10+ sends as GET)
   if(action==='updateStatus'){
     const rows=ws.getDataRange().getValues();const h=rows[0];
     const ui=h.indexOf('userId');const si=h.indexOf('status');
     for(let i=1;i<rows.length;i++){
-      if(rows[i][ui]===body.userId){ws.getRange(i+1,si+1).setValue(body.status);break}
+      if(String(rows[i][ui])===p.userId){ws.getRange(i+1,si+1).setValue(p.status);break}
     }
     return out({ok:true});
   }
-  return out({error:'unknown'});
+
+  return out({error:'unknown action'});
+}
+
+function doPost(e){
+  // doPost kept for backward compatibility with older deployments
+  try{
+    const ss=SpreadsheetApp.openById('${CFG.SHEET_ID}');
+    const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
+    const body=JSON.parse(e.postData.contents);
+    const action=body.action;
+    if(action==='appendUser'){
+      const d=body.data||body;
+      if(ws.getLastRow()===0){
+        ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
+      }
+      ws.appendRow([d.userId||'',d.name||'',d.mobile||'',d.company||'',d.designation||'',d.city||'',d.place||'',d.pin||'',d.status||'Free',d.createdAt||new Date().toISOString()]);
+      return out({ok:true});
+    }
+    if(action==='updateStatus'){
+      const rows=ws.getDataRange().getValues();const h=rows[0];
+      const ui=h.indexOf('userId');const si=h.indexOf('status');
+      for(let i=1;i<rows.length;i++){
+        if(rows[i][ui]===body.userId){ws.getRange(i+1,si+1).setValue(body.status);break}
+      }
+      return out({ok:true});
+    }
+    return out({error:'unknown'});
+  }catch(err){return out({error:err.message})}
 }
 
 function out(obj){
@@ -2235,11 +2363,436 @@ let _toastT=null;
 function showToast(msg,type='ok'){const e=document.getElementById('ocr-toast');e.textContent=msg;e.className='ocr-toast '+type+' show';clearTimeout(_toastT);_toastT=setTimeout(()=>e.classList.remove('show'),3200)}
 
 /* ══ BOOT ══ */
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded',async()=>{
+  // Load saved config from IDB into live CFG on every boot
+  const sheetId=await IDB.loadSetting('sheetId');
+  const scriptUrl=await IDB.loadSetting('scriptUrl');
+  if(sheetId)CFG.SHEET_ID=sheetId;
+  if(scriptUrl)CFG.SCRIPT_URL=scriptUrl;
+  // Legacy: old boot code below
+  void (()=>{
   const s=Sess.load();if(s)initApp(s);
   document.getElementById('lpin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
   window.addEventListener('hashchange',()=>{const h=location.hash.replace('#','');if(h&&PSP.user)nav(h)});
+  })();
 });
+
+/* ══════════════════════════════════════════════════════
+   TOUR PLAN / MTP MODULE
+   Logic: patch master → gap algorithm → calendar render
+══════════════════════════════════════════════════════ */
+const TP={
+  patches:[],   // [{patchName, area, gapDays, doctors:[]}]
+  plan:[],      // [{date, dayName, patchName, area, doctors:[]}]
+  month:null,year:null
+};
+
+/* ── Sample Excel Download ── */
+function tpDownloadSample(){
+  const data=[
+    {
+      'Patch Name':'Andheri East','Area':'Mumbai West','Gap Days':10,
+      'Dr 1':'Dr Rajesh Sharma (Physician)','Dr 2':'Dr Priya Mehta (Gynaecologist)',
+      'Dr 3':'Dr Suresh Patel (Orthopedic)','Dr 4':'Dr Anjali Gupta (Dermatologist)',
+      'Dr 5':'','Dr 6':''
+    },
+    {
+      'Patch Name':'Bandra West','Area':'Mumbai West','Gap Days':7,
+      'Dr 1':'Dr Amit Shah (Cardiologist)','Dr 2':'Dr Rekha Nair (Paediatrician)',
+      'Dr 3':'Dr Vikas Joshi (ENT)','Dr 4':'','Dr 5':'','Dr 6':''
+    },
+    {
+      'Patch Name':'Borivali North','Area':'Mumbai North','Gap Days':15,
+      'Dr 1':'Dr Sunita Rao (Diabetologist)','Dr 2':'Dr Kiran Desai (Neurologist)',
+      'Dr 3':'','Dr 4':'','Dr 5':'','Dr 6':''
+    },
+  ];
+  const ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:20},{wch:18},{wch:10},{wch:30},{wch:30},{wch:30},{wch:30},{wch:30},{wch:30}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Patch Master');
+  XLSX.writeFile(wb,'PatchMaster_Sample.xlsx');
+  showToast('Sample downloaded ✓','ok');
+}
+
+/* ── Load Patch Excel ── */
+function tpPatchDrop(e){e.preventDefault();document.getElementById('tp-patch-zone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)tpLoadPatch({target:{files:[f]}});}
+function tpLoadPatch(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!raw.length){showToast('No data in file.','err');return}
+      tpParsePatchData(raw,f.name);
+    }catch(err){showToast('Error reading file: '+err.message,'err')}
+  };
+  if(f.name.endsWith('.csv'))reader.readAsText(f);else reader.readAsArrayBuffer(f);
+}
+function tpParsePatchData(raw,fname){
+  const defaultGap=parseInt(document.getElementById('tp-default-gap').value)||10;
+  TP.patches=raw.map((row,i)=>{
+    const keys=Object.keys(row);
+    // Find patch name column
+    const patchCol=keys.find(k=>/patch|area.?name|zone|territory/i.test(k))||keys[0];
+    const areaCol=keys.find(k=>/^area$|location|hq|headquarter/i.test(k))||keys[1]||keys[0];
+    const gapCol=keys.find(k=>/gap|days|frequency|cycle|interval/i.test(k));
+    // Collect all doctor columns (Dr 1, Dr 2... or Doctor 1... or any col after gap)
+    const drCols=keys.filter(k=>/^dr\s*\d|^doctor\s*\d|^physician\s*\d|^doc\s*\d/i.test(k));
+    // Also support comma-separated doctors in a single "Doctors" column
+    const drBulkCol=keys.find(k=>/^doctors?$|^dr\s*list|^doctor\s*list/i.test(k));
+    let doctors=[];
+    if(drBulkCol&&row[drBulkCol]){
+      doctors=String(row[drBulkCol]).split(/[,;|]/).map(d=>d.trim()).filter(Boolean);
+    } else {
+      drCols.forEach(c=>{if(row[c]&&String(row[c]).trim())doctors.push(String(row[c]).trim())});
+      // If no dr cols found, try all remaining cols after index 3
+      if(!doctors.length){
+        keys.slice(3).forEach(k=>{const v=String(row[k]||'').trim();if(v)doctors.push(v)});
+      }
+    }
+    return {
+      _id:i,
+      patchName:String(row[patchCol]||`Patch ${i+1}`).trim(),
+      area:String(row[areaCol]||'').trim(),
+      gapDays:gapCol?parseInt(row[gapCol])||defaultGap:defaultGap,
+      doctors:doctors.filter(d=>d&&d.length>1)
+    };
+  }).filter(p=>p.patchName);
+
+  // Show patch preview
+  const preview=document.getElementById('tp-patch-preview');
+  const list=document.getElementById('tp-patch-list');
+  preview.style.display='block';
+  list.innerHTML=TP.patches.map(p=>`
+    <div style="padding:.6rem .85rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:flex-start;gap:.7rem">
+      <div style="flex:1">
+        <div style="font-size:.8rem;font-weight:700;color:var(--text)">📍 ${esc(p.patchName)}</div>
+        <div style="font-size:.7rem;color:var(--muted)">${esc(p.area)} · Every ${p.gapDays} days · ${p.doctors.length} Drs</div>
+        <div style="font-size:.68rem;color:rgba(0,198,255,.7);margin-top:2px">${p.doctors.slice(0,3).map(d=>esc(d)).join(' | ')}${p.doctors.length>3?` + ${p.doctors.length-3} more`:''}</div>
+      </div>
+      <span style="font-size:.7rem;background:rgba(0,198,255,.1);color:var(--accent-a);border-radius:20px;padding:2px 8px;white-space:nowrap">${p.gapDays}d gap</span>
+    </div>`).join('');
+
+  // Update zone UI
+  const zone=document.getElementById('tp-patch-zone');
+  zone.classList.add('has-file');
+  zone.innerHTML=`<div class="ocr-zone-icon" style="font-size:1.4rem">✅</div><div class="ocr-zone-lbl" style="font-size:.76rem">${TP.patches.length} Patches Loaded</div><div class="ocr-zone-sub">${fname}</div>`;
+
+  const info=document.getElementById('tp-patch-info');
+  info.style.display='block';
+  info.textContent=`✓ ${TP.patches.length} patches · ${TP.patches.reduce((s,p)=>s+p.doctors.length,0)} total doctors loaded`;
+
+  document.getElementById('tp-generate-btn').disabled=false;
+  showToast(`${TP.patches.length} patches loaded ✓`,'ok');
+}
+
+/* ── Generate Tour Plan ── */
+function tpGenerate(){
+  if(!TP.patches.length){showToast('Upload patch Excel first.','err');return}
+  const month=parseInt(document.getElementById('tp-month').value);
+  const year=parseInt(document.getElementById('tp-year').value);
+  const skipSunday=document.getElementById('tp-skip-sunday').checked;
+  const sundayShift=document.getElementById('tp-sunday-shift').value; // 'next' or 'prev'
+  TP.month=month;TP.year=year;
+
+  // Parse meeting days and holidays from user input
+  function parseDateList(id){
+    const raw=document.getElementById(id).value||'';
+    return raw.split(/[,;\s]+/).map(s=>parseInt(s.trim())).filter(n=>n>0&&n<=31);
+  }
+  const meetingDays=new Set(parseDateList('tp-meeting-days'));
+  const holidayDays=new Set(parseDateList('tp-holidays'));
+
+  // Get all days in month
+  const daysInMonth=new Date(year,month,0).getDate();
+
+  // Build base day info
+  const allDates=[];
+  for(let d=1;d<=daysInMonth;d++){
+    const dateObj=new Date(year,month-1,d);
+    const dow=dateObj.getDay(); // 0=Sun
+    allDates.push({
+      date:d,
+      fullDate:`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`,
+      day:dow,
+      dayName:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dow],
+      isSunday:dow===0,
+      isMeeting:meetingDays.has(d),
+      isHoliday:holidayDays.has(d)
+    });
+  }
+
+  // Determine if a date is blocked (meeting > holiday > sunday)
+  function isBlocked(d){
+    const info=allDates[d-1];if(!info)return true;
+    if(info.isMeeting)return true;
+    if(info.isHoliday)return true;
+    if(skipSunday&&info.isSunday)return true;
+    return false;
+  }
+
+  // Find next available (non-blocked) day from given date, searching forward
+  function nextFreeDay(fromDate,occupiedSet){
+    let d=fromDate;
+    while(d<=daysInMonth){
+      if(!isBlocked(d)&&!occupiedSet.has(d))return d;
+      d++;
+    }
+    return null; // no free day found this month
+  }
+
+  // Find previous available day (for Sunday → Saturday shift)
+  function prevFreeDay(fromDate,occupiedSet){
+    let d=fromDate;
+    while(d>=1){
+      if(!isBlocked(d)&&!occupiedSet.has(d))return d;
+      d--;
+    }
+    return null;
+  }
+
+  // Resolve a preferred day: if it's a sunday, shift per config; then find free slot
+  function resolveDay(preferredDate,occupiedSet){
+    let d=preferredDate;
+    if(d<1)d=1;if(d>daysInMonth)return null;
+    // Handle sunday shift first
+    if(skipSunday&&allDates[d-1]&&allDates[d-1].isSunday){
+      if(sundayShift==='prev'){
+        // Try saturday first, else monday
+        const sat=d-1;const mon=d+1;
+        if(sat>=1&&!isBlocked(sat)&&!occupiedSet.has(sat))return sat;
+        if(mon<=daysInMonth&&!isBlocked(mon)&&!occupiedSet.has(mon))return mon;
+      } else {
+        // Try monday first, else saturday
+        const mon=d+1;const sat=d-1;
+        if(mon<=daysInMonth&&!isBlocked(mon)&&!occupiedSet.has(mon))return mon;
+        if(sat>=1&&!isBlocked(sat)&&!occupiedSet.has(sat))return sat;
+      }
+      // Both blocked — fall through to scan forward
+    }
+    // If day itself is meeting/holiday, scan forward
+    if(isBlocked(d)){
+      return nextFreeDay(d+1,occupiedSet);
+    }
+    // Day is free but occupied by another patch — caller handles conflict
+    return d;
+  }
+
+  // SCHEDULING RULES:
+  //  1. STRICT 1 patch per working day (no two patches on same date)
+  //  2. Gap rhythm: next visit = placed date + gapDays (strict from actual placed date)
+  //  3. Frequency from gap: 7d=~4x/month, 10d=~3x/month, 15d=~2x/month
+  //  4. Blocked days (Sunday/holiday/meeting) push visit forward to next free day
+  //  5. Sort ascending gap (high-frequency patches get first pick of dates)
+
+  // ── 3-PASS PRIORITY SCHEDULING ──────────────────────────────
+  // Pass 1: 7-day patches  → up to 4 visits each
+  // Pass 2: 10-day patches → up to 3 visits each
+  // Pass 3: 15-day patches → up to 2 visits each
+  // Within each pass: preferred day taken/blocked → nextFreeDay from THAT resolved day.
+  // Goal: no day left vacant except planned meetings, holidays, Sundays.
+
+  const patchSchedule={};   // date -> [patch entry]
+  const occupiedDates=new Set();
+
+  // Max visits per gap category
+  function maxVisits(gap){if(gap<=7)return 4;if(gap<=10)return 3;return 2;}
+
+  // Assign patch to a resolved date
+  function placeVisit(date,patch){
+    if(!patchSchedule[date])patchSchedule[date]=[];
+    patchSchedule[date].push({...patch});
+    occupiedDates.add(date);
+  }
+
+  // Schedule one patch: starting from startDay, up to maxV visits, gap rhythm
+  function schedulePatch(patch,startDay,maxV){
+    let currentDay=startDay;
+    let placed=0;
+    while(placed<maxV&&currentDay<=daysInMonth){
+      // Resolve to next non-blocked free day at or after currentDay
+      const resolved=nextFreeDay(currentDay,occupiedDates);
+      if(resolved===null)break;
+      placeVisit(resolved,patch);
+      placed++;
+      // Next visit gap measured from the PLACED date
+      currentDay=resolved+patch.gapDays;
+    }
+  }
+
+  // Separate patches into 3 tiers
+  const tier7=TP.patches.filter(p=>p.gapDays<=7);
+  const tier10=TP.patches.filter(p=>p.gapDays>7&&p.gapDays<=10);
+  const tier15=TP.patches.filter(p=>p.gapDays>10);
+
+  // Stagger start days within each tier so patches don't all start on day 1
+  function staggeredStart(patches,tierOffset){
+    // Find all free (non-blocked) days to use as start anchors
+    const freeDays=[];
+    for(let d=1;d<=daysInMonth;d++){if(!isBlocked(d))freeDays.push(d);}
+    patches.forEach((patch,i)=>{
+      // Stagger: use (tierOffset + i) % freeDays.length as start pick
+      // But respect occupiedDates at schedule time, so we find next free from anchor
+      const anchorIdx=(tierOffset+i)%Math.max(freeDays.length,1);
+      const anchor=freeDays[anchorIdx]||1;
+      schedulePatch(patch,anchor,maxVisits(patch.gapDays));
+    });
+  }
+
+  staggeredStart(tier7,0);
+  staggeredStart(tier10,2);
+  staggeredStart(tier15,5);
+
+  // Build final plan array
+  TP.plan=allDates.map(d=>{
+    const entries=patchSchedule[d.date]||[];
+    return{
+      date:d.date,fullDate:d.fullDate,dayName:d.dayName,day:d.day,
+      isWorking:!isBlocked(d.date),
+      isSunday:d.isSunday,
+      isMeeting:d.isMeeting,
+      isHoliday:d.isHoliday,
+      patches:entries,
+      totalDrs:entries.reduce((s,p)=>s+p.doctors.length,0)
+    };
+  });
+
+  tpRenderCalendar();
+  tpRenderDayList();
+  document.getElementById('tp-calendar-wrap').style.display='block';
+  document.getElementById('tp-download-btn').style.display='block';
+  document.getElementById('tp-wa-btn').style.display='block';
+
+  const monthNames=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('tp-cal-title').textContent=`Tour Plan — ${monthNames[month]} ${year}`;
+
+  // Summary badges
+  const fieldDays=TP.plan.filter(d=>d.patches.length>0).length;
+  const totalVisits=TP.plan.reduce((s,d)=>s+d.totalDrs,0);
+  const avgPerDay=fieldDays>0?(totalVisits/fieldDays).toFixed(1):0;
+  const meetCount=[...meetingDays].filter(d=>d<=daysInMonth).length;
+  const holCount=[...holidayDays].filter(d=>d<=daysInMonth).length;
+  document.getElementById('tp-summary-badges').innerHTML=`
+    <span style="background:rgba(0,198,255,.12);color:var(--accent-a);border-radius:20px;padding:3px 10px;font-size:.72rem">📅 ${fieldDays} Field Days</span>
+    <span style="background:rgba(0,232,122,.1);color:var(--green);border-radius:20px;padding:3px 10px;font-size:.72rem">👨‍⚕️ ${totalVisits} Dr Visits</span>
+    <span style="background:rgba(255,200,0,.1);color:#f59e0b;border-radius:20px;padding:3px 10px;font-size:.72rem">📊 Avg ${avgPerDay}/day</span>
+    <span style="background:rgba(255,255,255,.06);color:var(--muted);border-radius:20px;padding:3px 10px;font-size:.72rem">📍 ${TP.patches.length} Patches</span>
+    ${meetCount?`<span style="background:rgba(255,179,0,.12);color:var(--amber);border-radius:20px;padding:3px 10px;font-size:.72rem">🤝 ${meetCount} Meeting Days</span>`:''}
+    ${holCount?`<span style="background:rgba(255,77,106,.1);color:var(--red);border-radius:20px;padding:3px 10px;font-size:.72rem">🏖️ ${holCount} Holidays</span>`:''}`;
+
+  showToast('Tour Plan generated ✓','ok');
+  // Scroll to calendar
+  setTimeout(()=>document.getElementById('tp-calendar-wrap').scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+
+/* ── Render Calendar Grid ── */
+function tpRenderCalendar(){
+  const cal=document.getElementById('tp-calendar');
+  // Day headers
+  const dayHeaders=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html=dayHeaders.map(d=>`<div style="text-align:center;font-size:.62rem;font-weight:700;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08)">${d}</div>`).join('');
+
+  // Empty cells before first day
+  const firstDayOfWeek=new Date(TP.year,TP.month-1,1).getDay();
+  for(let i=0;i<firstDayOfWeek;i++)html+=`<div></div>`;
+
+  TP.plan.forEach(d=>{
+    const hasPatch=d.patches.length>0;
+    const bg=d.isSunday?'rgba(255,255,255,.03)':hasPatch?'rgba(0,198,255,.12)':'rgba(255,255,255,.04)';
+    const color=d.isSunday?'rgba(255,255,255,.2)':hasPatch?'var(--accent-a)':'var(--text)';
+    const badge=hasPatch?`<div style="background:var(--accent-a);color:#000;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:900;margin:1px auto">${d.totalDrs}</div>`:'';
+    const patchDot=hasPatch&&d.patches.length>0?`<div style="font-size:.5rem;color:rgba(0,198,255,.7);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${d.patches.map(p=>p.patchName.substring(0,4)).join(',')}</div>`:'';
+    html+=`<div onclick="tpDayClick(${d.date})" style="background:${bg};border-radius:5px;padding:3px 2px;cursor:${hasPatch?'pointer':'default'};min-height:44px;display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid ${hasPatch?'rgba(0,198,255,.2)':'rgba(255,255,255,.05)'}">
+      <div style="font-size:.68rem;font-weight:700;color:${color}">${d.date}</div>
+      ${badge}${patchDot}
+    </div>`;
+  });
+  cal.innerHTML=html;
+}
+
+/* ── Calendar Day Click ── */
+function tpDayClick(date){
+  const d=TP.plan.find(p=>p.date===date);
+  if(!d||!d.patches.length)return;
+  const el=document.getElementById('tp-day-'+date);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+/* ── Render Day-wise List ── */
+function tpRenderDayList(){
+  const monthNames=['','January','February','March','April','May','June','July','August','September','October','November','December'];
+  const list=document.getElementById('tp-day-list');
+  const workingDays=TP.plan.filter(d=>d.patches.length>0);
+  list.innerHTML=workingDays.map(d=>`
+    <div id="tp-day-${d.date}" style="border-bottom:1px solid rgba(255,255,255,.07);padding:.75rem .1rem;margin-bottom:.3rem">
+      <div class="flex-row" style="margin-bottom:.5rem">
+        <div style="background:var(--accent-a);color:#000;border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:900">${d.dayName} ${d.date}</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-left:.3rem">${monthNames[TP.month]} ${TP.year}</div>
+        <span style="margin-left:auto;font-size:.68rem;background:rgba(0,232,122,.1);color:var(--green);border-radius:20px;padding:2px 8px">${d.totalDrs} Drs</span>
+      </div>
+      ${d.patches.map(p=>`
+        <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:.6rem .8rem;margin-bottom:.4rem;border-left:3px solid var(--accent-a)">
+          <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:.4rem">📍 ${esc(p.patchName)} <span style="font-size:.68rem;color:var(--muted);font-weight:400">· ${esc(p.area)}</span></div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            ${p.doctors.map((dr,i)=>`<div style="font-size:.72rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:5px"><span style="color:var(--accent-a);font-size:.65rem;min-width:14px">${i+1}.</span>${esc(dr)}</div>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ── Download Tour Plan Excel ── */
+function tpDownloadExcel(){
+  if(!TP.plan.length){showToast('Generate tour plan first.','err');return}
+  const monthNames=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const rows=[];
+  TP.plan.forEach(d=>{
+    if(!d.patches.length){
+      rows.push({'Date':`${d.date}-${monthNames[TP.month]}-${TP.year}`,'Day':d.dayName,'Patch':'','Area':'','Gap Days':'','No. of Drs':'','Doctor List':d.isSunday?'SUNDAY':'—'});
+    } else {
+      d.patches.forEach((p,pi)=>{
+        rows.push({
+          'Date':pi===0?`${d.date}-${monthNames[TP.month]}-${TP.year}`:'',
+          'Day':pi===0?d.dayName:'',
+          'Patch':p.patchName,
+          'Area':p.area,
+          'Gap Days':p.gapDays,
+          'No. of Drs':p.doctors.length,
+          'Doctor List':p.doctors.join(' | ')
+        });
+      });
+    }
+  });
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:14},{wch:6},{wch:20},{wch:16},{wch:10},{wch:10},{wch:60}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,`TP ${monthNames[TP.month]} ${TP.year}`);
+  XLSX.writeFile(wb,`TourPlan_${monthNames[TP.month]}_${TP.year}.xlsx`);
+  showToast('Tour Plan Excel downloaded ✓','ok');
+}
+
+/* ── Share Tour Plan on WhatsApp ── */
+function tpShareWhatsApp(){
+  if(!TP.plan.length)return;
+  const u=PSP.user||{};
+  const monthNames=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const rep=u.name||'Rep';const company=u.company||'Company';
+  let msg=`🗓️ *Monthly Tour Plan — ${monthNames[TP.month]} ${TP.year}*\nRep: ${rep} | ${company}\n${'─'.repeat(30)}\n`;
+  const working=TP.plan.filter(d=>d.patches.length>0);
+  working.forEach(d=>{
+    msg+=`\n📅 *${d.dayName} ${d.date} ${monthNames[TP.month]}*\n`;
+    d.patches.forEach(p=>{
+      msg+=`  📍 ${p.patchName} (${p.area})\n`;
+      p.doctors.forEach((dr,i)=>msg+=`    ${i+1}. ${dr}\n`);
+    });
+  });
+  msg+=`\n${'─'.repeat(30)}\n📊 *${working.length} field days | ${TP.plan.reduce((s,d)=>s+d.totalDrs,0)} doctor visits*\n_via PharmaSalesPro_`;
+  // WhatsApp has ~4096 char limit — truncate if needed
+  if(msg.length>4000)msg=msg.substring(0,3900)+'…\n_(truncated — download Excel for full plan)_';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
 </script>
 </body>
 </html>
