@@ -380,8 +380,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
             </select></div>
         </div>
         <div class="res-grid">
-          <div class="res-box"><div class="res-lbl">PTR</div><div class="res-val" id="rv-ptr">—</div><div class="res-frm">MRP÷(1+GST%)÷(1+Ret%)</div></div>
-          <div class="res-box"><div class="res-lbl">PTS</div><div class="res-val" id="rv-pts">—</div><div class="res-frm">PTR÷(1+Stk%)</div></div>
+          <div class="res-box"><div class="res-lbl">PTR</div><div class="res-val" id="rv-ptr">—</div><div class="res-frm">MRP÷(1+GST%)×(1−Ret%)</div></div>
+          <div class="res-box"><div class="res-lbl">PTS</div><div class="res-val" id="rv-pts">—</div><div class="res-frm">PTR×(1−Stk%)</div></div>
           <div class="res-box green"><div class="res-lbl">Net Rate (Chemist)</div><div class="res-val" id="rv-nr">—</div><div class="res-frm">PTR×(1−CD%)×Qty/(Qty+Free)</div></div>
           <div class="res-box amber"><div class="res-lbl">GST Amount</div><div class="res-val" id="rv-gst">—</div><div class="res-frm">PTS×GST%</div></div>
           <div class="res-box"><div class="res-lbl">Scheme Value</div><div class="res-val" id="rv-scheme">—</div><div class="res-frm">PTS×Free Qty</div></div>
@@ -389,7 +389,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <div class="res-box" style="border-color:rgba(0,232,122,.28);background:rgba(0,232,122,.06)">
             <div class="res-lbl" style="color:var(--green)">Chemist % Profit</div>
             <div class="res-val" id="rv-cmargin" style="color:var(--green)">—</div>
-            <div class="res-frm">(MRP−Net Rate)÷MRP×100</div>
+            <div class="res-frm">(MRP_ex−Net Rate)÷MRP_ex×100</div>
           </div>
         </div>
       </div>
@@ -1194,9 +1194,11 @@ const SheetAPI={
 
 /* ══ PHARMAMATH ══ */
 const PM={
-  // MRP is inclusive of GST. Derive excl-GST MRP first, then compute PTR and PTS.
-  PTR:(mrp,ret,gst)=>{const mrpEx=mrp/(1+(gst||0)/100);return mrpEx/(1+ret/100)},
-  PTS:(mrp,ret,stk,gst)=>{const mrpEx=mrp/(1+(gst||0)/100);const ptr=mrpEx/(1+ret/100);return ptr/(1+stk/100)},
+  // MRP is inclusive of GST. Strip GST first, then apply margin (% on MRP-ex, not markup).
+  // PTR = MRP_ex × (1 − retailerMargin%)
+  // PTS = PTR  × (1 − stockistMargin%)   [stockist margin is on PTR]
+  PTR:(mrp,ret,gst)=>{const mrpEx=mrp/(1+(gst||0)/100);return mrpEx*(1-ret/100)},
+  PTS:(mrp,ret,stk,gst)=>{const mrpEx=mrp/(1+(gst||0)/100);const ptr=mrpEx*(1-ret/100);return ptr*(1-stk/100)},
   netRate:(ptr,cd,sq,fq)=>fq+sq>0?(ptr*(1-cd/100))*(sq/(sq+fq)):ptr*(1-cd/100),
   ach:(act,tgt)=>(act/tgt*100).toFixed(2),
   growth:(cur,ly)=>((cur-ly)/ly*100).toFixed(2),
@@ -1512,7 +1514,9 @@ function calcLive(){
   const gst=parseFloat(document.getElementById('m-gst').value)||0;
   if(!mrp){['rv-ptr','rv-pts','rv-nr','rv-gst','rv-scheme','rv-eff','rv-cmargin'].forEach(id=>rv(id,'—'));return}
   const ptr=PM.PTR(mrp,ret,gst);const pts=PM.PTS(mrp,ret,stk,gst);const nr=PM.netRate(ptr,cd,sq,fq);
-  const ga=pts*gst/100;const sv=pts*fq;const ef=pts+ga;const chemistMargin=mrp>0?((mrp-nr)/mrp*100):0;
+  const ga=pts*gst/100;const sv=pts*fq;const ef=pts+ga;
+  const mrpEx=mrp/(1+(gst||0)/100);
+  const chemistMargin=mrpEx>0?((mrpEx-nr)/mrpEx*100):0;
   rv('rv-ptr','₹'+ptr.toFixed(2));rv('rv-pts','₹'+pts.toFixed(2));rv('rv-nr','₹'+nr.toFixed(2));
   rv('rv-gst','₹'+ga.toFixed(2));rv('rv-scheme','₹'+sv.toFixed(2));rv('rv-eff','₹'+ef.toFixed(2));
   rv('rv-cmargin',chemistMargin.toFixed(1)+'%');
