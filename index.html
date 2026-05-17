@@ -1153,11 +1153,43 @@ const Sess={
 };
 
 /* ══ SHEETS API ══ */
+// Google Apps Script redirects script.google.com → script.googleusercontent.com
+// This drops GET params on cross-origin redirects. Fix:
+// → Write actions (appendUser, updateStatus): use no-cors (fire & forget, params survive)
+// → Read actions (findUser, getAll): use JSONP script tag (bypasses CORS entirely)
 const SheetAPI={
-  async findUser(mob){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=findUser&mobile=${encodeURIComponent(mob)}`);return(await r.json()).user||null}catch{return null}},
-  async appendUser(d){try{const params=new URLSearchParams({action:'appendUser',userId:d.userId||'',name:d.name||'',mobile:d.mobile||'',company:d.company||'',designation:d.designation||'',city:d.city||'',place:d.place||'',pin:d.pin||'',status:d.status||'Free',createdAt:d.createdAt||new Date().toISOString()});const r=await fetch(`${CFG.SCRIPT_URL}?${params.toString()}`);return await r.json()}catch(e){console.error('appendUser error:',e);return null}},
-  async getAll(){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=getAllUsers`);return(await r.json()).users||[]}catch{return[]}},
-  async updateStatus(uid,status){try{const r=await fetch(`${CFG.SCRIPT_URL}?action=updateStatus&userId=${encodeURIComponent(uid)}&status=${encodeURIComponent(status)}`);return await r.json()}catch{return null}},
+  _jsonp(url){
+    return new Promise((res,rej)=>{
+      const cb='_psp_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+      const s=document.createElement('script');
+      const t=setTimeout(()=>{cleanup();rej(new Error('timeout'))},12000);
+      function cleanup(){clearTimeout(t);delete window[cb];s.remove()}
+      window[cb]=data=>{cleanup();res(data)};
+      s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+      s.onerror=()=>{cleanup();rej(new Error('JSONP load error'))};
+      document.head.appendChild(s);
+    });
+  },
+  async _write(url){
+    // no-cors: browser follows redirect, params sent, response opaque (we don't need it for writes)
+    try{await fetch(url,{method:'GET',mode:'no-cors',redirect:'follow'})}catch(e){console.warn('SheetAPI write warn:',e)}
+    return{ok:true};
+  },
+  async findUser(mob){
+    try{const d=await this._jsonp(`${CFG.SCRIPT_URL}?action=findUser&mobile=${encodeURIComponent(mob)}`);return d.user||null}catch{return null}
+  },
+  async appendUser(d){
+    try{
+      const p=new URLSearchParams({action:'appendUser',userId:d.userId||'',name:d.name||'',mobile:d.mobile||'',company:d.company||'',designation:d.designation||'',city:d.city||'',place:d.place||'',pin:d.pin||'',status:d.status||'Free',createdAt:d.createdAt||new Date().toISOString()});
+      return await this._write(`${CFG.SCRIPT_URL}?${p.toString()}`);
+    }catch(e){console.error('appendUser:',e);return null}
+  },
+  async getAll(){
+    try{const d=await this._jsonp(`${CFG.SCRIPT_URL}?action=getAllUsers`);return d.users||[]}catch{return[]}
+  },
+  async updateStatus(uid,status){
+    try{return await this._write(`${CFG.SCRIPT_URL}?action=updateStatus&userId=${encodeURIComponent(uid)}&status=${encodeURIComponent(status)}`)}catch{return null}
+  },
 };
 
 /* ══ PHARMAMATH ══ */
@@ -2265,16 +2297,27 @@ function ffDownload(){
   showToast('Excel downloaded ✓','ok');
 }
 
-// OCR for handwritten data in format
 /* ══ DOWNLOAD CODE.GS ══ */
-function downloadCodeGS(){
-  const gs=`// PharmaSalesPro v12 — Code.gs
+async function downloadCodeGS(){
+  // Read live values from IDB — so downloaded file has real IDs already baked in
+  const sheetId=(await IDB.loadSetting('sheetId'))||CFG.SHEET_ID||'PASTE_YOUR_SHEET_ID_HERE';
+  const scriptUrl=(await IDB.loadSetting('scriptUrl'))||CFG.SCRIPT_URL||'PASTE_YOUR_SCRIPT_URL_HERE';
+
+  if(sheetId==='PASTE_YOUR_SHEET_ID_HERE'){
+    showToast('⚠ Save your Sheet ID in Admin first!','err');
+    return;
+  }
+
+  const gs=`// PharmaSalesPro v13 — Code.gs
+// Auto-generated: Sheet ID and Script URL already filled in.
 // Sheet columns: userId | name | mobile | company | designation | city | place | pin | status | createdAt
 // Deploy: Extensions > Apps Script > paste this > Deploy > Web App > Execute as Me > Anyone
-// NOTE: All actions handled via doGet (GET params) — v10+ sends everything as GET requests
+// Script URL: ${scriptUrl}
+
+const SHEET_ID = '${sheetId}';
 
 function doGet(e){
-  const ss=SpreadsheetApp.openById('${CFG.SHEET_ID}');
+  const ss=SpreadsheetApp.openById(SHEET_ID);
   const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
   const p=e.parameter,action=p.action;
 
@@ -2284,19 +2327,18 @@ function doGet(e){
     for(let i=1;i<rows.length;i++){
       if(String(rows[i][mi])===p.mobile){
         const obj={};h.forEach((k,j)=>obj[k]=rows[i][j]);
-        return out({user:obj});
+        return out(e,{user:obj});
       }
     }
-    return out({user:null});
+    return out(e,{user:null});
   }
 
   if(action==='getAllUsers'){
     const rows=ws.getDataRange().getValues();const h=rows[0];
     const users=rows.slice(1).filter(r=>r[0]).map(r=>{const o={};h.forEach((k,j)=>o[k]=r[j]);return o});
-    return out({users});
+    return out(e,{users});
   }
 
-  // appendUser via GET params (v10+ sends as GET with URLSearchParams)
   if(action==='appendUser'){
     if(ws.getLastRow()===0){
       ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
@@ -2306,26 +2348,24 @@ function doGet(e){
       p.designation||'', p.city||'', p.place||'', p.pin||'',
       p.status||'Free', p.createdAt||new Date().toISOString()
     ]);
-    return out({ok:true});
+    return out(e,{ok:true});
   }
 
-  // updateStatus via GET params (v10+ sends as GET)
   if(action==='updateStatus'){
     const rows=ws.getDataRange().getValues();const h=rows[0];
     const ui=h.indexOf('userId');const si=h.indexOf('status');
     for(let i=1;i<rows.length;i++){
       if(String(rows[i][ui])===p.userId){ws.getRange(i+1,si+1).setValue(p.status);break}
     }
-    return out({ok:true});
+    return out(e,{ok:true});
   }
 
-  return out({error:'unknown action'});
+  return out(e,{error:'unknown action'});
 }
 
 function doPost(e){
-  // doPost kept for backward compatibility with older deployments
   try{
-    const ss=SpreadsheetApp.openById('${CFG.SHEET_ID}');
+    const ss=SpreadsheetApp.openById(SHEET_ID);
     const ws=ss.getSheetByName('Users')||ss.getSheets()[0];
     const body=JSON.parse(e.postData.contents);
     const action=body.action;
@@ -2335,7 +2375,7 @@ function doPost(e){
         ws.appendRow(['userId','name','mobile','company','designation','city','place','pin','status','createdAt']);
       }
       ws.appendRow([d.userId||'',d.name||'',d.mobile||'',d.company||'',d.designation||'',d.city||'',d.place||'',d.pin||'',d.status||'Free',d.createdAt||new Date().toISOString()]);
-      return out({ok:true});
+      return out(e,{ok:true});
     }
     if(action==='updateStatus'){
       const rows=ws.getDataRange().getValues();const h=rows[0];
@@ -2343,19 +2383,26 @@ function doPost(e){
       for(let i=1;i<rows.length;i++){
         if(rows[i][ui]===body.userId){ws.getRange(i+1,si+1).setValue(body.status);break}
       }
-      return out({ok:true});
+      return out(e,{ok:true});
     }
-    return out({error:'unknown'});
-  }catch(err){return out({error:err.message})}
+    return out(e,{error:'unknown'});
+  }catch(err){return out(e,{error:err.message})}
 }
 
-function out(obj){
+// Supports both plain JSON and JSONP (callback param) for CORS bypass
+function out(e,obj){
+  const cb=e&&e.parameter&&e.parameter.callback;
+  if(cb){
+    return ContentService.createTextOutput(cb+'('+JSON.stringify(obj)+')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }`;
+
   const blob=new Blob([gs],{type:'text/plain'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Code.gs';a.click();
-  showToast('Code.gs downloaded ✓','ok');
+  showToast('Code.gs downloaded ✓ — Sheet ID already filled in!','ok');
 }
 
 /* ══ TOAST ══ */
