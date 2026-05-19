@@ -256,6 +256,80 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .sub-tab.on{background:var(--grad);color:#fff}
 
 @media(max-width:380px){.calc-grid{grid-template-columns:1fr 1fr}.res-grid{grid-template-columns:1fr 1fr}}
+/* ══ INVOICE WORKSPACE ══ */
+.inv-block{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--radius);padding:1rem;backdrop-filter:blur(14px);margin-bottom:.85rem}
+.inv-block-title{font-size:.7rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent-a);margin-bottom:.85rem;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:.6rem}
+.inv-block-title span{font-size:.95rem}
+.inv-upload-zone{border:2px dashed rgba(0,198,255,.25);border-radius:var(--radius-sm);padding:1.1rem;text-align:center;cursor:pointer;transition:all .25s;position:relative;margin-bottom:.85rem}
+.inv-upload-zone:hover{border-color:var(--accent-a);background:rgba(0,198,255,.04)}
+.inv-upload-zone.loaded{border-color:var(--green);border-style:solid;background:rgba(0,232,122,.04)}
+.inv-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.inv-upload-lbl{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.inv-upload-sub{font-size:.6rem;color:rgba(255,255,255,.25);margin-top:3px}
+.inv-prod-scroll{max-height:240px;overflow-y:auto;border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-sm);margin-bottom:.85rem}
+.inv-prod-scroll::-webkit-scrollbar{width:3px}
+.inv-prod-scroll::-webkit-scrollbar-thumb{background:rgba(0,198,255,.22);border-radius:3px}
+.inv-prod-item{display:flex;align-items:center;gap:.65rem;padding:.6rem .85rem;border-bottom:1px solid rgba(255,255,255,.04);transition:background .14s;cursor:pointer}
+.inv-prod-item:hover{background:rgba(0,198,255,.05)}
+.inv-prod-item:last-child{border-bottom:none}
+.inv-prod-item.selected{background:rgba(0,198,255,.08)}
+.inv-cb{width:18px;height:18px;border-radius:5px;border:2px solid rgba(0,198,255,.4);background:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;flex-shrink:0;transition:all .15s;position:relative}
+.inv-cb:checked{background:var(--grad);border-color:var(--accent-a)}
+.inv-cb:checked::after{content:"✓";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:.65rem;font-weight:700}
+.inv-prod-name{font-size:.8rem;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-prod-mrp{font-size:.72rem;color:var(--muted);font-family:var(--mono);flex-shrink:0;text-align:right}
+.inv-tier-group{display:flex;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;margin-bottom:.85rem}
+.inv-tier-btn{flex:1;padding:.48rem;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.42);background:transparent}
+.inv-tier-btn.on{background:var(--grad);color:#fff;box-shadow:0 2px 12px rgba(0,114,255,.32)}
+.inv-empty-msg{text-align:center;padding:1.2rem 1rem;color:var(--muted);font-size:.78rem}
+.inv-empty-msg .ei{font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.4}
+.inv-tbl-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--glass-b);-webkit-overflow-scrolling:touch}
+.inv-tbl-wrap::-webkit-scrollbar{height:3px}
+.inv-tbl-wrap::-webkit-scrollbar-thumb{background:rgba(0,198,255,.22);border-radius:3px}
+.inv-tbl{width:100%;border-collapse:collapse;font-size:.75rem;min-width:600px}
+.inv-tbl thead th{background:rgba(0,198,255,.08);padding:.55rem .5rem;text-align:left;font-size:.57rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--label);white-space:nowrap;border-bottom:1px solid var(--glass-b)}
+.inv-tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .14s}
+.inv-tbl tbody tr:hover{background:rgba(0,198,255,.03)}
+.inv-tbl tbody td{padding:.5rem .5rem;vertical-align:middle}
+.inv-tbl tfoot td{padding:.6rem .5rem;font-weight:700;background:rgba(0,198,255,.06);border-top:1px solid rgba(0,198,255,.18)}
+.inv-cell{background:rgba(255,255,255,.06);border:1px solid transparent;border-radius:6px;padding:4px 6px;color:#fff;font-family:var(--mono);font-size:.78rem;width:100%;min-width:44px;outline:none;transition:border .15s;text-align:center}
+.inv-cell:focus{border-color:var(--accent-a);background:rgba(0,198,255,.08)}
+.inv-cell::-webkit-outer-spin-button,.inv-cell::-webkit-inner-spin-button{-webkit-appearance:none}
+.tier-pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.6rem;font-weight:700;letter-spacing:.4px}
+.tier-ptr{background:rgba(0,198,255,.14);color:var(--accent-a);border:1px solid rgba(0,198,255,.3)}
+.tier-pts{background:rgba(255,210,0,.12);color:var(--gold);border:1px solid rgba(255,210,0,.28)}
+.inv-rm-btn{background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.22);color:var(--red);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:.72rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.inv-rm-btn:hover{background:rgba(255,77,106,.24)}
+.inv-sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem}
+.inv-sum-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-sm);padding:.75rem}
+.inv-sum-lbl{font-size:.58rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.inv-sum-val{font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--text)}
+.inv-grand-box{background:linear-gradient(135deg,rgba(0,114,255,.12),rgba(0,198,255,.08));border:1px solid rgba(0,198,255,.28);border-radius:var(--radius-sm);padding:1rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem}
+.inv-grand-lbl{font-size:.72rem;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.8px}
+.inv-grand-val{font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--gold)}
+.inv-party-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem}
+.inv-export-row{display:flex;gap:.6rem;flex-wrap:wrap}
+.inv-export-row .btn{flex:1;min-width:80px;font-size:.78rem;padding:.65rem .5rem}
+.inv-search-bar{width:100%;padding:.52rem .8rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-size:.82rem;outline:none;margin-bottom:.6rem;box-sizing:border-box}
+.inv-search-bar:focus{border-color:rgba(0,198,255,.45)}
+.inv-search-bar::placeholder{color:rgba(255,255,255,.26)}
+.inv-select-all{display:flex;align-items:center;gap:.5rem;padding:.45rem .85rem;border-bottom:1px solid rgba(255,255,255,.07);font-size:.72rem;color:var(--muted)}
+.inv-count-badge{font-size:.6rem;background:rgba(0,198,255,.14);color:var(--accent-a);border-radius:20px;padding:2px 8px;margin-left:auto}
+.inv-mapper{background:rgba(4,13,24,.97);border:1px solid rgba(255,180,0,.3);border-radius:var(--radius);padding:1.1rem;margin-bottom:.85rem;display:none}
+.inv-mapper.show{display:block}
+.inv-mapper-title{font-size:.72rem;font-weight:700;color:var(--amber);margin-bottom:.75rem}
+.inv-mapper-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.75rem}
+.inv-mapper-row{display:flex;flex-direction:column;gap:4px}
+.inv-mapper-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.inv-mapper-sel{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:7px;color:#fff;font-size:.78rem;padding:.4rem .55rem;outline:none;width:100%}
+.inv-mapper-sel:focus{border-color:var(--accent-a)}
+.inv-mapper-sel option{background:#0a1628;color:#fff}
+.inv-remap-btn{display:none;background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.25);color:var(--accent-a);border-radius:7px;font-size:.68rem;font-weight:700;padding:.38rem .75rem;cursor:pointer;margin-bottom:.75rem;transition:all .15s}
+.inv-remap-btn:hover{background:rgba(0,198,255,.2)}
+.inv-remap-btn.visible{display:inline-flex;align-items:center;gap:5px}
+.inv-est-toggle{display:flex;align-items:center;gap:.65rem;padding:.6rem .85rem;background:rgba(255,180,0,.06);border:1px solid rgba(255,180,0,.2);border-radius:8px;margin-bottom:.75rem;cursor:pointer}
+.inv-est-toggle input{width:18px;height:18px;cursor:pointer;accent-color:var(--amber)}
+.inv-est-toggle label{font-size:.78rem;font-weight:600;color:var(--amber);cursor:pointer}
 
 /* ACCORDION */
 .acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.1rem;background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--radius);color:var(--text);cursor:pointer;font-family:var(--font);font-size:.88rem;font-weight:600;transition:all .2s;margin-bottom:.5rem;text-align:left;backdrop-filter:blur(14px)}
@@ -530,112 +604,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
       <!-- Sub-tabs -->
       <div class="sub-tab-row" style="flex-wrap:wrap;gap:3px">
-        <button class="sub-tab on" id="subtab-groq" onclick="ocrSubTab('groq')" style="flex:1;min-width:80px">⚡ Groq</button>
-        <button class="sub-tab" id="subtab-drmaster" onclick="ocrSubTab('drmaster')" style="flex:1;min-width:80px">👨‍⚕️ Dr Master</button>
+        <button class="sub-tab on" id="subtab-drmaster" onclick="ocrSubTab('drmaster')" style="flex:1;min-width:80px">👨‍⚕️ Dr Master</button>
         <button class="sub-tab" id="subtab-filler" onclick="ocrSubTab('filler')" style="flex:1;min-width:80px">📋 Format Filler</button>
       </div>
 
       <!-- ── GROQ TAB ── -->
-      <div id="panel-groq">
-
-        <!-- Groq API Key Quick-Enter Card -->
-        <div class="calc-card" id="groq-key-card-ocr" style="border-color:rgba(130,80,255,.35);background:rgba(130,80,255,.06)">
-          <div class="calc-title" style="color:#a78bfa">⚡ Groq API Key — Direct OCR</div>
-          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.75rem">Enter your Groq key to run OCR without Google login. Uses <b style="color:#a78bfa">llama-4-scout-17b</b> (vision-capable, multi-image).</p>
-          <div class="al al-info" style="font-size:.72rem;margin-bottom:.75rem">💡 <b>PDF Tip:</b> For PDF price lists, convert to Excel first using <b>Gemini / ChatGPT</b>, then upload below as CSV/XLSX for 100% accurate matching!</div>
-          <div id="groq-ocr-key-status" class="al al-warn" style="font-size:.76rem;margin-bottom:.7rem">⚠ No key loaded yet. Enter below or save from Admin panel.</div>
-          <div class="fg mb-1">
-            <label class="fl">Groq API Key</label>
-            <div class="flex-row" style="gap:.5rem">
-              <input class="fi flex-1" type="password" id="groq-ocr-key-inp" placeholder="gsk_xxxxxxxxxxxxxxxx" oninput="groqOcrKeyCheck()">
-              <button class="btn btn-g btn-sm" onclick="groqOcrToggleKey()" style="flex-shrink:0">👁</button>
-            </div>
-          </div>
-          <div class="flex-row" style="gap:.5rem;flex-wrap:wrap">
-            <button class="btn btn-p btn-sm" onclick="groqOcrSaveKey()">💾 Save Key</button>
-            <a href="https://console.groq.com/keys" target="_blank" class="btn btn-g btn-sm" style="text-decoration:none;font-size:.75rem">🔗 Get Groq Key</a>
-          </div>
-          <div id="groq-ocr-key-msg" class="al" style="display:none;margin-top:.7rem;font-size:.76rem"></div>
-        </div>
-
-        <!-- Groq OCR Upload Card -->
-        <div class="calc-card">
-          <div class="calc-title" style="color:#a78bfa">📸 Groq Vision OCR</div>
-
-          <!-- Price List Excel/CSV Upload -->
-          <div class="calc-card" style="background:rgba(0,232,122,.06);border-color:rgba(0,232,122,.25);margin-bottom:.75rem;padding:.75rem">
-            <div style="font-size:.78rem;font-weight:700;color:var(--green);margin-bottom:.4rem">📊 Upload Price List (Excel/CSV — Optional)</div>
-            <div class="ocr-zone" id="groq-pl-zone" style="height:72px" ondragover="ocrDragOver(event,'groq-pl-zone')" ondragleave="ocrDragLeave('groq-pl-zone')" ondrop="groqPlDrop(event)">
-              <input type="file" id="groq-pl-file" accept=".xlsx,.xls,.csv" onchange="groqPlLoad(event)">
-              <div class="ocr-zone-icon" style="font-size:1.2rem">📊</div>
-              <div class="ocr-zone-lbl" style="font-size:.72rem">Price List (.xlsx / .csv)</div>
-              <div class="ocr-zone-sub">Tap to upload</div>
-            </div>
-            <div id="groq-pl-info" class="al al-ok" style="display:none;margin-top:.5rem;font-size:.73rem"></div>
-          </div>
-
-          <div class="ocr-saved-badge" id="ocr-saved-badge" style="display:none">
-            <span>✅</span>
-            <span class="sb-text">Price List saved — upload Order Copy only</span>
-            <button class="sb-clear" onclick="ocrClearPriceList()">Clear</button>
-          </div>
-
-          <div class="ocr-upload-grid">
-            <div class="ocr-zone" id="zone-order" ondragover="ocrDragOver(event,'zone-order')" ondragleave="ocrDragLeave('zone-order')" ondrop="ocrDrop(event,'order')">
-              <input type="file" id="file-order" accept="image/*" onchange="ocrHandleFile(event,'order')">
-              <div class="ocr-zone-icon">📋</div>
-              <div class="ocr-zone-lbl">Handwritten<br>Order Copy</div>
-              <div class="ocr-zone-sub">Tap to upload</div>
-            </div>
-            <div class="ocr-zone" id="zone-pl" ondragover="ocrDragOver(event,'zone-pl')" ondragleave="ocrDragLeave('zone-pl')" ondrop="ocrDrop(event,'pricelist')">
-              <input type="file" id="file-pl" accept="image/*" onchange="ocrHandleFile(event,'pricelist')">
-              <div class="ocr-zone-icon">💊</div>
-              <div class="ocr-zone-lbl">Company<br>Price List</div>
-              <div class="ocr-zone-sub">Tap to upload</div>
-            </div>
-          </div>
-
-          <!-- Spinner & Error -->
-          <div class="ocr-spin-wrap" id="groq-spinner">
-            <div class="ocr-spinner"></div>
-            <div style="font-size:.8rem;color:var(--muted)">Analysing with Llama Vision…</div>
-            <div style="font-size:.7rem;color:rgba(255,255,255,.28);max-width:220px;margin-top:4px">Extracting products &amp; matching prices…</div>
-          </div>
-          <div class="ocr-err-box" id="groq-err-box">
-            <p id="groq-err-msg" style="font-size:.8rem;color:var(--red);margin-bottom:.6rem">Error</p>
-            <button class="btn btn-d btn-sm" onclick="ocrProcess()">↺ Retry</button>
-          </div>
-
-          <button class="btn btn-block mt-2" id="ocr-process-btn" onclick="ocrProcess()" disabled style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;box-shadow:0 4px 18px rgba(124,58,237,.35);font-weight:700;border:none;border-radius:11px;padding:.75rem 1.2rem;cursor:pointer">
-            🧠 Extract with Groq AI
-          </button>
-        </div>
-
-        <!-- Results table -->
-        <div class="calc-card ocr-table-wrap" id="groq-table-wrap" style="display:none;animation:fadeUp .35s ease">
-          <div class="flex-row mb-1">
-            <div style="font-size:.8rem;font-weight:700;color:#a78bfa">📦 Order Draft (Groq)</div>
-            <span id="groq-row-count" style="font-size:.66rem;background:rgba(124,58,237,.18);color:#a78bfa;border-radius:20px;padding:2px 8px;margin-left:.4rem"></span>
-          </div>
-          <div class="ocr-tbl-scroll">
-            <table class="ocr-tbl">
-              <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Free</th><th>Unit</th><th>Pack</th><th>PTS/Box(₹)</th><th>PTS/Strip(₹)</th><th>GST%</th><th>Net(₹)</th><th></th></tr></thead>
-              <tbody id="groq-tbody"></tbody>
-              <tfoot id="groq-tfoot"></tfoot>
-            </table>
-          </div>
-          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap">
-            <button class="btn btn-g" style="flex:1;min-width:90px" onclick="groqAddRow()">+ Row</button>
-            <button class="btn btn-p" style="flex:1;min-width:110px" onclick="groqConfirmOrder()">🚀 Push to Orders</button>
-            <button class="btn btn-d btn-sm" onclick="groqReset()">✕</button>
-          </div>
-          <div class="flex-row mt-2" style="gap:.6rem;flex-wrap:wrap" id="groq-export-row" style="display:none">
-            <button class="btn btn-gold" style="flex:1" onclick="groqDownloadFile()">⬇ Download</button>
-            <button class="btn btn-wa" style="flex:1" onclick="groqShareWhatsApp()">📲 WhatsApp</button>
-          </div>
-        </div>
-
-      </div><!-- /panel-groq -->
+      <!-- Groq OCR removed — launching with subscription model -->
 
       <!-- ── DR MASTER TAB ── -->
       <div id="panel-drmaster" style="display:none">
@@ -704,11 +678,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </button>
         </div>
 
-        <!-- Download result -->
+        <!-- Review gate — user confirms before download -->
         <div id="ff-result-card" class="calc-card" style="display:none">
-          <div class="calc-title">✅ Format Ready</div>
-          <div id="ff-result-info" style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem"></div>
-          <button class="btn btn-gold btn-block" onclick="ffDownload()">⬇ Download Filled Excel</button>
+          <div class="calc-title">✅ Format Ready — Please Review</div>
+          <div id="ff-result-info" style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem"></div>
+          <div id="ff-preview-wrap" style="margin-bottom:.85rem;max-height:260px;overflow-y:auto;border:1px solid rgba(255,255,255,.08);border-radius:8px"></div>
+          <div class="al al-warn" style="font-size:.72rem;margin-bottom:.75rem">⚠ Please verify the filled data above before downloading. Edit any row in the table if needed.</div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+            <button class="btn btn-gold" style="flex:1" onclick="ffDownload()">⬇ Confirm &amp; Download</button>
+            <button class="btn btn-d btn-sm" onclick="ffReset()">✕ Start Over</button>
+          </div>
         </div>
       </div><!-- /panel-filler -->
 
@@ -1018,6 +997,122 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     </div>
   </div>
 
+  <!-- INVOICE WORKSPACE -->
+  <div id="scr-invoice" class="screen">
+    <div class="sub-topbar">
+      <button class="btn btn-g btn-sm" onclick="nav('dashboard')">&#8592; Back</button>
+      <span class="sub-topbar-title">&#128203; Estimated Bill</span>
+      <div style="width:60px"></div>
+    </div>
+    <div class="sa">
+
+      <!-- BLOCK A -->
+      <div class="inv-block">
+        <div class="inv-block-title"><span>&#128194;</span> Price List Database</div>
+
+        <div class="inv-upload-zone" id="inv-upload-zone">
+          <input type="file" id="inv-file" accept=".xlsx,.xls,.csv" onchange="invLoadFile(event)">
+          <div style="font-size:1.6rem;margin-bottom:.35rem">&#128202;</div>
+          <div class="inv-upload-lbl">Upload Price List (.xlsx / .csv)</div>
+          <div class="inv-upload-sub">Parsed locally in browser &#8212; no internet needed</div>
+        </div>
+
+        <div id="inv-load-info" class="al al-ok" style="display:none;margin-bottom:.75rem;font-size:.75rem"></div>
+        <button class="inv-remap-btn" id="inv-remap-btn" onclick="invShowRemapper()">&#9881;&#65039; Remap Columns</button>
+
+        <!-- Layer 3: Column Mapper (only shown when auto-detect fails) -->
+        <div class="inv-mapper" id="inv-mapper">
+          <div class="inv-mapper-title">&#9888;&#65039; Column headers not recognized &#8212; please map them below</div>
+          <div class="inv-mapper-grid" id="inv-mapper-grid"></div>
+          <button class="btn btn-p btn-block" onclick="invApplyMapper()" style="padding:.65rem">&#10003; Apply Mapping &amp; Load Products</button>
+        </div>
+
+        <!-- Product list -->
+        <div id="inv-prod-panel" style="display:none">
+          <input class="inv-search-bar" id="inv-search" placeholder="Search product..." oninput="invFilterProds()">
+          <div class="inv-select-all">
+            <input type="checkbox" id="inv-sel-all" class="inv-cb" onchange="invToggleAll(this.checked)">
+            <label for="inv-sel-all" style="cursor:pointer">Select All</label>
+            <span class="inv-count-badge" id="inv-sel-count">0 selected</span>
+          </div>
+          <div class="inv-prod-scroll" id="inv-prod-list"></div>
+        </div>
+
+        <!-- Tier toggle -->
+        <div id="inv-tier-wrap" style="display:none;margin-bottom:.6rem">
+          <div style="font-size:.62rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem">Pricing Tier</div>
+          <div class="inv-tier-group">
+            <button class="inv-tier-btn on" id="inv-tier-ptr" onclick="invSetTier('PTR')">PTR (Retailer)</button>
+            <button class="inv-tier-btn" id="inv-tier-pts" onclick="invSetTier('PTS')">PTS (Stockist)</button>
+          </div>
+        </div>
+
+        <button class="btn btn-p btn-block" onclick="invPushItems()" style="padding:.72rem">
+          + Push to Estimated Bill
+        </button>
+      </div>
+
+      <!-- BLOCK B -->
+      <div class="inv-block">
+        <div class="inv-block-title"><span>&#128203;</span> Estimated Bill Items <span id="inv-line-count" style="margin-left:auto;font-size:.68rem;font-weight:400;color:var(--muted)"></span></div>
+        <div id="inv-grid-empty" class="inv-empty-msg"><span class="ei">&#129534;</span>No items yet &#8212; select products above and push.</div>
+        <div id="inv-grid-wrap" style="display:none">
+          <div class="inv-tbl-wrap">
+            <table class="inv-tbl">
+              <thead><tr><th>#</th><th>Product</th><th>Tier</th><th>MRP</th><th>Rate&#9998;</th><th>Qty</th><th>Free</th><th>Disc%</th><th>GST%</th><th>Batch</th><th>Exp</th><th>Subtotal</th><th></th></tr></thead>
+              <tbody id="inv-tbody"></tbody>
+              <tfoot id="inv-tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCK C -->
+      <div class="inv-block" id="inv-summary-block" style="display:none">
+        <div class="inv-block-title"><span>&#127970;</span> Billing Details</div>
+        <div class="inv-party-grid">
+          <div class="calc-field">
+            <label>Billed By</label>
+            <input type="text" id="inv-from" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;padding:.5rem .7rem;width:100%;outline:none" placeholder="Your company">
+          </div>
+          <div class="calc-field">
+            <label>Billed To</label>
+            <input type="text" id="inv-to" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;padding:.5rem .7rem;width:100%;outline:none" placeholder="Party / stockist">
+          </div>
+        </div>
+        <div class="inv-sum-grid">
+          <div class="inv-sum-box">
+            <div class="inv-sum-lbl">Gross (ex-GST)</div>
+            <div class="inv-sum-val" id="inv-s-gross">&#8377;0.00</div>
+          </div>
+          <div class="inv-sum-box">
+            <div class="inv-sum-lbl">Total GST</div>
+            <div class="inv-sum-val" id="inv-s-gst" style="color:var(--amber)">&#8377;0.00</div>
+          </div>
+        </div>
+        <div class="inv-grand-box">
+          <div>
+            <div class="inv-grand-lbl">Net Payable</div>
+            <div style="font-size:.62rem;color:var(--muted);margin-top:2px">Gross + GST</div>
+          </div>
+          <div class="inv-grand-val" id="inv-s-net">&#8377;0.00</div>
+        </div>
+      </div>
+
+      <!-- BLOCK D -->
+      <div class="inv-block" id="inv-export-block" style="display:none">
+        <div class="inv-block-title"><span>&#128640;</span> Export</div>
+        <div class="al al-warn" style="font-size:.72rem;margin-bottom:.75rem">&#128203; All prints are <b>Estimated Bills</b> — not tax invoices.</div>
+        <div class="inv-export-row">
+          <button class="btn" style="background:rgba(255,77,106,.15);color:#ff8090;border:1px solid rgba(255,77,106,.3)" onclick="invExportPDF()">&#128196; PDF / Print</button>
+          <button class="btn" style="background:rgba(0,210,120,.12);color:var(--green);border:1px solid rgba(0,210,120,.3)" onclick="invExportXLS()">&#128202; XLS</button>
+          <button class="btn" style="background:rgba(37,211,102,.12);color:#25d366;border:1px solid rgba(37,211,102,.3)" onclick="invExportWA()">&#128172; WhatsApp</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="nb on" id="nb-dashboard" onclick="nav('dashboard')">
@@ -1035,6 +1130,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <button class="nb" id="nb-tour" onclick="nav('tour')">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="14" x2="12" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="14" x2="16" y2="14" stroke-width="2" stroke-linecap="round"/></svg>
       <span>Tour Plan</span>
+    </button>
+    <button class="nb" id="nb-invoice" onclick="nav('invoice')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
+      <span>Est. Bill</span>
     </button>
     <button class="nb" id="nb-settings" onclick="nav('settings')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -1234,15 +1333,15 @@ async function ffOcrProcess(){showToast('Gemini OCR removed. Use ⚡ Groq tab.',
 
 /* ══ OCR SCREEN SUB-TABS ══ */
 function ocrSubTab(tab){
-  if(tab==='ocr')tab='groq'; // Gemini tab removed — redirect to Groq
-  ['groq','drmaster','filler'].forEach(t=>{
+  if(tab==='ocr'||tab==='groq')tab='drmaster'; // Photo OCR removed — redirect to Dr Master
+  ['drmaster','filler'].forEach(t=>{
     const panel=document.getElementById('panel-'+t);
     if(panel)panel.style.display=t===tab?'block':'none';
     const btn=document.getElementById('subtab-'+t);
     if(btn)btn.classList.toggle('on',t===tab);
   });
   if(tab==='filler')ffCheckMaster();
-  if(tab==='groq')groqLoadKeyStatus();
+  // groq tab removed
 }
 async function groqLoadKeyStatus(){
   const k=await IDB.loadSetting('groqApiKey');
@@ -1292,13 +1391,12 @@ async function doLogin(){
   if(!/^\d{10}$/.test(mob)){showErr('lerr','Enter valid 10-digit mobile.');return}
   if(pin.length<4){showErr('lerr','PIN must be at least 4 digits.');return}
   const btn=document.getElementById('lbtn');
-  btn.innerHTML='<span class="spin"></span>Signing in…';btn.disabled=true;
-  const local=Sess.load();
-  if(local&&local.mobile===mob&&local.pin===pin){initApp(local);return}
+  btn.innerHTML='<span class="spin"></span>Verifying…';btn.disabled=true;
+  /* Always fetch from sheet — works on any device, no localStorage dependency */
   const user=await SheetAPI.findUser(mob);
   btn.innerHTML='Login →';btn.disabled=false;
-  if(!user){showErr('lerr','Not registered. Please Sign Up.');return}
-  if(user.pin!==pin){showErr('lerr','Incorrect PIN.');return}
+  if(!user){showErr('lerr','⚠ Not registered. Please Sign Up.');return}
+  if(String(user.pin)!==String(pin)){showErr('lerr','Incorrect PIN. Please try again.');return}
   Sess.save(user);initApp(user);
 }
 
@@ -1350,6 +1448,13 @@ async function initApp(user){
   if(locEl)locEl.textContent=(user.city&&user.place)?'📍 '+user.place+', '+user.city:(user.city||user.place||'');
   document.getElementById('set-uid').textContent=user.userId;
   document.getElementById('set-acct-type').textContent=user.status;
+  // Data status labels (refreshed each time nav goes to settings via nav() call too)
+  const _plSt=document.getElementById('set-pl-status');
+  if(_plSt)_plSt.textContent=(typeof GlobalPriceMatrix!=='undefined'&&GlobalPriceMatrix.length)?GlobalPriceMatrix.length+' products loaded':'No price list saved';
+  const _drSt=document.getElementById('set-dr-status');
+  if(_drSt)_drSt.textContent=(typeof DR!=='undefined'&&DR.rows&&DR.rows.length)?DR.rows.length+' doctors loaded':'No Dr list loaded';
+  const _invSt=document.getElementById('set-inv-status');
+  if(_invSt)_invSt.textContent=(typeof INV!=='undefined'&&INV.lines&&INV.lines.length)?INV.lines.length+' item(s) in bill':'Bill is empty';
   const sb=document.getElementById('set-badge');sb.className='pill '+(user.status==='Paid'?'pill-paid':'pill-free');sb.textContent=user.status==='Paid'?'⭐ PRO':'FREE';
   document.getElementById('m-ret').value=PSP.settings.retailerMargin;
   document.getElementById('m-stk').value=PSP.settings.stockistMargin;
@@ -1370,8 +1475,8 @@ function doLogout(){
 }
 
 /* ══ NAVIGATION ══ */
-const SCREENS=['dashboard','ocr','orders','settings','admin','tour'];
-const NAVBTNS=['dashboard','orders','ocr','tour','settings'];
+const SCREENS=['dashboard','ocr','orders','settings','admin','tour','invoice'];
+const NAVBTNS=['dashboard','orders','ocr','tour','invoice','settings'];
 function nav(s){
   if(s==='tour'){
     // Set default month/year to current
@@ -1399,9 +1504,34 @@ async function saveMargins(){
   const ms=document.getElementById('margins-saved');ms.style.display='inline-block';setTimeout(()=>ms.style.display='none',2000);
 }
 async function clearPL(){
-  if(!PSP.user)return;
-  await IDB.deletePL(PSP.user.userId);OCR.savedPL=null;
-  showToast('Price list cleared.','ok');
+  if(PSP.user&&PSP.user.userId){try{await IDB.deletePL(PSP.user.userId);}catch(e){}}
+  OCR.savedPL=null;GlobalPriceMatrix=[];INV.filtered=[];INV.selected={};
+  const zone=document.getElementById('inv-upload-zone');
+  if(zone){zone.classList.remove('loaded');zone.querySelector('.inv-upload-lbl').textContent='Upload Price List (.xlsx / .csv)';zone.querySelector('.inv-upload-sub').textContent='Parsed locally in browser';}
+  ['inv-prod-panel','inv-load-info'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const rb=document.getElementById('inv-remap-btn');if(rb)rb.classList.remove('visible');
+  const tw=document.getElementById('inv-tier-wrap');if(tw)tw.style.display='none';
+  const fi=document.getElementById('inv-file');if(fi)fi.value='';
+  const badge=document.getElementById('ocr-saved-badge');if(badge)badge.style.display='none';
+  const st=document.getElementById('set-pl-status');if(st)st.textContent='No price list saved';
+  showToast('Price list cleared ✓','ok');
+}
+async function clearDrList(){
+  try{await IDB.saveDrMaster([]);}catch(e){}
+  DR.rows=[];DR.selected=new Set();DR.filtered=[];
+  drRenderList();
+  if(typeof FF!=='undefined'){FF.wb=null;FF.ws=null;FF.headers=[];FF.colMap={};FF.filledWb=null;}
+  ['ff-result-card','ff-cols-info'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const fb=document.getElementById('ff-fill-btn');if(fb)fb.style.display='none';
+  const st=document.getElementById('set-dr-status');if(st)st.textContent='No Dr list loaded';
+  showToast('Dr list cleared ✓','ok');
+}
+function clearEstBill(){
+  if(!INV||!INV.lines||!INV.lines.length){showToast('Bill is already empty.','err');return}
+  INV.lines=[];INV.ctr=0;INV.selected={};
+  invRenderGrid();
+  const st=document.getElementById('set-inv-status');if(st)st.textContent='Bill is empty';
+  showToast('Estimated Bill cleared ✓','ok');
 }
 
 /* ══ ADMIN ══ */
@@ -2197,9 +2327,20 @@ function ffLoadFile(e){
       }
       // Smart map: which format col maps to which Dr field (word-boundary safe)
       FF.colMap={};
+      const claimed={};
+      const fieldOrder=['mobile','speciality','area','name'];
+      const nameExcludeWords=['frequency','freq','rxion','rx','visit','date','remarks','notes','product','brand'];
       FF.headers.forEach(h=>{
-        const field=['name','mobile','speciality','area'].find(f=>drFindCol([h],DR_COL_MAP[f])!==null);
-        if(field)FF.colMap[h]=field;
+        const lh=h.toLowerCase();
+        let field=null;
+        for(const f of fieldOrder){
+          if(claimed[f])continue;
+          if(drFindCol([h],DR_COL_MAP[f])!==null){
+            if(f==='name'&&nameExcludeWords.some(w=>lh.includes(w)))continue;
+            field=f;break;
+          }
+        }
+        if(field){FF.colMap[h]=field;claimed[field]=true;}
       });
       const zone=document.getElementById('ff-zone');
       zone.classList.add('has-file');
@@ -2288,9 +2429,29 @@ function ffFillFormat(){
   ws['!ref']=XLSX.utils.encode_range(range);
 
   FF.filledWb=clonedWb;
-
+  const previewWrap=document.getElementById('ff-preview-wrap');
+  if(previewWrap){
+    let tbl='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.72rem">';
+    tbl+='<thead><tr>';
+    FF.headers.forEach(h=>{
+      const mapped=FF.colMap[h];
+      tbl+=`<th style="padding:5px 7px;background:rgba(0,198,255,.1);border-bottom:1px solid rgba(255,255,255,.1);color:${mapped?'var(--accent-a)':'rgba(255,255,255,.3)'};white-space:nowrap;text-align:left;font-size:.63rem;font-weight:700">${h}${mapped?' ('+mapped+')':''}</th>`;
+    });
+    tbl+='</tr></thead><tbody>';
+    selDrs.forEach((dr,di)=>{
+      tbl+=`<tr style="background:${di%2===0?'transparent':'rgba(255,255,255,.03)'}">`;
+      FF.headers.forEach(h=>{
+        const val=FF.colMap[h]&&dr[FF.colMap[h]]!==undefined?dr[FF.colMap[h]]:'';
+        tbl+=`<td style="padding:4px 7px;border-bottom:1px solid rgba(255,255,255,.04);color:${val?'var(--text)':'rgba(255,255,255,.2)'};font-size:.72rem">${val||'—'}</td>`;
+      });
+      tbl+='</tr>';
+    });
+    tbl+='</tbody></table></div>';
+    previewWrap.innerHTML=tbl;
+  }
   document.getElementById('ff-result-card').style.display='block';
-  document.getElementById('ff-result-info').textContent=`${selDrs.length} Drs filled in format. ${FF.headers.filter(h=>!FF.colMap[h]).length} columns left blank for manual entry.`;
+  const blankCnt=FF.headers.filter(h=>!FF.colMap[h]).length;
+  document.getElementById('ff-result-info').textContent=`${selDrs.length} Dr${selDrs.length!==1?'s':''} filled. ${blankCnt} column${blankCnt!==1?'s':''} left blank.`;
   showToast('Format filled ✓','ok');
   setTimeout(()=>document.getElementById('ff-result-card').scrollIntoView({behavior:'smooth',block:'start'}),200);
 }
@@ -2844,6 +3005,493 @@ function tpShareWhatsApp(){
   if(msg.length>4000)msg=msg.substring(0,3900)+'…\n_(truncated — download Excel for full plan)_';
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
+
+
+/* ══════════════════════════════════════════════════
+   ESTIMATED BILL  —  3-LAYER SMART COLUMN DETECTION
+   Layer 1: Auto header-row finder
+   Layer 2: Normalized keyword matching (strips dots/brackets/spaces)
+   Layer 3: Manual column mapper UI fallback
+   GlobalPriceMatrix is fully detached from auth/session
+══════════════════════════════════════════════════ */
+
+var GlobalPriceMatrix = [];
+var INV = {
+  tier: 'PTR', lines: [], ctr: 0,
+  filtered: [], selected: {},
+  rawRows: [], rawHeaders: [], mapperFname: ''
+};
+
+/* ─ LAYER 2: Normalize header string ─ */
+function invNorm(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/* ─ Keyword map — every real-world variation ─ */
+var INV_KEYS = {
+  name: ['brandname','brand','productname','product','itemname','item','medicinename','medicine','drugname','drug','name','description','particulars','details'],
+  mrp:  ['mrpincgst','mrpinctax','mrpincltax','newmrpincl','mrpincl','mrpinc','mrp','maximumretail','maxretail','retailprice','msp'],
+  ptr:  ['ptr','ptrtaxextra','traderate','trade','retailerrate','retailer','toretailer','chemistrate','chemist'],
+  pts:  ['pts','ptstaxextra','stockistrate','stockist','tostockist','distributorrate','distributor','netrate','nettrate','companyprice'],
+  gst:  ['newgst','gstpercent','gstslab','gst','igst','cgst','sgst','taxrate','tax','vat']
+};
+
+function invFindCol(headers, type) {
+  var keys = INV_KEYS[type];
+  var i, j, h, n, k;
+  // Pass 1: exact normalized match
+  for (i = 0; i < headers.length; i++) {
+    n = invNorm(headers[i]);
+    for (j = 0; j < keys.length; j++) {
+      if (n === keys[j]) return headers[i];
+    }
+  }
+  // Pass 2: partial normalized match
+  for (i = 0; i < headers.length; i++) {
+    n = invNorm(headers[i]);
+    for (j = 0; j < keys.length; j++) {
+      if (n.indexOf(keys[j]) !== -1 || keys[j].indexOf(n) !== -1) return headers[i];
+    }
+  }
+  return null;
+}
+
+/* ─ LAYER 1: Find actual header row (pick row with most non-empty cells) ─ */
+function invFindHeaderRowIdx(rows) {
+  /* Score each row: header rows have short text cells, no ₹/numbers dominating */
+  var bestScore = -1, bestIdx = 0;
+  var limit = Math.min(8, rows.length);
+  var allKeys = Object.keys(INV_KEYS);
+  for (var i = 0; i < limit; i++) {
+    var vals = Object.values(rows[i]).map(function(v){ return String(v||'').trim(); });
+    var nonEmpty = vals.filter(function(v){ return v !== ''; });
+    if (!nonEmpty.length) continue;
+    /* Score: +2 for each cell that matches a known keyword after normalize */
+    var kwScore = 0;
+    nonEmpty.forEach(function(v) {
+      var n = invNorm(v);
+      allKeys.forEach(function(type) {
+        INV_KEYS[type].forEach(function(k) {
+          if (n === k || n.indexOf(k) !== -1) kwScore++;
+        });
+      });
+    });
+    /* Penalty: long sentence cells (company name/address) */
+    var sentencePenalty = nonEmpty.filter(function(v){ return v.length > 40 || /[&\-,]{2,}/.test(v); }).length * 3;
+    /* Penalty: cells that are purely numeric (data row) */
+    var numPenalty = nonEmpty.filter(function(v){ return /^\d+(\.\d+)?$/.test(v); }).length * 2;
+    var score = kwScore * 3 + nonEmpty.length - sentencePenalty - numPenalty;
+    if (score > bestScore) { bestScore = score; bestIdx = i; }
+  }
+  return bestIdx;
+}
+
+/* ─ Load file ─ */
+function invLoadFile(e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var allRows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false });
+      if (!allRows.length) { showToast('No data found in file.', 'err'); return; }
+
+      /* LAYER 1: find real header row */
+      var hdrIdx = invFindHeaderRowIdx(allRows);
+      var dataRows = allRows;
+
+      if (hdrIdx > 0) {
+        /* Title rows above — rebuild with correct headers */
+        var hdrValues = Object.values(allRows[hdrIdx]).map(String);
+        dataRows = allRows.slice(hdrIdx + 1).map(function(r) {
+          var vals = Object.values(r);
+          var obj = {};
+          hdrValues.forEach(function(h, i) { obj[h] = vals[i] !== undefined ? vals[i] : ''; });
+          return obj;
+        });
+      }
+
+      INV.rawRows = dataRows;
+      INV.rawHeaders = Object.keys(dataRows[0] || {});
+      INV.mapperFname = f.name;
+
+      /* LAYER 2: try auto-detect */
+      var nameCol = invFindCol(INV.rawHeaders, 'name');
+      var mrpCol  = invFindCol(INV.rawHeaders, 'mrp');
+      var ptrCol  = invFindCol(INV.rawHeaders, 'ptr');
+      var ptsCol  = invFindCol(INV.rawHeaders, 'pts');
+      var gstCol  = invFindCol(INV.rawHeaders, 'gst');
+
+      if (nameCol) {
+        invBuildMatrix(dataRows, { nameCol:nameCol, mrpCol:mrpCol, ptrCol:ptrCol, ptsCol:ptsCol, gstCol:gstCol }, f.name);
+      } else {
+        /* LAYER 3: show manual mapper */
+        invShowMapper(INV.rawHeaders);
+        showToast('Columns not recognized — please map below.', 'err');
+      }
+    } catch(err) { showToast('Cannot read file: ' + err.message, 'err'); }
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+/* ─ LAYER 3: Show mapper UI ─ */
+function invShowMapper(headers) {
+  var mapper = document.getElementById('inv-mapper');
+  var grid   = document.getElementById('inv-mapper-grid');
+  mapper.classList.add('show');
+
+  var fields = [
+    { key: 'nameCol', label: 'Product Name *', required: true },
+    { key: 'mrpCol',  label: 'MRP (incl GST)',  required: false },
+    { key: 'ptrCol',  label: 'PTR / Trade Rate', required: false },
+    { key: 'ptsCol',  label: 'PTS / Stockist Rate', required: false },
+    { key: 'gstCol',  label: 'GST %',           required: false }
+  ];
+
+  var types = ['name','mrp','ptr','pts','gst'];
+
+  grid.innerHTML = fields.map(function(f, fi) {
+    var best = invFindCol(headers, types[fi]) || '';
+    var opts = (f.required ? '' : '<option value="">-- Not in file --</option>') +
+      headers.map(function(h) {
+        return '<option value="' + h.replace(/"/g,'&quot;') + '"' + (h === best ? ' selected' : '') + '>' + h + '</option>';
+      }).join('');
+    return '<div class="inv-mapper-row"><div class="inv-mapper-lbl">' + f.label + '</div>' +
+      '<select class="inv-mapper-sel" id="inv-map-' + f.key + '">' + opts + '</select></div>';
+  }).join('');
+}
+
+function invApplyMapper() {
+  var nameCol = document.getElementById('inv-map-nameCol').value;
+  if (!nameCol) { showToast('Product Name column is required.', 'err'); return; }
+  var map = {
+    nameCol: nameCol,
+    mrpCol:  document.getElementById('inv-map-mrpCol').value || null,
+    ptrCol:  document.getElementById('inv-map-ptrCol').value || null,
+    ptsCol:  document.getElementById('inv-map-ptsCol').value || null,
+    gstCol:  document.getElementById('inv-map-gstCol').value || null
+  };
+  document.getElementById('inv-mapper').classList.remove('show');
+  invBuildMatrix(INV.rawRows, map, INV.mapperFname);
+}
+
+/* ─ Build GlobalPriceMatrix ─ */
+function invBuildMatrix(rows, map, fname) {
+  var retM = (typeof PSP !== 'undefined' && PSP && PSP.settings && PSP.settings.retailerMargin) ? PSP.settings.retailerMargin : 20;
+  var stkM = (typeof PSP !== 'undefined' && PSP && PSP.settings && PSP.settings.stockistMargin) ? PSP.settings.stockistMargin : 10;
+
+  GlobalPriceMatrix = [];
+  rows.forEach(function(r) {
+    var name = String(r[map.nameCol] || '').trim();
+    if (!name || invNorm(name) === invNorm(map.nameCol)) return; /* skip header echo row */
+    var mrp  = parseFloat(String(r[map.mrpCol]  || '').replace(/[^0-9.]/g, '')) || 0;
+    var gst  = parseFloat(String(r[map.gstCol]  || '').replace(/[^0-9.%]/g,'')) || 5;
+    var ptrR = parseFloat(String(r[map.ptrCol]  || '').replace(/[^0-9.]/g, '')) || 0;
+    var ptsR = parseFloat(String(r[map.ptsCol]  || '').replace(/[^0-9.]/g, '')) || 0;
+    var mrpEx = mrp > 0 ? mrp / (1 + gst / 100) : 0;
+    var ptr = ptrR > 0 ? ptrR : (mrpEx > 0 ? parseFloat((mrpEx * (1 - retM / 100)).toFixed(2)) : 0);
+    var pts = ptsR > 0 ? ptsR : (ptr   > 0 ? parseFloat((ptr   * (1 - stkM / 100)).toFixed(2)) : 0);
+    GlobalPriceMatrix.push({ name:name, mrp:mrp, gst:gst, ptr:ptr, pts:pts });
+  });
+
+  if (!GlobalPriceMatrix.length) { showToast('No valid products found in file.', 'err'); return; }
+
+  var zone = document.getElementById('inv-upload-zone');
+  zone.classList.add('loaded');
+  zone.querySelector('.inv-upload-lbl').textContent = '\u2713 ' + fname;
+  zone.querySelector('.inv-upload-sub').textContent = GlobalPriceMatrix.length + ' products loaded';
+  var info = document.getElementById('inv-load-info');
+  info.style.display = 'block';
+  info.textContent = '\u2713 ' + GlobalPriceMatrix.length + ' products parsed from "' + fname + '"';
+
+  INV.filtered = GlobalPriceMatrix.slice();
+  INV.selected = {};
+  document.getElementById('inv-prod-panel').style.display = 'block';
+  document.getElementById('inv-tier-wrap').style.display = 'block';
+  document.getElementById('inv-remap-btn').classList.add('visible');
+  invRenderProdList();
+  showToast(GlobalPriceMatrix.length + ' products loaded \u2713', 'ok');
+}
+
+/* ─ Product list UI ─ */
+function invFilterProds() {
+  var q = (document.getElementById('inv-search').value || '').toLowerCase();
+  INV.filtered = q
+    ? GlobalPriceMatrix.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; })
+    : GlobalPriceMatrix.slice();
+  invRenderProdList();
+}
+
+function invRenderProdList() {
+  var list = document.getElementById('inv-prod-list');
+  if (!INV.filtered.length) {
+    list.innerHTML = '<div style="padding:.8rem;text-align:center;color:var(--muted);font-size:.78rem">No products found.</div>';
+    invUpdateSelCount(); return;
+  }
+  var rateColor = INV.tier === 'PTR' ? 'var(--accent-a)' : 'var(--gold)';
+  list.innerHTML = INV.filtered.map(function(p) {
+    var rate = INV.tier === 'PTR' ? p.ptr : p.pts;
+    var sel  = INV.selected[p.name] ? true : false;
+    var safeName = p.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return '<div class="inv-prod-item' + (sel ? ' selected' : '') + '" onclick="invToggleProd(\'' + safeName + '\')">' +
+      '<input type="checkbox" class="inv-cb"' + (sel ? ' checked' : '') + ' onclick="event.stopPropagation();invToggleProd(\'' + safeName + '\')">' +
+      '<div class="inv-prod-name">' + p.name + '</div>' +
+      '<div class="inv-prod-mrp">MRP \u20b9' + p.mrp.toFixed(2) +
+        '<br><span style="color:' + rateColor + ';font-size:.65rem">' + INV.tier + ' \u20b9' + rate.toFixed(2) + '</span></div>' +
+      '</div>';
+  }).join('');
+  invUpdateSelCount();
+}
+
+function invToggleProd(name) {
+  if (INV.selected[name]) delete INV.selected[name]; else INV.selected[name] = true;
+  invRenderProdList();
+}
+function invToggleAll(checked) {
+  INV.selected = {};
+  if (checked) INV.filtered.forEach(function(p){ INV.selected[p.name] = true; });
+  invRenderProdList();
+}
+function invUpdateSelCount() {
+  var el = document.getElementById('inv-sel-count');
+  if (el) el.textContent = Object.keys(INV.selected).length + ' selected';
+}
+function invSetTier(tier) {
+  INV.tier = tier;
+  document.getElementById('inv-tier-ptr').classList.toggle('on', tier === 'PTR');
+  document.getElementById('inv-tier-pts').classList.toggle('on', tier === 'PTS');
+  invRenderProdList();
+  if (INV.lines.length) invRenderGrid();
+}
+function invPushItems() {
+  if (!GlobalPriceMatrix.length) { showToast('Upload a price list first.', 'err'); return; }
+  var keys = Object.keys(INV.selected);
+  if (!keys.length) { showToast('Select at least one product.', 'err'); return; }
+  var added = 0;
+  keys.forEach(function(name) {
+    if (INV.lines.some(function(l){ return l.name === name; })) return;
+    var prod = GlobalPriceMatrix.filter(function(p){ return p.name === name; })[0];
+    if (!prod) return;
+    INV.ctr++;
+    INV.lines.push({ id:INV.ctr, name:prod.name, tier:INV.tier,
+      mrp:prod.mrp, rate:INV.tier==='PTR'?prod.ptr:prod.pts, qty:1, free:0, disc:0, gst:prod.gst, batch:'', expiry:'' });
+    added++;
+  });
+  if (!added) { showToast('Item already in bill.', 'err'); return; }
+  INV.selected = {};
+  invRenderProdList();
+  invRenderGrid();
+  showToast(added + ' item(s) added \u2713', 'ok');
+}
+
+/* ─ Invoice grid ─ */
+function invRenderGrid() {
+  var tbody    = document.getElementById('inv-tbody');
+  var empty    = document.getElementById('inv-grid-empty');
+  var wrap     = document.getElementById('inv-grid-wrap');
+  var sumBlock = document.getElementById('inv-summary-block');
+  var expBlock = document.getElementById('inv-export-block');
+  var cnt      = document.getElementById('inv-line-count');
+  if (!INV.lines.length) {
+    empty.style.display='block'; wrap.style.display='none';
+    sumBlock.style.display='none'; expBlock.style.display='none';
+    cnt.textContent=''; invUpdateTotals(); return;
+  }
+  empty.style.display='none'; wrap.style.display='block';
+  sumBlock.style.display='block'; expBlock.style.display='block';
+  cnt.textContent = INV.lines.length + ' item' + (INV.lines.length!==1?'s':'');
+  tbody.innerHTML = INV.lines.map(function(l, i) {
+    var sub = invCalcSubtotal(l);
+    var pc  = l.tier==='PTR' ? 'tier-ptr' : 'tier-pts';
+    return '<tr>' +
+      '<td style="color:var(--muted);font-size:.68rem">' + (i+1) + '</td>' +
+      '<td style="font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.77rem">' + l.name + '</td>' +
+      '<td><span class="tier-pill ' + pc + '">' + l.tier + '</span></td>' +
+      '<td style="font-family:var(--mono);font-size:.75rem">₹' + l.mrp.toFixed(2) + '</td>' +
+      '<td><input type="number" class="inv-cell" value="' + l.rate.toFixed(2) + '" min="0" step="0.01" style="max-width:60px" oninput="invUpdLine(' + l.id + ',\'rate\',+this.value)"></td>' +
+      '<td><input type="number" class="inv-cell" value="' + l.qty + '" min="1" style="max-width:46px" oninput="invUpdLine(' + l.id + ',\'qty\',+this.value)"></td>' +
+      '<td><input type="number" class="inv-cell" value="' + l.free + '" min="0" style="max-width:40px" oninput="invUpdLine(' + l.id + ',\'free\',+this.value)"></td>' +
+      '<td><input type="number" class="inv-cell" value="' + (l.disc||0) + '" min="0" max="100" style="max-width:40px" oninput="invUpdLine(' + l.id + ',\'disc\',+this.value)"></td>' +
+      '<td><input type="number" class="inv-cell" value="' + l.gst + '" min="0" max="28" style="max-width:42px" oninput="invUpdLine(' + l.id + ',\'gst\',+this.value)"></td>' +
+      '<td><input type="text" class="inv-cell" value="' + (l.batch||'') + '" style="max-width:64px;font-size:.68rem" placeholder="Batch" oninput="invUpdLineStr(' + l.id + ',\'batch\',this.value)"></td>' +
+      '<td><input type="text" class="inv-cell" value="' + (l.expiry||'') + '" style="max-width:52px;font-size:.68rem" placeholder="MM/YY" oninput="invUpdLineStr(' + l.id + ',\'expiry\',this.value)"></td>' +
+      '<td style="font-family:var(--mono);font-weight:700;color:var(--green);font-size:.8rem" id="inv-sub-' + l.id + '">₹' + sub.toFixed(2) + '</td>' +
+      '<td><button class="inv-rm-btn" onclick="invRemoveLine(' + l.id + ')">&#10005;</button></td>' +
+      '</tr>';
+  }).join('');
+  invRenderTfoot(); invUpdateTotals();
+}
+
+function invRenderTfoot() {
+  var tfoot = document.getElementById('inv-tfoot'); if (!tfoot) return;
+  var gross = INV.lines.reduce(function(s,l){ return s + invCalcBase(l); }, 0);
+  var gstAmt= INV.lines.reduce(function(s,l){ return s + invCalcGSTAmt(l); }, 0);
+  tfoot.innerHTML = '<tr><td colspan="11" style="color:var(--accent-a);font-size:.75rem">Grand Total</td>' +
+    '<td style="color:var(--gold);font-size:.85rem;font-weight:700">\u20b9' + (gross+gstAmt).toFixed(2) + '</td><td></td></tr>';
+}
+function invUpdLine(id, field, val) {
+  var line = null;
+  INV.lines.forEach(function(l){ if(l.id===id) line=l; });
+  if (!line) return;
+  line[field] = val;
+  var cell = document.getElementById('inv-sub-' + id);
+  if (cell) cell.textContent = '₹' + invCalcSubtotal(line).toFixed(2);
+  invRenderTfoot(); invUpdateTotals();
+}
+function invUpdLineStr(id, field, val) {
+  var line = null;
+  INV.lines.forEach(function(l){ if(l.id===id) line=l; });
+  if (!line) return;
+  line[field] = val;
+}
+function invRemoveLine(id) {
+  INV.lines = INV.lines.filter(function(l){ return l.id !== id; });
+  invRenderGrid();
+}
+/* FIX P5: Base = rate × qty only (free qty is bonus, does NOT reduce value) */
+/* FIX P6: Discount applied on base before GST */
+function invCalcBase(l) {
+  var rate = parseFloat(l.rate)||0;
+  var qty  = parseFloat(l.qty)||0;
+  var disc = parseFloat(l.disc)||0;
+  return rate * qty * (1 - disc/100);
+}
+function invCalcGSTAmt(l) { return invCalcBase(l) * ((parseFloat(l.gst)||0) / 100); }
+function invCalcSubtotal(l) {
+  var base = invCalcBase(l);
+  return base + base * (parseFloat(l.gst)||0) / 100;
+}
+function invUpdateTotals() {
+  var gross  = INV.lines.reduce(function(s,l){ return s+invCalcBase(l); }, 0);
+  var gstAmt = INV.lines.reduce(function(s,l){ return s+invCalcGSTAmt(l); }, 0);
+  var net    = gross + gstAmt;
+  var sg=document.getElementById('inv-s-gross'), st=document.getElementById('inv-s-gst'), sn=document.getElementById('inv-s-net');
+  if(sg) sg.textContent='\u20b9'+gross.toFixed(2);
+  if(st) st.textContent='\u20b9'+gstAmt.toFixed(2);
+  if(sn) sn.textContent='\u20b9'+net.toFixed(2);
+}
+
+/* ─ Format Filler reset ─ */
+function ffReset(){
+  document.getElementById('ff-result-card').style.display='none';
+  document.getElementById('ff-step1').style.display='block';
+  document.getElementById('ff-file').value='';
+  document.getElementById('ff-cols-info').style.display='none';
+  document.getElementById('ff-fill-btn').style.display='none';
+}
+/* ─ Column Remapper (always accessible after file load) ─ */
+function invShowRemapper() {
+  if (!INV.rawHeaders.length) { showToast('Upload a price list first.', 'err'); return; }
+  invShowMapper(INV.rawHeaders);
+  document.getElementById('inv-mapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ─ Exports ─ */
+function invExportWA() {
+  if (!INV.lines.length) { showToast('Add items first.', 'err'); return; }
+  var from = document.getElementById('inv-from').value || 'Consignor';
+  var to   = document.getElementById('inv-to').value   || 'Consignee';
+  var date = new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+  var gross  = INV.lines.reduce(function(s,l){ return s+invCalcBase(l); }, 0);
+  var gstAmt = INV.lines.reduce(function(s,l){ return s+invCalcGSTAmt(l); }, 0);
+  var msg = '\ud83e\uddfe *ESTIMATED BILL \u2014 PharmaSalesPro*\n\ud83d\udcc5 ' + date + '\n\ud83c\udfe2 From: *' + from + '*\n\ud83d\udce6 To: *' + to + '*\n' + '\u2500'.repeat(30) + '\n';
+  INV.lines.forEach(function(l, i) {
+    msg += (i+1) + '. *' + l.name + '*\n   ' + l.tier + ' ₹' + l.rate.toFixed(2) +
+      ' | Qty:' + l.qty + (l.free>0?'+'+l.free+'F':'') +
+      (l.disc>0?' | Disc:'+l.disc+'%':'') +
+      ' | GST:' + l.gst + '%' +
+      (l.batch?' | Batch:'+l.batch:'') +
+      (l.expiry?' | Exp:'+l.expiry:'') +
+      ' | *₹' + invCalcSubtotal(l).toFixed(2) + '*\n';
+  });
+  msg += '\u2500'.repeat(30) + '\n\ud83d\udcca Gross: \u20b9' + gross.toFixed(2) +
+    '\n\ud83c\udff7\ufe0f GST: \u20b9' + gstAmt.toFixed(2) +
+    '\n\ud83d\udcb0 *Net Payable: \u20b9' + (gross+gstAmt).toFixed(2) + '*\n_via PharmaSalesPro_';
+  if (msg.length > 4000) msg = msg.substring(0, 3900) + '\u2026';
+  window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function invExportXLS() {
+  if (!INV.lines.length) { showToast('Add items first.', 'err'); return; }
+  var from = document.getElementById('inv-from').value || '';
+  var to   = document.getElementById('inv-to').value   || '';
+  var date = new Date().toLocaleDateString('en-IN');
+  var gross  = INV.lines.reduce(function(s,l){ return s+invCalcBase(l); }, 0);
+  var gstAmt = INV.lines.reduce(function(s,l){ return s+invCalcGSTAmt(l); }, 0);
+  var aoa = [
+    ['INVOICE','','','','','','','',''],
+    ['Date:', date, '', 'From:', from, '', 'To:', to, ''],
+    [], [],
+    ['#','Product','Tier','MRP','Rate','Qty','Free','Disc%','GST%','Batch','Expiry','Subtotal']
+  ];
+  INV.lines.forEach(function(l, i) {
+    aoa.push([i+1, l.name, l.tier, +l.mrp.toFixed(2), +l.rate.toFixed(2), l.qty, l.free, l.disc||0, l.gst, l.batch||"", l.expiry||"", +invCalcSubtotal(l).toFixed(2)]);
+  });
+  aoa.push([]);
+  aoa.push(['','','','','','','','Gross (ex-GST):', +gross.toFixed(2)]);
+  aoa.push(['','','','','','','','GST Total:', +gstAmt.toFixed(2)]);
+  aoa.push(['','','','','','','','NET PAYABLE:', +(gross+gstAmt).toFixed(2)]);
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:4},{wch:30},{wch:6},{wch:10},{wch:10},{wch:6},{wch:6},{wch:6},{wch:8},{wch:10},{wch:8},{wch:14}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Invoice');
+  XLSX.writeFile(wb, 'Invoice_' + date.replace(/\//g, '-') + '.xlsx');
+  showToast('Excel downloaded \u2713', 'ok');
+}
+
+function invExportPDF() {
+  if (!INV.lines.length) { showToast('Add items first.', 'err'); return; }
+  var from = document.getElementById('inv-from').value || '\u2014';
+  var to   = document.getElementById('inv-to').value   || '\u2014';
+  var isEst = true;
+  var docTitle = 'ESTIMATED BILL';
+  var titleColor = '#e67e00';
+  var date = new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'long',year:'numeric'});
+  var gross  = INV.lines.reduce(function(s,l){ return s+invCalcBase(l); }, 0);
+  var gstAmt = INV.lines.reduce(function(s,l){ return s+invCalcGSTAmt(l); }, 0);
+  var net    = gross + gstAmt;
+  var rows = INV.lines.map(function(l,i) {
+    return '<tr><td>'+(i+1)+'</td><td><b>'+l.name+'</b></td><td>'+l.tier+'</td>' +
+      '<td>\u20b9'+l.mrp.toFixed(2)+'</td><td>\u20b9'+l.rate.toFixed(2)+'</td>' +
+      '<td>'+l.qty+'</td><td>'+(l.free||0)+'</td><td>'+(l.disc||0)+'%</td><td>'+l.gst+'%</td>' +
+      '<td>'+(l.batch||'')+'</td><td>'+(l.expiry||'')+'</td>' +
+      '<td><b>\u20b9'+invCalcSubtotal(l).toFixed(2)+'</b></td></tr>';
+  }).join('');
+  var estBanner = isEst ? '<div style="text-align:center;background:#fff3cd;border:2px dashed #e67e00;border-radius:6px;padding:8px;margin-bottom:16px;font-size:13px;font-weight:800;color:#e67e00;letter-spacing:1px">&#9888; ESTIMATED BILL &#8212; NOT A TAX INVOICE &#9888;</div>' : '';
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+docTitle+'</title><style>' +
+    '*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;color:#111;padding:24px;font-size:11px}' +
+    '.hdr{display:flex;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid '+titleColor+'}' +
+    '.brand{font-size:16px;font-weight:800;color:'+titleColor+'}.sub{font-size:9px;color:#888;margin-top:2px}' +
+    '.it{font-size:20px;font-weight:800;text-align:right;color:'+titleColor+'}.id{font-size:10px;color:#666;text-align:right;margin-top:2px}' +
+    '.parties{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}' +
+    '.pb{background:#f8faff;border-left:3px solid '+titleColor+';padding:8px 11px;border-radius:4px}' +
+    '.pl{font-size:8px;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:2px}.pv{font-size:12px;font-weight:700}' +
+    'table{width:100%;border-collapse:collapse;margin-bottom:12px}' +
+    'thead th{background:'+titleColor+';color:#fff;padding:5px 6px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase}' +
+    'tbody tr:nth-child(even){background:#f5f8ff}tbody td{padding:4px 6px;border-bottom:1px solid #e8eef8;font-size:10px}' +
+    '.tots{margin-left:auto;width:220px}.tr{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:11px}' +
+    '.tr.net{background:'+titleColor+';color:#fff;padding:6px 9px;border-radius:4px;font-weight:700;font-size:13px;border:none;margin-top:4px}' +
+    '.ft{margin-top:16px;text-align:center;font-size:8px;color:#aaa;border-top:1px solid #eee;padding-top:8px}' +
+    '@media print{body{padding:10px}}' +
+    '</style></head><body>' +
+    estBanner +
+    '<div class="hdr"><div><div class="brand">PharmaSalesPro</div><div class="sub">Field Sales Intelligence</div></div>' +
+    '<div><div class="it">'+docTitle+'</div><div class="id">Date: ' + date + '</div></div></div>' +
+    '<div class="parties"><div class="pb"><div class="pl">Billed By</div><div class="pv">' + from + '</div></div>' +
+    '<div class="pb"><div class="pl">Billed To</div><div class="pv">' + to + '</div></div></div>' +
+    '<table><thead><tr><th>#</th><th>Product</th><th>Tier</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Free</th><th>Disc%</th><th>GST%</th><th>Batch</th><th>Exp</th><th>Subtotal</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>' +
+    '<div class="tots"><div class="tr"><span>Gross (ex-GST)</span><span>\u20b9' + gross.toFixed(2) + '</span></div>' +
+    '<div class="tr"><span>GST Total</span><span>\u20b9' + gstAmt.toFixed(2) + '</span></div>' +
+    '<div class="tr net"><span>NET PAYABLE</span><span>\u20b9' + net.toFixed(2) + '</span></div></div>' +
+    '<div class="ft">Generated by PharmaSalesPro \u00b7 ' + date + ' \u2014 ESTIMATED ONLY' + '</div>' +
+    '<scr'+'ipt>window.onload=function(){window.print()}<\/scr'+'ipt></body></html>';
+  var w = window.open('', '_blank');
+  w.document.write(html); w.document.close();
+}
+
 </script>
 </body>
 </html>
