@@ -1277,40 +1277,37 @@ const Sess={
 /* ══ SHEETS API ══ */
 // Google Apps Script redirects script.google.com → script.googleusercontent.com
 // This drops GET params on cross-origin redirects. Fix:
-// → Write actions (appendUser, updateStatus): use no-cors (fire & forget, params survive)
-// → Read actions (findUser, getAll): use JSONP script tag (bypasses CORS entirely)
+// ALL actions (read + write) use JSONP — it follows Google's 302 redirect correctly
+// and params survive. no-cors fetch drops params on redirect → sheet never gets data.
 const SheetAPI={
-  _jsonp(url){
+  _jsonp(url,timeoutMs=15000){
     return new Promise((res,rej)=>{
       const cb='_psp_'+Date.now()+'_'+Math.random().toString(36).slice(2);
       const s=document.createElement('script');
-      const t=setTimeout(()=>{cleanup();rej(new Error('timeout'))},12000);
-      function cleanup(){clearTimeout(t);delete window[cb];s.remove()}
+      const t=setTimeout(()=>{cleanup();rej(new Error('SheetAPI timeout'))},timeoutMs);
+      function cleanup(){clearTimeout(t);try{delete window[cb]}catch(e){}s.remove()}
       window[cb]=data=>{cleanup();res(data)};
       s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
-      s.onerror=()=>{cleanup();rej(new Error('JSONP load error'))};
+      s.onerror=e=>{cleanup();rej(new Error('JSONP load error — check Script URL'))};
       document.head.appendChild(s);
     });
   },
-  async _write(url){
-    // no-cors: browser follows redirect, params sent, response opaque (we don't need it for writes)
-    try{await fetch(url,{method:'GET',mode:'no-cors',redirect:'follow'})}catch(e){console.warn('SheetAPI write warn:',e)}
-    return{ok:true};
-  },
   async findUser(mob){
-    try{const d=await this._jsonp(`${CFG.SCRIPT_URL}?action=findUser&mobile=${encodeURIComponent(mob)}`);return d.user||null}catch{return null}
+    try{const d=await this._jsonp(`${CFG.SCRIPT_URL}?action=findUser&mobile=${encodeURIComponent(mob)}`);return d.user||null}catch(e){console.warn('findUser:',e);return null}
   },
   async appendUser(d){
     try{
       const p=new URLSearchParams({action:'appendUser',userId:d.userId||'',name:d.name||'',mobile:d.mobile||'',company:d.company||'',designation:d.designation||'',city:d.city||'',place:d.place||'',pin:d.pin||'',status:d.status||'Free',createdAt:d.createdAt||new Date().toISOString()});
-      return await this._write(`${CFG.SCRIPT_URL}?${p.toString()}`);
-    }catch(e){console.error('appendUser:',e);return null}
+      const result=await this._jsonp(`${CFG.SCRIPT_URL}?${p.toString()}`);
+      if(!result||!result.ok)throw new Error('Sheet returned error: '+(result&&result.error||'unknown'));
+      return result;
+    }catch(e){console.error('appendUser failed:',e);throw e;}
   },
   async getAll(){
-    try{const d=await this._jsonp(`${CFG.SCRIPT_URL}?action=getAllUsers`);return d.users||[]}catch{return[]}
+    try{const d=await this._jsonp(`${CFG.SCRIPT_URL}?action=getAllUsers`);return d.users||[]}catch(e){console.warn('getAll:',e);return[]}
   },
   async updateStatus(uid,status){
-    try{return await this._write(`${CFG.SCRIPT_URL}?action=updateStatus&userId=${encodeURIComponent(uid)}&status=${encodeURIComponent(status)}`)}catch{return null}
+    try{return await this._jsonp(`${CFG.SCRIPT_URL}?action=updateStatus&userId=${encodeURIComponent(uid)}&status=${encodeURIComponent(status)}`)}catch(e){console.warn('updateStatus:',e);return null}
   },
 };
 
@@ -1443,8 +1440,10 @@ async function doSignup(){
   if(!place)return showErr('serr','Area / Place is required.');
   if(!/^\d{4,6}$/.test(pin))return showErr('serr','PIN must be 4–6 digits.');
   if(pin!==cpin)return showErr('serr','PINs do not match.');
-  // Check Script URL — device-specific config stored in IDB
-  if(!CFG.SCRIPT_URL||CFG.SCRIPT_URL==='YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'||CFG.SCRIPT_URL.trim()===''){
+  // Read Script URL directly from IDB — don't trust CFG which may have stale default
+  const savedScriptUrl=await IDB.loadSetting('scriptUrl');
+  if(savedScriptUrl)CFG.SCRIPT_URL=savedScriptUrl;
+  if(!CFG.SCRIPT_URL||CFG.SCRIPT_URL==='YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'||!CFG.SCRIPT_URL.includes('script.google')){
     return showErr('serr','App not configured. Ask admin to set Script URL first.');
   }
   _signupInProgress=true;
@@ -1457,6 +1456,8 @@ async function doSignup(){
     Sess.save(u);
     const ok=document.getElementById('sok');ok.style.display='block';ok.textContent='✓ Account created! Welcome 🎉';
     setTimeout(()=>initApp(u),1100);
+  }catch(err){
+    showErr('serr','Signup failed — '+(err.message||'could not reach server. Check Script URL in Settings.'));
   }finally{
     _signupInProgress=false;
     if(sbtn){sbtn.disabled=false;sbtn.innerHTML='Create Account →';}
@@ -2754,17 +2755,21 @@ function showToast(msg,type='ok'){const e=document.getElementById('ocr-toast');e
 
 /* ══ BOOT ══ */
 window.addEventListener('DOMContentLoaded',async()=>{
-  // Load saved config from IDB into live CFG on every boot
-  const sheetId=await IDB.loadSetting('sheetId');
-  const scriptUrl=await IDB.loadSetting('scriptUrl');
-  if(sheetId)CFG.SHEET_ID=sheetId;
-  if(scriptUrl)CFG.SCRIPT_URL=scriptUrl;
-  // Legacy: old boot code below
-  void (()=>{
+  // CRITICAL: load saved Script URL + Sheet ID into CFG BEFORE anything else.
+  // If we check session first, CFG.SCRIPT_URL may still be blank → SheetAPI calls go nowhere.
+  try{
+    const [sheetId,scriptUrl]=await Promise.all([
+      IDB.loadSetting('sheetId'),
+      IDB.loadSetting('scriptUrl')
+    ]);
+    if(sheetId)CFG.SHEET_ID=sheetId;
+    if(scriptUrl)CFG.SCRIPT_URL=scriptUrl;
+  }catch(e){console.warn('IDB settings load failed:',e);}
+
+  // NOW safe to restore session and boot the app
   const s=Sess.load();if(s)initApp(s);
   document.getElementById('lpin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
   window.addEventListener('hashchange',()=>{const h=location.hash.replace('#','');if(h&&PSP.user)nav(h)});
-  })();
 });
 
 /* ══════════════════════════════════════════════════════
