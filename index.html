@@ -198,6 +198,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .ocr-cell{background:rgba(255,255,255,.06);border:1px solid transparent;border-radius:6px;padding:4px 6px;color:#fff;font-family:var(--font);font-size:.74rem;width:100%;min-width:50px;outline:none;transition:border .15s}
 .ocr-cell:focus{border-color:var(--accent-a);background:rgba(0,198,255,.08)}
 .ocr-cell.wide{min-width:95px}
+.dr-mapper-row{display:flex;flex-direction:column;gap:3px}
+.dr-mapper-lbl{font-size:.6rem;font-weight:700;color:var(--label);letter-spacing:.5px;text-transform:uppercase}
+.dr-mapper-sel{width:100%;padding:.45rem .6rem;background:rgba(10,28,48,.95);border:1px solid rgba(255,255,255,.14);border-radius:7px;color:#fff;font-size:.78rem;outline:none}
+/* Format Filler mapper row */
+.ff-map-row{display:grid;grid-template-columns:1fr 18px 1fr;align-items:center;gap:.4rem;padding:.45rem .6rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px}
+.ff-map-row.matched{border-color:rgba(0,198,255,.2);background:rgba(0,198,255,.04)}
+.ff-map-row.raw-matched{border-color:rgba(255,179,0,.2);background:rgba(255,179,0,.04)}
+.ff-map-row.unmatched{border-color:rgba(255,255,255,.06)}
+.ff-map-fmt{font-size:.75rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ff-map-arrow{font-size:.75rem;color:var(--muted);text-align:center}
+.ff-map-sel{width:100%;padding:.38rem .5rem;background:rgba(10,28,48,.95);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:#fff;font-size:.74rem;outline:none;transition:border .15s}
+.ff-map-sel:focus{border-color:var(--accent-a)}
+.ff-map-sel.sel-matched{border-color:rgba(0,198,255,.35);color:var(--accent-a)}
+.ff-map-sel.sel-raw{border-color:rgba(255,179,0,.35);color:var(--amber)}
+.ff-map-sel.sel-skip{color:rgba(255,255,255,.3)}
 .ocr-del-btn{background:none;border:1px solid rgba(255,77,106,.28);color:var(--red);border-radius:6px;width:25px;height:25px;cursor:pointer;font-size:.78rem;display:flex;align-items:center;justify-content:center}
 .ocr-tbl-scroll{overflow-x:auto;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch}
 .ocr-tbl-scroll::-webkit-scrollbar{height:3px}
@@ -625,6 +640,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </div>
 
           <div id="dr-loaded-info" class="al al-ok" style="display:none;margin-top:.7rem;font-size:.78rem"></div>
+
+          <!-- Dr Column Mapper (shown after upload, like price list mapper) -->
+          <div id="dr-mapper" style="display:none;margin-top:.9rem;background:rgba(255,179,0,.06);border:1px solid rgba(255,179,0,.22);border-radius:var(--radius-sm);padding:.9rem">
+            <div style="font-size:.72rem;font-weight:700;color:var(--amber);margin-bottom:.65rem;display:flex;align-items:center;gap:5px">⚙️ Column Mapping — Confirm or reassign</div>
+            <div id="dr-mapper-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.75rem"></div>
+            <button class="btn btn-p btn-block btn-sm" onclick="drApplyMapper()" style="padding:.6rem">✓ Apply Mapping</button>
+          </div>
         </div>
 
         <div id="dr-list-panel" style="display:none">
@@ -652,40 +674,41 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <!-- ── FORMAT FILLER TAB ── -->
       <div id="panel-filler" style="display:none">
 
-        <!-- Step 1: Dr Master check -->
+        <!-- Step 1: Upload card -->
         <div class="calc-card" id="ff-step1">
           <div class="calc-title">📋 Format Filler — Auto-fill Company Template</div>
           <div id="ff-no-master" class="al al-warn" style="font-size:.78rem;margin-bottom:.75rem;display:none">⚠ No Dr Master loaded. Go to Dr Master tab first.</div>
           <div id="ff-master-ok" class="al al-ok" style="font-size:.78rem;margin-bottom:.75rem;display:none"></div>
-
-          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.85rem">Upload your blank company format (.xlsx). App reads column headers and auto-fills from selected Drs in master list.</p>
-
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:.85rem">Upload your company format (.xlsx). For each column in the format, choose which Dr list column to fill it from.</p>
           <div class="ocr-zone" id="ff-zone" style="height:90px" ondragover="ocrDragOver(event,'ff-zone')" ondragleave="ocrDragLeave('ff-zone')" ondrop="ffDrop(event)">
             <input type="file" id="ff-file" accept=".xlsx,.xls" onchange="ffLoadFile(event)">
             <div class="ocr-zone-icon">📁</div>
             <div class="ocr-zone-lbl">Company Format (.xlsx)</div>
             <div class="ocr-zone-sub">Tap to upload</div>
           </div>
+        </div>
 
-          <div id="ff-cols-info" style="display:none;margin-top:.85rem">
-            <div style="font-size:.7rem;font-weight:700;color:var(--label);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.4rem">Detected Columns</div>
-            <div id="ff-cols-list" style="font-size:.74rem;color:var(--muted);line-height:1.7"></div>
-            <div style="font-size:.68rem;color:rgba(255,255,255,.28);margin-top:.5rem">Smart matching will auto-map Dr fields. Unmatched columns left blank for manual fill.</div>
+        <!-- Step 2: Column Mapper — always shown after upload -->
+        <div class="calc-card" id="ff-mapper-card" style="display:none">
+          <div class="calc-title">🗂️ Map Columns
+            <span id="ff-mapper-badge" style="margin-left:auto;font-size:.68rem;font-weight:400;color:var(--muted)"></span>
           </div>
-
-          <button class="btn btn-p btn-block mt-2" id="ff-fill-btn" onclick="ffFillFormat()" style="display:none">
-            ⚡ Auto-Fill Format
+          <p style="font-size:.73rem;color:var(--muted);margin-bottom:.85rem">Each row = one column in your format. We auto-suggested the best match from your Dr list — change any dropdown if wrong, or set to <em>— Skip —</em> to leave blank.</p>
+          <div id="ff-mapper-grid" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.9rem"></div>
+          <button class="btn btn-p btn-block" onclick="ffApplyMapper()" style="padding:.75rem">
+            ⚡ Fill Format with Selected Drs
           </button>
         </div>
 
-        <!-- Review gate — user confirms before download -->
+        <!-- Step 3: Review & Download -->
         <div id="ff-result-card" class="calc-card" style="display:none">
           <div class="calc-title">✅ Format Ready — Please Review</div>
           <div id="ff-result-info" style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem"></div>
-          <div id="ff-preview-wrap" style="margin-bottom:.85rem;max-height:260px;overflow-y:auto;border:1px solid rgba(255,255,255,.08);border-radius:8px"></div>
-          <div class="al al-warn" style="font-size:.72rem;margin-bottom:.75rem">⚠ Please verify the filled data above before downloading. Edit any row in the table if needed.</div>
+          <div id="ff-preview-wrap" style="margin-bottom:.85rem;max-height:300px;overflow-y:auto;border:1px solid rgba(255,255,255,.08);border-radius:8px"></div>
+          <div class="al al-warn" style="font-size:.72rem;margin-bottom:.75rem">⚠ Review data above — tap any cell to edit before downloading.</div>
           <div style="display:flex;gap:.6rem;flex-wrap:wrap">
             <button class="btn btn-gold" style="flex:1" onclick="ffDownload()">⬇ Confirm &amp; Download</button>
+            <button class="btn btn-g btn-sm" onclick="ffBackToMapper()">← Remap</button>
             <button class="btn btn-d btn-sm" onclick="ffReset()">✕ Start Over</button>
           </div>
         </div>
@@ -1400,7 +1423,10 @@ async function doLogin(){
   Sess.save(user);initApp(user);
 }
 
+let _signupInProgress=false;
 async function doSignup(){
+  // Duplicate-call guard
+  if(_signupInProgress)return;
   hideEl('serr');hideEl('sok');
   const name=document.getElementById('sname').value.trim();
   const mob=document.getElementById('smob').value;
@@ -1417,12 +1443,24 @@ async function doSignup(){
   if(!place)return showErr('serr','Area / Place is required.');
   if(!/^\d{4,6}$/.test(pin))return showErr('serr','PIN must be 4–6 digits.');
   if(pin!==cpin)return showErr('serr','PINs do not match.');
-  const uid=Sess.genId(mob);
-  const u={userId:uid,name,mobile:mob,company:comp,designation:desig,city,place,pin,status:'Free',createdAt:new Date().toISOString()};
-  await SheetAPI.appendUser(u);
-  Sess.save(u);
-  const ok=document.getElementById('sok');ok.style.display='block';ok.textContent='✓ Account created! Welcome 🎉';
-  setTimeout(()=>initApp(u),1100);
+  // Check Script URL — device-specific config stored in IDB
+  if(!CFG.SCRIPT_URL||CFG.SCRIPT_URL==='YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'||CFG.SCRIPT_URL.trim()===''){
+    return showErr('serr','App not configured. Ask admin to set Script URL first.');
+  }
+  _signupInProgress=true;
+  const sbtn=document.getElementById('sbtn');
+  if(sbtn){sbtn.disabled=true;sbtn.innerHTML='<span class="spin"></span>Creating…';}
+  try{
+    const uid=Sess.genId(mob);
+    const u={userId:uid,name,mobile:mob,company:comp,designation:desig,city,place,pin,status:'Free',createdAt:new Date().toISOString()};
+    await SheetAPI.appendUser(u);
+    Sess.save(u);
+    const ok=document.getElementById('sok');ok.style.display='block';ok.textContent='✓ Account created! Welcome 🎉';
+    setTimeout(()=>initApp(u),1100);
+  }finally{
+    _signupInProgress=false;
+    if(sbtn){sbtn.disabled=false;sbtn.innerHTML='Create Account →';}
+  }
 }
 
 /* ══ APP INIT ══ */
@@ -1520,7 +1558,7 @@ async function clearDrList(){
   try{await IDB.saveDrMaster([]);}catch(e){}
   DR.rows=[];DR.selected=new Set();DR.filtered=[];
   drRenderList();
-  if(typeof FF!=='undefined'){FF.wb=null;FF.ws=null;FF.headers=[];FF.colMap={};FF.filledWb=null;}
+  if(typeof FF!=='undefined'){FF.wb=null;FF.ws=null;FF.headers=[];FF.colMap={};FF.rawColMap={};FF.filledWb=null;FF._editData=[];}
   ['ff-result-card','ff-cols-info'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   const fb=document.getElementById('ff-fill-btn');if(fb)fb.style.display='none';
   const st=document.getElementById('set-dr-status');if(st)st.textContent='No Dr list loaded';
@@ -2147,7 +2185,9 @@ const DR={rows:[],filtered:[],selected:new Set()};
 
 // Fuzzy-ish column name detection
 const DR_COL_MAP={
-  name:['doctor name','dr name','name','doctor','physician name','physician','doc name','dr.name','dr name'],
+  // Priority order: dr/doctor/physician FIRST, plain "name" only as last fallback
+  // This prevents "MR Name" or "Patient Name" from matching before "Doctor Name"
+  name:['doctor name','dr name','dr.name','physician name','doc name','doctor','physician','dr','doc','name'],
   mobile:['mobile','mobile no','phone','contact','number','mob','cell','whatsapp'],
   speciality:['speciality','specialty','specialization','dept','department','category','type','qualification'],
   area:['area','location','territory','place','zone','sector','address','city','town','patch','headquarter','hq'],
@@ -2156,22 +2196,21 @@ const DR_COL_MAP={
 };
 
 function drFindCol(headers,fieldKeys){
-  // Word-boundary match: keyword must equal full header OR be a whole word inside it.
-  // Splits on spaces and non-alphanumeric chars.
-  // e.g. keyword "name" matches "Doctor Name" or "Name" but NOT "Frequency Name".
+  // Priority-respecting match: iterate keywords in order (most-specific first),
+  // and for each keyword scan all headers. This ensures 'doctor name' is tried
+  // before 'name', so "Doctor Name" wins over "MR Name" for the name field.
   function headerWords(h){return h.toLowerCase().trim().split(/[\s\-\/\.\,\(\)\_]+/).filter(Boolean)}
-  for(const h of headers){
-    const lh=h.toLowerCase().trim();
-    const words=headerWords(h);
-    for(const k of fieldKeys){
+  for(const k of fieldKeys){
+    const kWords=k.split(/[\s\-\/\.\,\(\)\_]+/).filter(Boolean);
+    for(const h of headers){
+      const lh=h.toLowerCase().trim();
+      const words=headerWords(h);
       // Exact full-header match
       if(lh===k)return h;
-      // Keyword equals one of the whole words in the header
-      if(words.includes(k))return h;
-      // Multi-word keyword: all words of keyword appear as consecutive tokens in header
-      const kWords=k.split(/[\s\-\/\.\,\(\)\_]+/).filter(Boolean);
+      // Single keyword: must be a whole word in the header
+      if(kWords.length===1&&words.includes(k))return h;
+      // Multi-word keyword: all words appear as contiguous subsequence
       if(kWords.length>1){
-        // Check if kWords appear as a contiguous subsequence in words
         outer: for(let i=0;i<=words.length-kWords.length;i++){
           for(let j=0;j<kWords.length;j++){if(words[i+j]!==kWords[j])continue outer;}
           return h;
@@ -2183,48 +2222,38 @@ function drFindCol(headers,fieldKeys){
 
 function drLoadFile(e){
   const f=e.target.files[0];if(!f)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
-      const data=new Uint8Array(ev.target.result);
-      const wb=XLSX.read(data,{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
-      if(!raw.length){showToast('No data found in file.','err');return}
-      const headers=Object.keys(raw[0]);
-      const nameCol=drFindCol(headers,DR_COL_MAP.name);
-      const mobCol=drFindCol(headers,DR_COL_MAP.mobile);
-      const specCol=drFindCol(headers,DR_COL_MAP.speciality);
-      const areaCol=drFindCol(headers,DR_COL_MAP.area);
-      DR.rows=raw.map((row,i)=>({
-        _id:i,
-        name:String(row[nameCol]||row[headers[0]]||'Dr '+(i+1)).trim(),
-        mobile:String(row[mobCol]||'').trim(),
-        speciality:String(row[specCol]||'').trim(),
-        area:String(row[areaCol]||'').trim(),
-        _raw:row,_headers:headers
-      }));
-      IDB.saveDrMaster(DR.rows);
-      drRenderList();
-      const zone=document.getElementById('drzone');
-      zone.innerHTML=`<div class="ocr-zone-icon">✅</div><div class="ocr-zone-lbl">${f.name}</div><div class="ocr-zone-sub">${DR.rows.length} doctors loaded</div>`;
-      zone.classList.add('has-file');
-      const info=document.getElementById('dr-loaded-info');
-      info.style.display='block';info.textContent=`✓ ${DR.rows.length} doctors loaded · Columns: name${nameCol?'':' (guessed)'}, mobile, speciality, area`;
-      showToast(`${DR.rows.length} doctors loaded ✓`,'ok');
-    }catch(err){showToast('Error reading file: '+err.message,'err')}
+  const afterParse=(raw)=>{
+    drParseAndLoad(raw,f.name);
+    // Update upload zone
+    const zone=document.getElementById('drzone');
+    if(zone){zone.innerHTML=`<div class="ocr-zone-icon">✅</div><div class="ocr-zone-lbl">${f.name}</div><div class="ocr-zone-sub">${DR.rows.length} doctors loaded</div>`;zone.classList.add('has-file');}
+    const info=document.getElementById('dr-loaded-info');
+    if(info){info.style.display='block';info.textContent=`✓ ${DR.rows.length} doctors loaded — review column mapping below`;}
   };
+  const reader=new FileReader();
   if(f.name.endsWith('.csv')){
-    reader.readAsText(f);
     reader.onload=ev=>{
-      const rows=XLSX.utils.sheet_to_json(XLSX.read(ev.target.result,{type:'string'}).Sheets[XLSX.read(ev.target.result,{type:'string'}).SheetNames[0]],{defval:''});
-      drParseAndLoad(rows,f.name);
-    };return;
+      try{
+        const wb2=XLSX.read(ev.target.result,{type:'string'});
+        const rows=XLSX.utils.sheet_to_json(wb2.Sheets[wb2.SheetNames[0]],{defval:''});
+        afterParse(rows);
+      }catch(err){showToast('Error reading CSV: '+err.message,'err')}
+    };
+    reader.readAsText(f);
+  } else {
+    reader.onload=ev=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+        const raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+        if(!raw.length){showToast('No data found in file.','err');return}
+        afterParse(raw);
+      }catch(err){showToast('Error reading file: '+err.message,'err')}
+    };
+    reader.readAsArrayBuffer(f);
   }
-  reader.readAsArrayBuffer(f);
 }
 
-function drParseAndLoad(raw,fname){
+function drParseAndLoad(raw,fname,skipMapper){
   if(!raw.length){showToast('No data found.','err');return}
   const headers=Object.keys(raw[0]);
   const nameCol=drFindCol(headers,DR_COL_MAP.name);
@@ -2233,17 +2262,72 @@ function drParseAndLoad(raw,fname){
   const areaCol=drFindCol(headers,DR_COL_MAP.area);
   const freqCol=drFindCol(headers,DR_COL_MAP.frequency);
   const catCol=drFindCol(headers,DR_COL_MAP.category);
-  DR.rows=raw.map((row,i)=>({
-    _id:i,
-    name:String(row[nameCol]||row[headers[0]]||'Dr '+(i+1)).trim(),
-    mobile:String(row[mobCol]||'').trim(),
-    speciality:String(row[specCol]||'').trim(),
-    area:String(row[areaCol]||'').trim(),
-    frequency:String(row[freqCol]||'Monthly').trim(),
-    category:String(row[catCol]||'').trim(),
-    _raw:row,_headers:headers
-  }));
+
+  // Store raw data for mapper use
+  DR._pendingRaw=raw;DR._pendingHeaders=headers;DR._pendingFname=fname||'';
+
+  // Build rows with current mapping
+  function buildRows(m){
+    return raw.map((row,i)=>({
+      _id:i,
+      name:String(row[m.name]||row[headers[0]]||'Dr '+(i+1)).trim(),
+      mobile:String(row[m.mobile]||'').trim(),
+      speciality:String(row[m.speciality]||'').trim(),
+      area:String(row[m.area]||'').trim(),
+      frequency:String(row[m.freq]||'Monthly').trim(),
+      category:String(row[m.cat]||'').trim(),
+      _raw:row,_headers:headers
+    }));
+  }
+  DR._buildRows=buildRows;
+  DR._curMap={name:nameCol,mobile:mobCol,speciality:specCol,area:areaCol,freq:freqCol,cat:catCol};
+
+  DR.rows=buildRows(DR._curMap);
   IDB.saveDrMaster(DR.rows);drRenderList();showToast(`${DR.rows.length} doctors loaded ✓`,'ok');
+
+  if(!skipMapper){drShowMapper(headers,DR._curMap);}
+}
+
+function drShowMapper(headers,curMap){
+  const mapper=document.getElementById('dr-mapper');
+  const grid=document.getElementById('dr-mapper-grid');
+  if(!mapper||!grid)return;
+  const fields=[
+    {key:'name',   label:'Doctor Name *'},
+    {key:'mobile', label:'Mobile / Phone'},
+    {key:'speciality',label:'Speciality / Dept'},
+    {key:'area',   label:'Area / Territory'},
+    {key:'freq',   label:'Frequency / Gap Days'},
+    {key:'cat',    label:'Category / Grade'},
+  ];
+  grid.innerHTML=fields.map(f=>{
+    const cur=curMap[f.key]||'';
+    const opts='<option value="">— Not mapped —</option>'+
+      headers.map(h=>`<option value="${h.replace(/"/g,'&quot;')}"${h===cur?' selected':''}>${h}</option>`).join('');
+    return `<div class="dr-mapper-row"><div class="dr-mapper-lbl">${f.label}</div><select class="dr-mapper-sel" id="dr-map-${f.key}">${opts}</select></div>`;
+  }).join('');
+  mapper.style.display='block';
+}
+
+function drApplyMapper(){
+  const m={
+    name:  document.getElementById('dr-map-name').value||null,
+    mobile:document.getElementById('dr-map-mobile').value||null,
+    speciality:document.getElementById('dr-map-speciality').value||null,
+    area:  document.getElementById('dr-map-area').value||null,
+    freq:  document.getElementById('dr-map-freq').value||null,
+    cat:   document.getElementById('dr-map-cat').value||null,
+  };
+  if(!m.name){showToast('Doctor Name column is required.','err');return}
+  if(!DR._buildRows){showToast('Upload a file first.','err');return}
+  DR._curMap=m;
+  DR.rows=DR._buildRows(m);
+  IDB.saveDrMaster(DR.rows);
+  drRenderList();
+  document.getElementById('dr-mapper').style.display='none';
+  const info=document.getElementById('dr-loaded-info');
+  if(info){info.style.display='block';info.textContent=`✓ ${DR.rows.length} doctors loaded · Mapping applied`;}
+  showToast(`${DR.rows.length} doctors re-mapped ✓`,'ok');
 }
 
 function drDrop(e){e.preventDefault();document.getElementById('drzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)drLoadFile({target:{files:[f]}})}
@@ -2289,7 +2373,15 @@ function drClearSelection(){DR.selected.clear();drRenderItems(DR.filtered)}
 function drExportSelected(){
   const sel=DR.rows.filter(d=>DR.selected.has(d._id));
   if(!sel.length){showToast('No Drs selected.','err');return}
-  const ws=XLSX.utils.json_to_sheet(sel.map(d=>({Name:d.name,Mobile:d.mobile,Speciality:d.speciality,Area:d.area})));
+  // Export ALL columns from the original uploaded row (_raw), not just hardcoded 3
+  let exportRows;
+  if(sel[0]&&sel[0]._raw&&Object.keys(sel[0]._raw).length){
+    exportRows=sel.map(d=>d._raw);
+  } else {
+    // Fallback: build from parsed fields
+    exportRows=sel.map(d=>({Name:d.name,Mobile:d.mobile,Speciality:d.speciality,Area:d.area,Frequency:d.frequency,Category:d.category}));
+  }
+  const ws=XLSX.utils.json_to_sheet(exportRows);
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Selected Drs');
   XLSX.writeFile(wb,`Selected_Drs_${new Date().toISOString().split('T')[0]}.xlsx`);
   showToast(`${sel.length} Drs exported ✓`,'ok');
@@ -2298,7 +2390,26 @@ function drExportSelected(){
 /* ══════════════════════════════════
    CHANGE 3B: FORMAT FILLER
 ══════════════════════════════════ */
-let FF={wb:null,ws:null,headers:[],colMap:{},filledWb:null,_pendingAmbiguous:[]};
+let FF={wb:null,ws:null,headers:[],colMap:{},rawColMap:{},filledWb:null,_editData:[]};
+
+/* ── Helper: get all Dr list raw column names ── */
+function ffGetRawHeaders(){
+  if(DR.rows.length&&DR.rows[0]._raw)return Object.keys(DR.rows[0]._raw);
+  return[];
+}
+
+/* ── Normalise header for fuzzy matching: lowercase, strip _-space ── */
+function ffNorm(s){return String(s).toLowerCase().replace(/[_\s\-]/g,'');}
+
+/* ── Auto-suggest best Dr list column for a format column ── */
+function ffBestMatch(fmtH,rawHeaders){
+  const n=ffNorm(fmtH);
+  // Exact normalised match
+  let m=rawHeaders.find(rh=>ffNorm(rh)===n);
+  // Substring match
+  if(!m)m=rawHeaders.find(rh=>ffNorm(rh).includes(n)||n.includes(ffNorm(rh)));
+  return m||'';
+}
 
 function ffCheckMaster(){
   const hasM=DR.rows.length>0;
@@ -2318,142 +2429,207 @@ function ffLoadFile(e){
       const data=new Uint8Array(ev.target.result);
       FF.wb=XLSX.read(data,{type:'array'});
       FF.ws=FF.wb.Sheets[FF.wb.SheetNames[0]];
-      // Read first row as headers
+      // Read header row
       const range=XLSX.utils.decode_range(FF.ws['!ref']||'A1');
       FF.headers=[];
       for(let c=range.s.c;c<=range.e.c;c++){
         const cell=FF.ws[XLSX.utils.encode_cell({r:range.s.r,c})];
-        FF.headers.push(cell?String(cell.v):'');
+        FF.headers.push(cell?String(cell.v):'Col'+(c+1));
       }
-      // Smart map: which format col maps to which Dr field (word-boundary safe)
-      FF.colMap={};
-      const claimed={};
-      const fieldOrder=['mobile','speciality','area','name'];
-      const nameExcludeWords=['frequency','freq','rxion','rx','visit','date','remarks','notes','product','brand'];
-      FF.headers.forEach(h=>{
-        const lh=h.toLowerCase();
-        let field=null;
-        for(const f of fieldOrder){
-          if(claimed[f])continue;
-          if(drFindCol([h],DR_COL_MAP[f])!==null){
-            if(f==='name'&&nameExcludeWords.some(w=>lh.includes(w)))continue;
-            field=f;break;
-          }
-        }
-        if(field){FF.colMap[h]=field;claimed[field]=true;}
-      });
+      // Update zone
       const zone=document.getElementById('ff-zone');
       zone.classList.add('has-file');
       zone.innerHTML=`<div class="ocr-zone-icon">✅</div><div class="ocr-zone-lbl">${f.name}</div><div class="ocr-zone-sub">${FF.headers.length} columns detected</div>`;
-      const colsInfo=document.getElementById('ff-cols-info');
-      colsInfo.style.display='block';
-      const mapped=Object.entries(FF.colMap).map(([h,f])=>`<span style="color:var(--green)">✓ ${h}</span> → ${f}`).join('&nbsp;&nbsp;');
-      const unmapped=FF.headers.filter(h=>!FF.colMap[h]).map(h=>`<span style="color:var(--muted)">${h}</span>`).join(', ');
-      document.getElementById('ff-cols-list').innerHTML=(mapped||'None matched')+((unmapped)?'<br><span style="font-size:.65rem;color:rgba(255,255,255,.25)">Blank (no match): '+unmapped+'</span>':'');
-      document.getElementById('ff-fill-btn').style.display='block';
-      showToast('Format loaded ✓','ok');
+      // Show mapper
+      ffBuildMapper();
+      showToast(`${FF.headers.length} columns loaded — confirm mapping below ✓`,'ok');
     }catch(err){showToast('Error reading file: '+err.message,'err')}
   };reader.readAsArrayBuffer(f);
 }
 
-function ffFillFormat(){
-  if(!FF.wb||!FF.ws){showToast('Upload a format first.','err');return}
+/* ── Build the mapper UI: one row per format column ── */
+function ffBuildMapper(){
+  const rawHeaders=ffGetRawHeaders();
+  const mapCard=document.getElementById('ff-mapper-card');
+  const grid=document.getElementById('ff-mapper-grid');
+  const badge=document.getElementById('ff-mapper-badge');
+  if(!mapCard||!grid)return;
+
+  badge.textContent=`${FF.headers.length} format columns`;
+
+  // Build options HTML once (same for all dropdowns)
+  const skipOpt='<option value="">— Skip (leave blank) —</option>';
+  const rawOpts=rawHeaders.map(rh=>`<option value="${rh.replace(/"/g,'&quot;')}">${rh}</option>`).join('');
+
+  grid.innerHTML='';
+  FF.headers.forEach((fmtH,i)=>{
+    const best=ffBestMatch(fmtH,rawHeaders);
+    const isBest=!!best;
+    const row=document.createElement('div');
+    row.className='ff-map-row '+(isBest?'matched':'unmatched');
+    row.innerHTML=`
+      <div class="ff-map-fmt" title="${fmtH}">${fmtH}</div>
+      <div class="ff-map-arrow">→</div>
+      <select class="ff-map-sel ${isBest?'sel-matched':'sel-skip'}" id="ff-sel-${i}" onchange="ffSelChange(${i},this)">
+        ${skipOpt}${rawOpts}
+      </select>`;
+    grid.appendChild(row);
+    // Pre-select best match
+    const sel=row.querySelector('select');
+    if(best)sel.value=best;
+    if(!best)sel.value='';
+  });
+
+  // Summary line
+  const autoMatched=FF.headers.filter(h=>ffBestMatch(h,rawHeaders)).length;
+  badge.textContent=`${FF.headers.length} columns · ${autoMatched} auto-matched`;
+
+  mapCard.style.display='block';
+  setTimeout(()=>mapCard.scrollIntoView({behavior:'smooth',block:'start'}),150);
+}
+
+function ffSelChange(i,sel){
+  sel.className='ff-map-sel '+(sel.value?'sel-matched':'sel-skip');
+  const row=sel.closest('.ff-map-row');
+  if(row)row.className='ff-map-row '+(sel.value?'matched':'unmatched');
+}
+
+/* ── User taps Fill — read mapper selections then fill workbook ── */
+function ffApplyMapper(){
+  if(!FF.wb||!FF.headers.length){showToast('Upload a format first.','err');return}
   const selDrs=DR.rows.filter(d=>DR.selected.has(d._id));
   if(!selDrs.length){showToast('No Drs selected in Dr Master tab.','err');return}
 
-  // Deep-clone workbook to preserve styles, merges, col widths etc.
+  // Read user selections: formatColIndex -> drRawColName (or '')
+  const mapping={}; // fmtHeader -> rawColName
+  FF.headers.forEach((h,i)=>{
+    const sel=document.getElementById('ff-sel-'+i);
+    if(sel&&sel.value)mapping[h]=sel.value;
+  });
+
+  const mappedCount=Object.keys(mapping).length;
+  if(!mappedCount){showToast('Please map at least one column.','err');return}
+
+  // Deep-clone workbook to preserve styles
   const clonedWb=JSON.parse(JSON.stringify(FF.wb));
   const sheetName=clonedWb.SheetNames[0];
   const ws=clonedWb.Sheets[sheetName];
-
-  // Detect header row index (scan first 5 rows for the one with most mapped cols)
   const range=XLSX.utils.decode_range(ws['!ref']||'A1');
-  let headerRowIdx=range.s.r;
-  let bestScore=0;
+
+  // Find header row (row where most format headers appear)
+  let headerRowIdx=range.s.r,bestScore=0;
   for(let r=range.s.r;r<=Math.min(range.s.r+4,range.e.r);r++){
     let score=0;
     for(let c=range.s.c;c<=range.e.c;c++){
       const cell=ws[XLSX.utils.encode_cell({r,c})];
-      if(cell&&FF.colMap[String(cell.v)])score++;
+      if(cell&&mapping[String(cell.v)])score++;
     }
     if(score>bestScore){bestScore=score;headerRowIdx=r;}
   }
 
-  // Build col index → Dr field mapping from header row
-  const colFieldMap={};
+  // Build col index → rawColName
+  const colRawMap={};
   for(let c=range.s.c;c<=range.e.c;c++){
     const cell=ws[XLSX.utils.encode_cell({r:headerRowIdx,c})];
-    if(cell){const field=FF.colMap[String(cell.v)];if(field)colFieldMap[c]=field;}
+    if(cell){const rCol=mapping[String(cell.v)];if(rCol)colRawMap[c]=rCol;}
   }
 
-  // Find first data row (row after header)
   const firstDataRow=headerRowIdx+1;
 
-  // Collect a template row (first data row after header) to copy non-mapped cell styles
+  // Grab template row styles
   const templateCells={};
   for(let c=range.s.c;c<=range.e.c;c++){
     const addr=XLSX.utils.encode_cell({r:firstDataRow,c});
     if(ws[addr])templateCells[c]=JSON.parse(JSON.stringify(ws[addr]));
   }
 
-  // Clear all existing data rows (keep header + everything above it)
+  // Clear existing data rows
   for(let r=firstDataRow;r<=range.e.r;r++){
-    for(let c=range.s.c;c<=range.e.c;c++){
-      const addr=XLSX.utils.encode_cell({r,c});
-      delete ws[addr];
-    }
+    for(let c=range.s.c;c<=range.e.c;c++){delete ws[XLSX.utils.encode_cell({r,c})];}
   }
 
   // Write one row per selected Dr
   selDrs.forEach((dr,di)=>{
     const rowIdx=firstDataRow+di;
     for(let c=range.s.c;c<=range.e.c;c++){
-      const field=colFieldMap[c];
+      const rawCol=colRawMap[c];
       const tmpl=templateCells[c]||{};
-      const newCell=Object.assign({},tmpl); // clone style from template
-      if(field&&dr[field]!==undefined&&dr[field]!==''){
-        newCell.v=dr[field];
-        newCell.t='s'; // string type
-        delete newCell.f; // remove any formula from template
-      } else {
-        newCell.v=tmpl.v!==undefined&&!colFieldMap[c]?tmpl.v:'';
-        newCell.t='s';
-        delete newCell.f;
-      }
+      const newCell=Object.assign({},tmpl);
+      const val=(rawCol&&dr._raw&&dr._raw[rawCol]!==undefined&&dr._raw[rawCol]!=='')?String(dr._raw[rawCol]):'';
+      newCell.v=val;newCell.t='s';delete newCell.f;
       ws[XLSX.utils.encode_cell({r:rowIdx,c})]=newCell;
     }
   });
 
-  // Update sheet range to reflect new last row
   range.e.r=firstDataRow+selDrs.length-1;
   ws['!ref']=XLSX.utils.encode_range(range);
-
   FF.filledWb=clonedWb;
+
+  // Build _editData for editable preview
+  FF._editData=selDrs.map(dr=>{
+    const row={};
+    FF.headers.forEach(h=>{
+      const rCol=mapping[h];
+      row[h]=(rCol&&dr._raw&&dr._raw[rCol]!==undefined)?String(dr._raw[rCol]):'';
+    });
+    return row;
+  });
+
+  // Build editable preview table
   const previewWrap=document.getElementById('ff-preview-wrap');
   if(previewWrap){
-    let tbl='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.72rem">';
-    tbl+='<thead><tr>';
+    let tbl='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.72rem"><thead><tr>';
     FF.headers.forEach(h=>{
-      const mapped=FF.colMap[h];
-      tbl+=`<th style="padding:5px 7px;background:rgba(0,198,255,.1);border-bottom:1px solid rgba(255,255,255,.1);color:${mapped?'var(--accent-a)':'rgba(255,255,255,.3)'};white-space:nowrap;text-align:left;font-size:.63rem;font-weight:700">${h}${mapped?' ('+mapped+')':''}</th>`;
+      const isMapped=!!mapping[h];
+      tbl+=`<th style="padding:5px 7px;background:rgba(0,198,255,.1);border-bottom:1px solid rgba(255,255,255,.1);color:${isMapped?'var(--accent-a)':'rgba(255,255,255,.3)'};white-space:nowrap;text-align:left;font-size:.63rem;font-weight:700">${h}${isMapped?`<br><span style="font-size:.55rem;font-weight:400;opacity:.6">← ${mapping[h]}</span>`:''}</th>`;
     });
     tbl+='</tr></thead><tbody>';
-    selDrs.forEach((dr,di)=>{
+    FF._editData.forEach((rowData,di)=>{
       tbl+=`<tr style="background:${di%2===0?'transparent':'rgba(255,255,255,.03)'}">`;
       FF.headers.forEach(h=>{
-        const val=FF.colMap[h]&&dr[FF.colMap[h]]!==undefined?dr[FF.colMap[h]]:'';
-        tbl+=`<td style="padding:4px 7px;border-bottom:1px solid rgba(255,255,255,.04);color:${val?'var(--text)':'rgba(255,255,255,.2)'};font-size:.72rem">${val||'—'}</td>`;
+        const val=rowData[h]||'';
+        const isMapped=!!mapping[h];
+        const safeH=h.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+        const safeVal=val.replace(/"/g,'&quot;');
+        tbl+=`<td style="padding:2px 4px;border-bottom:1px solid rgba(255,255,255,.04)"><input value="${safeVal}" oninput="ffEditCell(${di},'${safeH}',this.value)" style="background:${isMapped?'rgba(0,198,255,.06)':'rgba(255,255,255,.03)'};border:1px solid ${isMapped?'rgba(0,198,255,.18)':'rgba(255,255,255,.07)'};border-radius:5px;color:${val?'var(--text)':'rgba(255,255,255,.3)'};font-size:.7rem;padding:3px 5px;width:100%;min-width:70px;outline:none;font-family:var(--font)" onfocus="this.style.borderColor='var(--accent-a)'" onblur="this.style.borderColor='${isMapped?'rgba(0,198,255,.18)':'rgba(255,255,255,.07)'}'"></td>`;
       });
       tbl+='</tr>';
     });
     tbl+='</tbody></table></div>';
     previewWrap.innerHTML=tbl;
   }
+
+  const skipped=FF.headers.filter(h=>!mapping[h]).length;
+  document.getElementById('ff-result-info').textContent=`${selDrs.length} Dr${selDrs.length!==1?'s':''} filled · ${mappedCount} columns mapped · ${skipped} skipped`;
   document.getElementById('ff-result-card').style.display='block';
-  const blankCnt=FF.headers.filter(h=>!FF.colMap[h]).length;
-  document.getElementById('ff-result-info').textContent=`${selDrs.length} Dr${selDrs.length!==1?'s':''} filled. ${blankCnt} column${blankCnt!==1?'s':''} left blank.`;
   showToast('Format filled ✓','ok');
   setTimeout(()=>document.getElementById('ff-result-card').scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+
+function ffBackToMapper(){
+  document.getElementById('ff-result-card').style.display='none';
+  document.getElementById('ff-mapper-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function ffEditCell(rowIdx,header,value){
+  if(!FF._editData||!FF._editData[rowIdx])return;
+  FF._editData[rowIdx][header]=value;
+  if(!FF.filledWb)return;
+  const ws=FF.filledWb.Sheets[FF.filledWb.SheetNames[0]];
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+  // Find header row
+  let hRowIdx=range.s.r,best=0;
+  for(let r=range.s.r;r<=Math.min(range.s.r+4,range.e.r);r++){
+    let sc=0;for(let c=range.s.c;c<=range.e.c;c++){const cell=ws[XLSX.utils.encode_cell({r,c})];if(cell&&FF.headers.includes(String(cell.v)))sc++;}
+    if(sc>best){best=sc;hRowIdx=r;}
+  }
+  for(let c=range.s.c;c<=range.e.c;c++){
+    const cell=ws[XLSX.utils.encode_cell({r:hRowIdx,c})];
+    if(cell&&String(cell.v)===header){
+      const addr=XLSX.utils.encode_cell({r:hRowIdx+1+rowIdx,c});
+      ws[addr]=ws[addr]||{};ws[addr].v=value;ws[addr].t='s';break;
+    }
+  }
 }
 
 function ffDownload(){
@@ -2461,6 +2637,8 @@ function ffDownload(){
   XLSX.writeFile(FF.filledWb,`FilledFormat_${new Date().toISOString().split('T')[0]}.xlsx`);
   showToast('Excel downloaded ✓','ok');
 }
+
+
 
 /* ══ DOWNLOAD CODE.GS ══ */
 async function downloadCodeGS(){
@@ -3376,10 +3554,15 @@ function invUpdateTotals() {
 /* ─ Format Filler reset ─ */
 function ffReset(){
   document.getElementById('ff-result-card').style.display='none';
-  document.getElementById('ff-step1').style.display='block';
-  document.getElementById('ff-file').value='';
-  document.getElementById('ff-cols-info').style.display='none';
-  document.getElementById('ff-fill-btn').style.display='none';
+  document.getElementById('ff-mapper-card').style.display='none';
+  FF.wb=null;FF.ws=null;FF.headers=[];FF.colMap={};FF.rawColMap={};FF.filledWb=null;FF._editData=[];
+  const zone=document.getElementById('ff-zone');
+  if(zone){
+    zone.classList.remove('has-file');
+    zone.innerHTML='<input type="file" id="ff-file" accept=".xlsx,.xls" onchange="ffLoadFile(event)"><div class="ocr-zone-icon">📁</div><div class="ocr-zone-lbl">Company Format (.xlsx)</div><div class="ocr-zone-sub">Tap to upload</div>';
+  }
+  const grid=document.getElementById('ff-mapper-grid');
+  if(grid)grid.innerHTML='';
 }
 /* ─ Column Remapper (always accessible after file load) ─ */
 function invShowRemapper() {
